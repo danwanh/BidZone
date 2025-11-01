@@ -1,0 +1,17 @@
+Set up ReactJS, TailwindCSS: https://www.youtube.com/watch?v=8ffYlFxxBpc
+Set up MongoDB: https://www.youtube.com/watch?v=T8RurS56pZs
+-----------------------------
+Run:
+    - Frontend: cài dependencies: npm install
+
+    cd frontend
+    npm run dev
+
+----------------------------
+    - Backend: cài dependencies: npm install + tạo file .env (lấy link như video 5:12 và tạo .env như video từ 13:57 đến hết)
+    File .env gồm:
+    PORT = 3000
+    MONGO_URI = mongodb+srv://<username>:<password>@cluster0.xfklozk.mongodb.net/?appName=Cluster0
+
+    cd backend
+    node server.js
