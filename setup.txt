@@ -14,4 +14,5 @@ Run:
     MONGO_URI = mongodb+srv://<username>:<password>@cluster0.xfklozk.mongodb.net/?appName=Cluster0
 
     cd backend
+    npm i express mongoose dotenv
     node server.js
