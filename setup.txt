@@ -12,6 +12,8 @@ Run:
     File .env gồm:
     PORT = 3000
     MONGO_URI = mongodb+srv://<username>:<password>@cluster0.xfklozk.mongodb.net/?appName=Cluster0
+--- truy cập tới folder test
+    MONGO_URI = mongodb+srv://<username>:<password>@cluster0.xfklozk.mongodb.net/test?retryWrites=true&w=majority&appName=Cluster0
 
     cd backend
     npm i express mongoose dotenv
