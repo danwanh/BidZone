@@ -1,0 +1,11 @@
+POST http://localhost:3000/api/bids
+Content-Type: application/json
+
+{
+  "product_id": "672a33c865f9f18d4a7dc1c1",
+  "bidder_id": "672a34a865f9f18d4a7dc1c3",
+  "price": 1200
+}
+
+### Get all bids for a product
+GET http://localhost:3000/api/bids/672a33c865f9f18d4a7dc1c1
