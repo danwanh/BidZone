@@ -24,6 +24,9 @@ const RatingSchema = mongoose.Schema(
         comment: {
             type: String,
         }
+    },
+    {
+        Timestamp: true
     }
 );
 

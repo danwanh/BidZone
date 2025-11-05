@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 import User from "./models/user.model.js";
 // Import routes
 import bidRoutes from "./routes/bidRoutes.js";
+import ratingRoutes from "./routes/ratingRoutes.js";
 
 dotenv.config();
 
@@ -18,6 +19,7 @@ mongoose.connect(process.env.MONGO_URI)
   .catch(err => console.log("DB error:", err));
 // Routes
 app.use("/api/bids", bidRoutes);
+app.use("/api/ratings", ratingRoutes);
 
 app.listen(process.env.PORT, () =>
   console.log(`Server running on port ${process.env.PORT}`)
