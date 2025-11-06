@@ -26,7 +26,7 @@ const RatingSchema = mongoose.Schema(
         }
     },
     {
-        Timestamp: true
+        timestamps: true
     }
 );
 
