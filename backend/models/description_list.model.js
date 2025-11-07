@@ -8,12 +8,10 @@ const DescriptionItemSchema = mongoose.Schema(
 
         description: {
             type: String
-        },
-
-        date: {
-            type: Date,
-            default: Date.now()
         }
+    },
+    {
+        timestamps: true
     }
 );
 

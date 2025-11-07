@@ -49,7 +49,12 @@ export const updateRating = async (req, res) => {
         if(!mongoose.Types.ObjectId.isValid(req.params.id)){
             return res.status(400).json({ message: "Invalid ObjectId format" });
         }
-
+        // else if (from_user_id === to_user_id){
+        //     return res.status(400).json({ message: "User can't rate themself "});
+        // }else if (points !== 1 && points !== -1){
+        //     return res.status(400).json({ message: "Points must be either 1 or -1" });
+        // }
+            
         // const rating = res.rating;
         // console.log(typeof rating);
         // if (product_id) rating.product_id = product_id;
@@ -58,7 +63,7 @@ export const updateRating = async (req, res) => {
         if (comment) res.rating.comment = comment;
         if (points) res.rating.points = points;
         const updated = await Rating.findByIdAndUpdate(req.params.id, res.rating, {new: true});
-        console.log(updated);
+
         res.json(updated);
     }catch(err){
         console.error("Error updating rating:", err);
