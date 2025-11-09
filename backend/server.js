@@ -6,18 +6,20 @@ import dotenv from "dotenv";
 import User from "./models/user.model.js";
 // Import routes
 import bidRoutes from "./routes/bidRoutes.js";
-
+import categoryRoutes from "./routes/categoryRoutes.js";
 dotenv.config();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-mongoose.connect(process.env.MONGO_URI)
+mongoose
+  .connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB connected"))
-  .catch(err => console.log("DB error:", err));
+  .catch((err) => console.log("DB error:", err));
 // Routes
 app.use("/api/bids", bidRoutes);
+app.use("/api/category", categoryRoutes);
 
 app.listen(process.env.PORT, () =>
   console.log(`Server running on port ${process.env.PORT}`)
@@ -46,6 +48,3 @@ app.listen(process.env.PORT, () =>
 //     res.status(500).json({message: error.message})
 //   }
 // })
-
-
-
