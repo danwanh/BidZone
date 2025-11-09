@@ -18,6 +18,7 @@ mongoose.connect(process.env.MONGO_URI)
   .catch(err => console.log("DB error:", err));
 // Routes
 app.use("/api/bids", bidRoutes);
+app.use("/api/autobids", bidRoutes);
 
 app.listen(process.env.PORT, () =>
   console.log(`Server running on port ${process.env.PORT}`)
