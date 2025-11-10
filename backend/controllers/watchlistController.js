@@ -77,13 +77,18 @@ export const getWatchlistByUserId = async (req, res) => {
     }
 }
 
-// PATCH /api/watchlislt/:userId/:productId
+// PATCH /api/watchlislt/:userId
 export const addToWatchlist = async (req, res) => {
     try{
-        const { userId: u_i, productId: p_i } = req.params;
+        const { userId: u_i } = req.params;
+        let p_i;
+        if (req.body.product_id == undefined)  p_i = null;
+        else    p_i = req.body.product_id;
         
-        if(!u_i || !p_i)
-            return res.status(400).json( {message: "Missing required name"} ); 
+        if(!u_i)
+            return res.status(400).json( {message: "Missing required user id"} ); 
+        if(!p_i)
+            return res.status(400).json( {message: "Missing required product id"} ); 
     
         // Check if userId is in database
         if( !await User.findById(u_i) )

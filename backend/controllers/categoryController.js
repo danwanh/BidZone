@@ -16,7 +16,7 @@ export const createCategory = async (req, res) => {
     
   } catch (err) {
     console.error("Error creating category:", err);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Can't create category" });
   }
 };
 
@@ -27,7 +27,7 @@ export const getAllTopCategory = async (req, res) => {
     res.status(200).json(categories);
   } catch (err) {
     console.error("Error fetching top level categories:", err);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: `Can't get top categories` });
   }
 };
 

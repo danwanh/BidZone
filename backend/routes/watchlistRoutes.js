@@ -7,7 +7,7 @@ import { createWatchlist, getWatchlistByUserId, addToWatchlist, removeFromWatchl
 router.post("/", createWatchlist);
 router.get("/", getAllWatchlist);
 router.get("/:userId", getWatchlistByUserId);
-router.patch("/:userId/:productId", addToWatchlist);
+router.patch("/:userId", addToWatchlist);
 router.delete("/:userId", removeWatchlist);
 router.delete("/:userId/:productId", removeFromWatchlist);
 

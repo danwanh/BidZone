@@ -20,13 +20,17 @@ Content-Type: application/json
 
 ###
 // ADD PRODUCT
-PATCH http://localhost:3000/api/watchlist/69074d222438b6fadd1a1ea2/69074dd92438b6fadd1a1ea4
+PATCH http://localhost:3000/api/watchlist/69074d222438b6fadd1a1ea2
 Content-Type: application/json
 
 ###
 // ADD PRODUCT
-PATCH http://localhost:3000/api/watchlist/69074d222438b6fadd1a1ea2/69074df62438b6fadd1a1ea6
+PATCH http://localhost:3000/api/watchlist/69074d222438b6fadd1a1ea2
 Content-Type: application/json
+
+{
+    "product_id": "69111c5306251b39d3acd669"
+}
 
 ###
 // REMOVE PRODUCT
