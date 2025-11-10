@@ -9,6 +9,7 @@ import bidRoutes from "./routes/bidRoutes.js";
 import ratingRoutes from "./routes/ratingRoutes.js";
 import questionRoutes from "./routes/questionRoutes.js";
 import descriptionRoutes from "./routes/desRoutes.js";
+import autobidRoutes from "./routes/autobidRoutes.js"
 
 dotenv.config();
 
@@ -22,6 +23,7 @@ mongoose.connect(process.env.MONGO_URI)
 
 // Routes
 app.use("/api/bids", bidRoutes);
+app.use("/api/autobids", autobidRoutes);
 app.use("/api/ratings", ratingRoutes);
 app.use("/api/questions", questionRoutes);
 app.use("/api/descriptions", descriptionRoutes);
