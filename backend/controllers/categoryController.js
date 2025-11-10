@@ -97,5 +97,5 @@ export const deleteCategoryById = async (req, res) => {
 
   await Category.deleteMany({ category_id: categoryId });
   await Category.findByIdAndDelete(categoryId);
-  res.status(200).json({ message: "Deleted category" });
+  res.status(204).json({ message: "Deleted category" });
 };

@@ -12,9 +12,17 @@ const AutoBidSchema = mongoose.Schema(
             required: true
         },
 
-        max_price: {
+        price: { // giá vào sản phẩm
+            type: Number,
+        },
+
+        max_price: { //người dùng nhập
             type: Number,
             required: true
+        },
+
+        current_holder: {
+            type: mongoose.Schema.Types.ObjectId, ref: "User",
         },
 
         date: {

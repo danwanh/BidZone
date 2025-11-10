@@ -1,0 +1,39 @@
+###
+POST http://localhost:3000/api/watchlist
+Content-Type: application/json
+
+{
+    "user_id": "69074d222438b6fadd1a1ea2",
+    "product_id": "69074dd92438b6fadd1a1ea4"
+}
+
+###
+
+//GET ALL WATCHLIST
+GET http://localhost:3000/api/watchlist
+Content-Type: application/json
+
+###
+
+GET http://localhost:3000/api/watchlist/69074d222438b6fadd1a1ea2
+Content-Type: application/json
+
+###
+// ADD PRODUCT
+PATCH http://localhost:3000/api/watchlist/69074d222438b6fadd1a1ea2/69074dd92438b6fadd1a1ea4
+Content-Type: application/json
+
+###
+// ADD PRODUCT
+PATCH http://localhost:3000/api/watchlist/69074d222438b6fadd1a1ea2/69074df62438b6fadd1a1ea6
+Content-Type: application/json
+
+###
+// REMOVE PRODUCT
+DELETE http://localhost:3000/api/watchlist/69074d222438b6fadd1a1ea2/69074dd92438b6fadd1a1ea4
+Content-Type: application/json
+
+###
+
+DELETE http://localhost:3000/api/watchlist/69074d222438b6fadd1a1ea2
+Content-Type: application/json

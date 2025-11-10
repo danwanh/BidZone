@@ -6,6 +6,10 @@ import dotenv from "dotenv";
 import User from "./models/user.model.js";
 // Import routes
 import bidRoutes from "./routes/bidRoutes.js";
+import ratingRoutes from "./routes/ratingRoutes.js";
+import questionRoutes from "./routes/questionRoutes.js";
+import descriptionRoutes from "./routes/desRoutes.js";
+import autobidRoutes from "./routes/autobidRoutes.js"
 import categoryRoutes from "./routes/categoryRoutes.js";
 import watchlistRoutes from "./routes/watchlistRoutes.js";
 
@@ -19,8 +23,13 @@ mongoose
   .connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB connected"))
   .catch((err) => console.log("DB error:", err));
+
 // Routes
 app.use("/api/bids", bidRoutes);
+app.use("/api/autobids", autobidRoutes);
+app.use("/api/ratings", ratingRoutes);
+app.use("/api/questions", questionRoutes);
+app.use("/api/descriptions", descriptionRoutes);
 app.use("/api/category", categoryRoutes);
 app.use("/api/watchlist", watchlistRoutes);
 

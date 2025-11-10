@@ -1,11 +1,87 @@
+###
 POST http://localhost:3000/api/bids
 Content-Type: application/json
 
 {
-  "product_id": "672a33c865f9f18d4a7dc1c1",
-  "bidder_id": "672a34a865f9f18d4a7dc1c3",
-  "price": 1200
+  "product_id": "69111c5306251b39d3acd669",
+  "bidder_id": "69111e8a06251b39d3acd8f9",
+  "price": 10700000
 }
 
-### Get all bids for a product
-GET http://localhost:3000/api/bids/672a33c865f9f18d4a7dc1c1
+
+### 
+GET http://localhost:3000/api/bids/69111c5306251b39d3acd669
+
+
+### 
+GET http://localhost:3000/api/bids
+
+
+### 
+PUT http://localhost:3000/api/bids/6730b2e8c5e9a9f8d3d11122
+Content-Type: application/json
+
+{
+  "price": 11000000
+}
+
+### 
+DELETE http://localhost:3000/api/bids/6730b2e8c5e9a9f8d3d11122
+
+### Autobid
+### user 1
+POST http://localhost:3000/api/autobids
+Content-Type: application/json
+
+{
+  "product_id": "69111c5306251b39d3acd669",
+  "bidder_id": "69111e8a06251b39d3acd8f9",
+  "max_price": 10400000
+}
+###2
+POST http://localhost:3000/api/autobids
+Content-Type: application/json
+
+{
+  "product_id": "69111c5306251b39d3acd669",
+  "bidder_id": "69113d2a06251b39d3acfd0d",
+  "max_price": 10500000
+}
+###2
+POST http://localhost:3000/api/autobids
+Content-Type: application/json
+
+{
+  "product_id": "69111c5306251b39d3acd669",
+  "bidder_id": "69113d2a06251b39d3acfd0d",
+  "max_price": 10500000
+}
+###1
+POST http://localhost:3000/api/autobids
+Content-Type: application/json
+
+{
+  "product_id": "69111c5306251b39d3acd669",
+  "bidder_id": "69111e8a06251b39d3acd8f9",
+  "max_price": 10600000
+}
+###
+POST http://localhost:3000/api/autobids
+Content-Type: application/json
+
+{
+  "product_id": "69111c5306251b39d3acd669",
+  "bidder_id": "69111e8a06251b39d3acd8f9",
+  "max_price": 10000000
+}
+###
+GET http://localhost:3000/api/autobids
+
+
+### 
+GET http://localhost:3000/api/autobids/product/69111c5306251b39d3acd669
+
+
+### 
+DELETE http://localhost:3000/api/autobids/69114056a6e7454b85c2299b
+
