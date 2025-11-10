@@ -2,7 +2,8 @@ import mongoose from "mongoose";
 
 const CategorySchema = mongoose.Schema({
   category_id: {
-    type: mongoose.Schema.Types.ObjectId("Category"),
+    type: mongoose.Schema.Types.ObjectId,
+    ref:("Category")
   },
 
   name: {

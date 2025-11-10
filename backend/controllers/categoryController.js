@@ -13,6 +13,7 @@ export const createCategory = async (req, res) => {
     const savedCategory = await newCategory.save();
 
     res.status(201).json(savedCategory);
+    
   } catch (err) {
     console.error("Error creating category:", err);
     res.status(500).json({ message: "Server error" });
@@ -33,10 +34,20 @@ export const getAllTopCategory = async (req, res) => {
 // [GET] /api/category/:categoryId
 export const getLowerCategoriesById = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { categoryId } = req.params;
 
-    const categories = await Category.find({ category_id: id });
-    res.status(200).json(categories);
+    // Check if id is in database
+    if(!await Category.findById(categoryId))
+      return res.status(404).json({message: "ID not found"});
+
+
+    const categories = await Category.find({ category_id: categoryId });
+    if (categories.length === 0) {
+      console.log(`No child found: ${categoryId}`);
+      res.status(404).json({ message: "No child found" });
+    } else {
+      res.status(200).json(categories);
+    }
   } catch (err) {
     console.error("Error fetching lower categories:", err);
     res.status(500).json({ message: "Server error" });
@@ -46,17 +57,24 @@ export const getLowerCategoriesById = async (req, res) => {
 // [PATCH] /api/category/:categoryID
 export const changeCategoryById = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { category_id, name, slug } = req.body;
+    const { categoryId } = req.params;
+    
+    // Check if id is in database
+    if(!await Category.findById(categoryId))
+      return res.status(404).json({message: "ID not found"});
+    
+    const updates = {};
 
-    // Update category
+    if (req.body.category_id !== undefined) updates.category_id = req.body.category_id;
+    if (req.body.name !== undefined) updates.name = req.body.name;
+    if (req.body.slug !== undefined) updates.slug = req.body.slug;
+
     const updated_category = await Category.findByIdAndUpdate(
-      id,
-      { category_id, name, slug },
+      categoryId,
+      updates,
       { new: true, runValidators: true } // return updated doc
     );
 
-    // If id is not in db
     if (!updated_category) {
       return res.status(404).json({ message: "Category not found" });
     }
@@ -68,11 +86,16 @@ export const changeCategoryById = async (req, res) => {
 
 // [DELETE] /api/category/:categoryID
 export const deleteCategoryById = async (req, res) => {
-  const { id } = req.params;
+  const { categoryId } = req.params;
 
-  const category = await Category.findById(id);
+  // Check if id is in database
+  if(!await Category.findById(categoryId))
+    return res.status(404).json({message: "ID not found"});
+
+  const category = await Category.findById(categoryId);
   if (!category) return res.status(404).json({ message: "Category not found" });
 
-  await Category.deleteMany({ category_id: id });
-  await Category.findByIdAndDelete(id);
+  await Category.deleteMany({ category_id: categoryId });
+  await Category.findByIdAndDelete(categoryId);
+  res.status(200).json({ message: "Deleted category" });
 };

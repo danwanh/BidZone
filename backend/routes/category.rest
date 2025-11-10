@@ -1,0 +1,41 @@
+POST http://localhost:3000/api/category
+Content-Type: application/json
+
+{
+  "category_id": null,
+  "name": "Cloths",
+  "slug": "cloth"
+}
+
+###
+
+POST http://localhost:3000/api/category
+Content-Type: application/json
+
+{
+  "category_id": "69117bceeaf6973ce996054e",
+  "name": "T-shirt red",
+  "slug": "t shirt"
+}
+
+###
+
+GET http://localhost:3000/api/category
+Content-Type: application/json
+
+###
+GET http://localhost:3000/api/category/69117bceeaf6973ce996054e
+Content-Type: application/json
+
+###
+DELETE http://localhost:3000/api/category/69117bceeaf6973ce996054e
+Content-Type: application/json
+
+###
+PATCH http://localhost:3000/api/category/69117f3097d3d9d641819350
+Content-Type: application/json
+
+{
+    "name": "Fruit",
+    "slug": "fruit"
+}
