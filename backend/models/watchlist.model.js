@@ -5,6 +5,7 @@ const WatchListSchema = mongoose.Schema(
         user_id: {
             type: mongoose.Schema.Types.ObjectId,
             refer: "User",
+            required: true
         },
 
         product_id: [{
@@ -12,6 +13,9 @@ const WatchListSchema = mongoose.Schema(
             refer: "Product",
         }],
 
+    }, 
+    {
+        timestamps: true
     }
 );
 

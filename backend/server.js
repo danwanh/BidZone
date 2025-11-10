@@ -7,6 +7,8 @@ import User from "./models/user.model.js";
 // Import routes
 import bidRoutes from "./routes/bidRoutes.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
+import watchlistRoutes from "./routes/watchlistRoutes.js";
+
 dotenv.config();
 
 const app = express();
@@ -20,6 +22,7 @@ mongoose
 // Routes
 app.use("/api/bids", bidRoutes);
 app.use("/api/category", categoryRoutes);
+app.use("/api/watchlist", watchlistRoutes);
 
 app.listen(process.env.PORT, () =>
   console.log(`Server running on port ${process.env.PORT}`)

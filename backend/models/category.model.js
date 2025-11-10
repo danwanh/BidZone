@@ -1,19 +1,23 @@
 import mongoose from "mongoose";
 
 const CategorySchema = mongoose.Schema({
-  category_id: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref:("Category")
-  },
+    category_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref:("Category")
+    },
 
-  name: {
-    type: String,
-    required: true,
-  },
+    name: {
+      type: String,
+      required: true,
+    },
 
-  slug: {
-    type: String,
+    slug: {
+      type: String,
+    },
   },
-});
+  {
+    timestamps: true
+  }
+);
 
 export default mongoose.model("Category", CategorySchema);
