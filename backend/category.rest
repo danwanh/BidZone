@@ -13,8 +13,8 @@ POST http://localhost:3000/api/category
 Content-Type: application/json
 
 {
-  "category_id": "69117bceeaf6973ce996054e",
-  "name": "T-shirt red",
+  "category_id": "691158f1635fde90d067cb48",
+  "name": "Mouse",
   "slug": "t shirt"
 }
 
@@ -24,7 +24,7 @@ GET http://localhost:3000/api/category
 Content-Type: application/json
 
 ###
-GET http://localhost:3000/api/category/69117bceeaf6973ce996054e
+GET http://localhost:3000/api/category/691158f1635fde90d067cb48/subcategories
 Content-Type: application/json
 
 ###
@@ -32,7 +32,7 @@ DELETE http://localhost:3000/api/category/69117bceeaf6973ce996054e
 Content-Type: application/json
 
 ###
-PATCH http://localhost:3000/api/category/69117bceeaf6973ce996054e
+PATCH http://localhost:3000/api/category/691220a9447c34d48270e9af
 Content-Type: application/json
 
 {

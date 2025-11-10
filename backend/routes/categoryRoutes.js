@@ -1,7 +1,7 @@
 import express from "express";
 const router = express.Router();
 import {
-  getAllTopCategory,
+  getAllTopCategories,
   getLowerCategoriesById,
   createCategory,
   changeCategoryById,
@@ -9,8 +9,8 @@ import {
 } from "../controllers/categoryController.js";
 
 router.post("/", createCategory);
-router.get("/", getAllTopCategory);
-router.get("/:categoryId", getLowerCategoriesById);
+router.get("/", getAllTopCategories);
+router.get("/:categoryId/subcategories", getLowerCategoriesById);
 router.patch("/:categoryId", changeCategoryById);
 router.delete("/:categoryId", deleteCategoryById);
 
