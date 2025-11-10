@@ -1,4 +1,5 @@
 import Rating from "../models/rating.model.js";
+import User from "../models/user.model.js";
 import mongoose from "mongoose";
 
 export const getAllRatings = async (req, res) => {
