@@ -1,0 +1,56 @@
+###
+POST http://localhost:3000/api/product
+Content-Type: application/json
+
+{
+    "name": "Shoes",
+    "seller_id": "6912e02b70323bdb4045f327",
+    "start_price": 1000,
+    "status": "active"
+}
+
+### Create product (JSON body)
+POST http://localhost:5000/api/product
+Content-Type: application/json
+# Accept: application/json
+
+{
+    "name": "Shoes",
+    "description": "Cool running shoes",
+    "seller_id": "6912e02b70323bdb4045f327",
+    "start_price": 1000,
+    "bid_step": 50,
+    "buy_now_price": 2000,
+    "current_price": 1000,
+    "status": "active",
+    "slug": "shoes"
+}
+
+###
+
+GET http://localhost:3000/api/product
+Content-Type: application/json
+
+###
+
+POST http://localhost:3000/api/product
+Content-Type: multipart/form-data
+Accept: application/json
+
+{
+  "name": "Cool Bees",
+  "description": "Comfortable running shoes",
+  "seller_id": "6912e02b70323bdb4045f327",
+  "start_price": 1000,
+  "bid_step": 50,
+  "buy_now_price": 2000,
+  "current_price": 1000,
+  "status": "active",
+  "slug": "cool-shoes",
+  "is_autobid": false,
+  "allow_unrated_bidders": true,
+  "images": [
+    "BeeCorn_xnvm4t",
+    "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD... (base64 string of image2)"
+  ]
+}
