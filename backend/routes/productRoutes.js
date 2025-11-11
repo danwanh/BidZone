@@ -8,7 +8,7 @@ const MAXIMUM_PICTURE_SENT = 25;
 router.post("/", addProduct);
 router.get("/", getAllProducts);
 router.get("/:id", getProductById);
-router.get("/:id/seller", getProductBySellerId);
+router.get("/seller/:id", getProductBySellerId);
 router.delete("/:id", deleteProductById);
 router.patch("/:id", changeProductById);
 

@@ -6,11 +6,15 @@ import {
   createCategory,
   changeCategoryById,
   deleteCategoryById,
+  getAllCategories,
+  getCategoryById
 } from "../controllers/categoryController.js";
 
 router.post("/", createCategory);
-router.get("/", getAllTopCategories);
-router.get("/:categoryId/subcategories", getLowerCategoriesById);
+router.get("/", getAllCategories);
+router.get("/top", getAllTopCategories);
+router.get("/:categoryId", getCategoryById);
+router.get("/subcategories/:categoryId", getLowerCategoriesById);
 router.patch("/:categoryId", changeCategoryById);
 router.delete("/:categoryId", deleteCategoryById);
 

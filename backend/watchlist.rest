@@ -4,7 +4,8 @@ Content-Type: application/json
 
 {
     "user_id": "69074d222438b6fadd1a1ea2",
-    "product_id": "69074dd92438b6fadd1a1ea4"
+    "product_id": ["69074dd92438b6fadd1a1ea4",
+    "6912f7b57e185fa911aa95ca"]
 }
 
 ###
@@ -15,26 +16,26 @@ Content-Type: application/json
 
 ###
 
+GET http://localhost:3000/api/watchlist/user/
+Content-Type: application/json
+
+###
+
 GET http://localhost:3000/api/watchlist/69074d222438b6fadd1a1ea2
 Content-Type: application/json
 
 ###
 // ADD PRODUCT
-PATCH http://localhost:3000/api/watchlist/69074d222438b6fadd1a1ea2
-Content-Type: application/json
-
-###
-// ADD PRODUCT
-PATCH http://localhost:3000/api/watchlist/69074d222438b6fadd1a1ea2
+PATCH http://localhost:3000/api/watchlist/690b56766d0100a54cbca32a
 Content-Type: application/json
 
 {
-    "product_id": "69111c5306251b39d3acd669"
+    "product_id": "6912f7b57e185fa911aa95ca"
 }
 
 ###
 // REMOVE PRODUCT
-DELETE http://localhost:3000/api/watchlist/69074d222438b6fadd1a1ea2/69074dd92438b6fadd1a1ea4
+DELETE http://localhost:3000/api/watchlist/69074d222438b6fadd1a1ea2/6912f7b57e185fa911aa95ca
 Content-Type: application/json
 
 ###

@@ -7,7 +7,7 @@ export const createWatchlist = async (req, res) => {
     try{
         const { user_id: u_i, product_id: p_i } = req.body;
         if (!u_i){
-           return res.status(400).json( {message: "Missing required name"} ); 
+           return res.status(400).json( {message: "Missing required user_id"} ); 
         }
 
         // Check if userId is in database
@@ -54,19 +54,37 @@ export const getAllWatchlist = async (req, res) => {
     }
 }
 
-// GET /api/watchlist/:userId
+// GET /api/watchlist/:id
+export const getWatchlistById = async (req, res) => {
+    try{
+        const { id } = req.params;
+        const watchlist = await Watchlist.findById(id);
+        if(!watchlist){
+            console.log(`No watchlist in database`);
+            return res.status(404).json( {message: `No watchlist found with id: ${id}`} );
+        }
+        else
+            res.status(200).json(watchlist);
+    }
+    catch (error) {
+        console.error("Error reading watchlist: ", error);
+        res.status(500).json( {message: "Can't read watchlist"} );
+    }
+}
+
+// GET /api/watchlist/user/:userId
 export const getWatchlistByUserId = async (req, res) => {
     try{
-        const { userId } = req.params;
+        const { userId: u_i } = req.params;
 
         // Check if userId is in database
-        if( !await User.findById(userId) )
+        if( !await User.findById(u_i) )
           return res.status(404).json({message: "User id not found"});
 
-        const watchlist = await Watchlist.findOne( {user_id: userId } );
-        if(watchlist.length === 0){
-            console.log(`No watchlist with user id: ${userId}`);
-            return res.status(404).json( {message: `No watchlist found for user`} );
+        const watchlist = await Watchlist.findOne( {user_id: u_i } );
+        if(!watchlist){
+            console.log(`No watchlist with user id: ${u_i}`);
+            return res.status(404).json( {message: `No watchlist found for user: ${u_i}`} );
         }
         else
             res.status(200).json(watchlist);
@@ -101,8 +119,11 @@ export const addToWatchlist = async (req, res) => {
         const updatedWatchlist = await Watchlist.findOneAndUpdate(
             { user_id: u_i },
             { $addToSet: { product_id: p_i } },
-            { new: true, upsert: true } // create if it doesn't exist
+            { new: true} // create if it doesn't exist
         );
+        if (!updatedWatchlist) {
+            return res.status(404).json({ message: `Watchlist not found for this user: ${u_i}` });
+        }
 
         res.status(200).json({ message: "Product added to watchlist", updatedWatchlist });
     }

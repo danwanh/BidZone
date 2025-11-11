@@ -9,6 +9,12 @@ export const createCategory = async (req, res) => {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
+    if (category_id) {
+      const parent = await Category.findById(category_id);
+      if (!parent)
+        return res.status(400).json({ message: `Can't find parent id: ${category_id}` });
+    }
+
     const newCategory = new Category({ category_id, name, slug });
     const savedCategory = await newCategory.save();
 
@@ -21,6 +27,17 @@ export const createCategory = async (req, res) => {
 };
 
 // [GET] /api/category
+export const getAllCategories = async (req, res) => {
+  try {
+    const categories = await Category.find();
+    res.status(200).json(categories);
+  } catch (err) {
+    console.error("Error fetching categories:", err);
+    res.status(500).json({ message: `Can't get categories` });
+  }
+};
+
+// [GET] /api/category/top
 export const getAllTopCategories = async (req, res) => {
   try {
     const categories = await Category.find({ category_id: null });
@@ -31,19 +48,31 @@ export const getAllTopCategories = async (req, res) => {
   }
 };
 
+// [GET] /api/category/:categoryId
+export const getCategoryById = async (req, res) => {
+  try {
+    const { categoryId: c_i } = req.params;
+    const category = await Category.findById(c_i);
+    res.status(200).json(category);
+  } catch (err) {
+    console.error("Error fetching category:", err);
+    res.status(500).json({ message: `Can't get category: ${c_i}` });
+  }
+};
+
 // [GET] /api/category/:categoryId/subcategories
 export const getLowerCategoriesById = async (req, res) => {
   try {
-    const { categoryId } = req.params;
+    const { categoryId: c_i } = req.params;
 
     // Check if id is in database
-    if(!await Category.findById(categoryId))
+    if(!await Category.findById(c_i))
       return res.status(404).json({message: "ID not found"});
 
 
-    const categories = await Category.find({ category_id: categoryId });
+    const categories = await Category.find({ category_id: c_i });
     if (categories.length === 0) {
-      console.log(`No child found for: ${categoryId}`);
+      console.log(`No child found for: ${c_i}`);
       res.status(404).json({ message: "No child found" });
     } else {
       res.status(200).json(categories);
@@ -65,9 +94,16 @@ export const changeCategoryById = async (req, res) => {
     
     const updates = {};
 
-    if (req.body.category_id !== undefined) updates.category_id = req.body.category_id;
+    if (req.body.category_id !== undefined){
+      const cat_id = req.body.category_id;
+      const parent = await Category.findById(cat_id);
+      if (!parent)
+        return res.status(400).json({ message: `Can't find parent id: ${cat_id}` });
+      updates.category_id = cat_id;
+    } 
     if (req.body.name !== undefined) updates.name = req.body.name;
     if (req.body.slug !== undefined) updates.slug = req.body.slug;
+
 
     const updated_category = await Category.findByIdAndUpdate(
       c_i,
@@ -101,6 +137,6 @@ export const deleteCategoryById = async (req, res) => {
   }
   catch (error){
     console.error("Error deleting category:", error);
-    res.status(500).json({ message: "Couldn't delete category" });
+    res.status(500).json({ message: `Couldn't delete category: ${c_i}` });
   }
 };
