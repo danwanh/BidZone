@@ -13,7 +13,7 @@ Content-Type: application/json
 ###
 
 // GET ALL PRODUCT
-GET http://localhost:3000/api/product
+GET http://localhost:3000/api/product/69074dd92438b6fadd1a1ea4
 Content-Type: application/json
 
 ###
