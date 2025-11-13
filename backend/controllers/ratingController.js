@@ -1,4 +1,5 @@
 import Rating from "../models/rating.model.js";
+import Product from "../models/product.model.js";
 import User from "../models/user.model.js";
 import mongoose from "mongoose";
 
@@ -23,6 +24,7 @@ export const createRating = async (req, res) => {
     try{
         const {product_id, from_user_id, to_user_id, comment, points} = req.body;
 
+        //Check for valid request
         if (!product_id || !from_user_id || !to_user_id || !comment){
             return res.status(400).json({ message: "Missing required fields" });
         }else if (points !== 1 && points !== -1){
@@ -31,6 +33,17 @@ export const createRating = async (req, res) => {
             return res.status(400).json({ message: "User can't rate themself "});
         }
         
+        //Check for existence
+        const product = await findById(product_id);
+        if (!product) return res.status(404).json({ message: "Product not found" });
+
+        const rater = User.findById(from_user_id);
+        if (!rater) return res.status(404).json({ message: "Rater not found" });
+
+        const rated = User.findById(to_user_id);
+        if (!rated) return res.status(404).json({ message: "Target user for rating not found" });
+
+
         const rating = new Rating({product_id, from_user_id, to_user_id, comment, points});
         const save = await rating.save();
         res.status(201).json(save);
@@ -47,20 +60,25 @@ export const updateRating = async (req, res) => {
         if (!res.rating)
             return res;
 
-        if(!mongoose.Types.ObjectId.isValid(req.params.id)){
-            return res.status(400).json({ message: "Invalid ObjectId format" });
+        if (from_user_id === to_user_id){
+            return res.status(400).json({ message: "User can't rate themself "});
+        }else if (points !== 1 && points !== -1){
+            return res.status(400).json({ message: "Points must be either 1 or -1" });
         }
-        // else if (from_user_id === to_user_id){
-        //     return res.status(400).json({ message: "User can't rate themself "});
-        // }else if (points !== 1 && points !== -1){
-        //     return res.status(400).json({ message: "Points must be either 1 or -1" });
-        // }
-            
-        // const rating = res.rating;
-        // console.log(typeof rating);
-        // if (product_id) rating.product_id = product_id;
-        // if(from_user_id) rating.from_user_id = from_user_id;
-        // if (to_user_id) rating.to_user_id = to_user_id;
+        
+        //Check for existence
+        const product = await findById(product_id);
+        if (!product) return res.status(404).json({ message: "Product not found" });
+
+        const rater = User.findById(from_user_id);
+        if (!rater) return res.status(404).json({ message: "Rater not found" });
+
+        const rated = User.findById(to_user_id);
+        if (!rated) return res.status(404).json({ message: "Target user for rating not found" });
+
+        if (product_id) res.rating.product_id = product_id;
+        if(from_user_id) res.rating.from_user_id = from_user_id;
+        if (to_user_id) res.rating.to_user_id = to_user_id;
         if (comment) res.rating.comment = comment;
         if (points) res.rating.points = points;
         const updated = await Rating.findByIdAndUpdate(req.params.id, res.rating, {new: true});
@@ -105,4 +123,25 @@ async function getRating(req, res){
         return res.status(500).json({message: err.message});
     }
     res.rating = rating;
+}
+
+async function is_valid_req(req){
+    //Check for validation
+    if (!product_id || !from_user_id || !to_user_id || !comment){
+        return res.status(400).json({ message: "Missing required fields" });
+    }else if (points !== 1 && points !== -1){
+        return res.status(400).json({ message: "Points must be either 1 or -1" });
+    }else if (from_user_id === to_user_id){
+        return res.status(400).json({ message: "User can't rate themself "});
+    }
+
+    //Check for existence
+    const product = await Product.exists(product_id);
+    if (!product) return res.status(404).json({ message: "Product not found" });
+
+    const rater = User.findById(from_user_id);
+    if (!rater) return res.status(404).json({ message: "Rater not found" });
+
+    const rated = User.findById(to_user_id);
+    if (!rated) return res.status(404).json({ message: "Target user for rating not found" });
 }

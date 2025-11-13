@@ -1,4 +1,6 @@
 import Question from "../models/question.model.js";
+import User from "../models/user.model.js";
+import Product from "../models/product.model.js";
 import mongoose from "mongoose";
 
 export const getAllQuestions = async (req, res) => {
