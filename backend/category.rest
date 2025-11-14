@@ -1,0 +1,50 @@
+POST http://localhost:3000/api/category
+Content-Type: application/json
+
+{
+  "category_id": null,
+  "name": "Cloths",
+  "slug": "cloth"
+}
+
+###
+
+POST http://localhost:3000/api/category
+Content-Type: application/json
+
+{
+  "category_id": "691158f1635fde90d067cb48",
+  "name": "Mouse Logitech",
+  "slug": "Logitech"
+}
+
+###
+
+GET http://localhost:3000/api/category
+Content-Type: application/json
+
+
+###
+
+GET http://localhost:3000/api/category/top
+Content-Type: application/json
+
+###
+GET http://localhost:3000/api/category/69149a20348c34f06b58ea59
+Content-Type: application/json
+
+###
+GET http://localhost:3000/api/category/subcategories/691158f1635fde90d067cb48
+Content-Type: application/json
+
+###
+DELETE http://localhost:3000/api/category/691158f1635fde90d067cb48
+Content-Type: application/json
+
+###
+PATCH http://localhost:3000/api/category/69149a20348c34f06b58ea59
+Content-Type: application/json
+
+{
+    "category_id": "691158f1635fde90d067cb48"
+}
