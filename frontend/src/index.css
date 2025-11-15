@@ -1,1 +1,11 @@
 @import "tailwindcss";
+
+:root {
+  --blue-main: #a9b9f8;
+  --input-fill: #F3F5F6;
+  --button-fill: #667EEA;
+}
+
+body{
+    background: var(--blue-main);
+}
