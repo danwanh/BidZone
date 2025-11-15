@@ -4,21 +4,25 @@ const OrderSchema = mongoose.Schema(
     {
         product_id: {
             type: mongoose.Schema.Types.ObjectId,
-            refer: "Product",
+            ref: "Product",
+            required: true
         },
 
         seller_id: {
             type: mongoose.Schema.Types.ObjectId,
-            refer: "User",
+            ref: "User",
+            required: true
         },
 
         buyer_id: {
             type: mongoose.Schema.Types.ObjectId,
-            refer: "User",
+            ref: "User",
+            required: true
         },
 
         address: {
             type: String,
+            required: true
         },
 
         invoice_info: {
@@ -30,6 +34,9 @@ const OrderSchema = mongoose.Schema(
             enum: ["unpaid", "paid", "pending", "delivered", "cancel"],
             default: "pending"
         }
+    },
+    {
+        timestamps: true
     }
 );
 
