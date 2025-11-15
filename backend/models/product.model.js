@@ -80,6 +80,9 @@ const ProductSchema = mongoose.Schema(
         slug: {
             type: String
         }
+    },
+    {
+        timestamps: true
     }
 );
 
