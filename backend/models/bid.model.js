@@ -15,12 +15,10 @@ const BidSchema = mongoose.Schema(
         price: {
             type: Number,
             required: true
-        },
-
-        date: {
-            type: Date,
-            default: Date.now
         }
+    },
+    {
+        timestamps: true
     }
 );
 

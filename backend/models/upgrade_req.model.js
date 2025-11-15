@@ -20,7 +20,7 @@ const UpgradeRequestSchema = mongoose.Schema(
 
     },
     {
-        Timestamp: true
+        timestamps: true
     }
 );
 

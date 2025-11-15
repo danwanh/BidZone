@@ -187,3 +187,46 @@ export const deleteProductById = async (req,res) => {
         res.status(500).json( {message: "Can't delete product"} );
     }
 }
+
+// GET /api/product/top5/ending
+export const getTop5Ending = async (req, res) => {
+    try{
+        const now = new Date();
+        const products = await Product.find({
+            status: "active",
+            end_time: { $exists: true, $gt: new Date() }
+        }).sort({ end_time: 1 }).limit(5);
+        return res.status(200).json(products);
+    }
+    catch (error){
+        console.error("Error getting top 5 ending: ", error);
+        res.status(500).json( {message: "Can't get top 5 ending"} );
+    }
+}
+
+// GET /api/product/top5/bid
+export const getTop5Bid = async (req, res) => {
+    try{
+        let products = await Product.find( {
+            status: "active",
+            total_bids: { $exists: true }
+        } ).sort({total_bids: -1}).limit(5);
+        return res.status(200).json(products);
+    }
+    catch (error){
+        console.error("Error getting top 5 most bids: ", error);
+        res.status(500).json( {message: "Can't get top 5 most bids"} );
+    }
+}
+
+// GET /api/product/top5/price
+export const getTop5Price = async (req, res) => {
+    try{
+        let products = await Product.find({status: "active", current_price: { $exists: true }}).sort({current_price: -1}).limit(5);
+        return res.status(200).json(products);
+    }
+    catch (error){
+        console.error("Error getting top 5 most price: ", error);
+        res.status(500).json( {message: "Can't get top 5 most price"} );
+    }
+}
