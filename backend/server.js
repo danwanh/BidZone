@@ -57,26 +57,3 @@ app.listen(process.env.PORT, () =>
   console.log(`Server running on port ${process.env.PORT}`)
 );
 
-// import Product from './models/product.model.js';
-
-// app.get('/', (req, res) => {
-//   res.send("Hello from node api!");
-// })
-
-// app.post('/api/users', async (req,res) => {
-//   try{
-//     const user =  await User.create(req.body);
-//     res.status(200).json(user);
-//   }catch (error){
-//     res.status(500).json({message: error.message})
-//   }
-// })
-
-// app.post('/api/products', async (req,res) => {
-//   try{
-//     const product =  await Product.create(req.body);
-//     res.status(200).json(product);
-//   }catch (error){
-//     res.status(500).json({message: error.message})
-//   }
-// })

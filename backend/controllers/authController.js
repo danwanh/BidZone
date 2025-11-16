@@ -62,7 +62,7 @@ export const register = async (req, res) => {
     await newUser.save();
 
     // Generate JWT token
-    const token = generateTokens(newUser);
+    const tokens = generateTokens(newUser);
 
     //Send refreshToken to user cookie
     res.cookie("refreshToken", tokens.refreshToken, {
@@ -73,7 +73,6 @@ export const register = async (req, res) => {
 
     res.status(201).json({
       message: "User registered successfully",
-      token,
       user: {
         id: newUser._id,
         name: newUser.name,
@@ -122,7 +121,6 @@ export const login = async (req, res) => {
 
     res.status(200).json({
       message: "Login successfully",
-      token,
       user: {
         id: user._id,
         name: user.name,

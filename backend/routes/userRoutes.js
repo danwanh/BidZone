@@ -1,9 +1,5 @@
 import express from "express";
 import {
-    register,
-    login,
-} from "../controllers/authController.js";
-import {
     getAllUsers,
     getUserById,
     getProfile,
@@ -16,12 +12,7 @@ import { authenticate, isAdmin } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// PUBLIC ROUTES
-// POST /api/users/register
-router.post("/register", register);
 
-// POST /api/users/login
-router.post("/login", login);
 
 // PROTECTED ROUTES
 

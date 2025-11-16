@@ -4,9 +4,7 @@ import { useForm } from "react-hook-form";
 import ReCAPTCHA from "react-google-recaptcha";
 import api from "../api/axios";
 
-const RECAPTCHA_SITE_KEY = "6LenmQwsAAAAAPjXvCW8cnMSoK36HCe1j3pY4YuY";
-
-const Register = ({ onRegisterSuccess }) => {
+const Register = ({ toLogin }) => {
   const {
     register,
     handleSubmit,
@@ -18,7 +16,7 @@ const Register = ({ onRegisterSuccess }) => {
   const [captcha, setCaptcha] = useState(null);
 
   const pass_confirm = (pass) => {
-    pass === watch("password") || "Mật khẩu nhập lại không khớp";
+    return pass === watch("password") || "Mật khẩu nhập lại không khớp";
   };
 
   const onSubmit = async (data) => {
@@ -28,16 +26,16 @@ const Register = ({ onRegisterSuccess }) => {
     }
     console.log(JSON.stringify(data, null, 2));
     try {
-      await api.post("/auth/register", {
+      const res = await api.post("/api/auth/register", {
         ...data,
         captcha,
       });
-      alert("Tạo tài khoản thành công!");
-      onRegisterSuccess();
+      console.log("Tạo tài khoản thành công: ", res.data);
+      toLogin();
     } catch (err) {
-      alert("Đăng ký thất bại:" + err.message);
+      console.log("Đăng ký thất bại:" + err.message);
+       console.log(err.response.data.message);
     }
-    console.log("reached");
   };
 
   return (
@@ -46,7 +44,7 @@ const Register = ({ onRegisterSuccess }) => {
         <div className="bg-white shadow-xl p-7 rounded-md ">
           <div className="flex w-full justify-between">
             <h1 className="font-bold text-2xl"> Đăng Ký </h1>
-            <Link to={``} className="underline text-blue-500">
+            <Link onClick={toLogin} className="underline text-blue-500">
               Đăng nhập
             </Link>
           </div>
@@ -57,9 +55,8 @@ const Register = ({ onRegisterSuccess }) => {
           >
             <div>
               <input
-                {...register("username", { required: "Vui lòng nhập họ tên" })}
-                name="username"
-                id="username"
+                {...register("name", { required: "Vui lòng nhập họ tên" })}
+                id="name"
                 type="text"
                 placeholder="Họ tên"
                 className="w-full rounded-md border p-2 bg-(--input-fill)"
@@ -144,7 +141,7 @@ const Register = ({ onRegisterSuccess }) => {
 
             <div>
               <ReCAPTCHA
-                sitekey={RECAPTCHA_SITE_KEY}
+                sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
                 onChange={(token) => setCaptcha(token)}
               />
               {!captcha && (

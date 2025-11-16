@@ -1,16 +1,16 @@
-import {useState} from "react";
-import Register from "../components/Register"
+import { useState } from "react";
+import Register from "../components/Register";
 import Login from "../components/Login";
 
 export const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(false);
-  const onRegisterSuccess=() => setIsLogin(true);
+  const toLogin = () => setIsLogin(true);
+  const toRegister = () => setIsLogin(false);
 
   return (
     <>
-      {isLogin && <Login/>}
-      {!isLogin && <Register onRegisterSuccess/>}
+      {isLogin && <Login toRegister={toRegister}/>}
+      {!isLogin && <Register toLogin={toLogin} />}
     </>
-  )
+  );
 };
-
