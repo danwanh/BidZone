@@ -4,17 +4,17 @@ const QuestionSchema = mongoose.Schema(
     {
         product_id: {
             type: mongoose.Schema.Types.ObjectId,
-            refer: "Product"
+            ref: "Product"
         },
 
         seller_id: {
             type: mongoose.Schema.Types.ObjectId,
-            refer: "User"
+            ref: "User"
         },
 
         bidder_id: {
             type: mongoose.Schema.Types.ObjectId,
-            refer: "User"
+            ref: "User"
         },
 
         question: {

@@ -21,6 +21,8 @@ import MainLayout from "./layouts/MainLayout";
 // Pages
 import { Home } from "./pages/Home";
 import { AuthPage } from "./pages/AuthPage";
+import { ProductDetailPage } from "./pages/ProductDetailPage";
+import { NotFoundPage } from "./pages/NotFoundPage";
 
 const router = createBrowserRouter([
   {
@@ -29,6 +31,8 @@ const router = createBrowserRouter([
     children: [
       { path: "", element: <Home /> },
       { path: "auth", element: <AuthPage/>},
+      { path: "products/:id", element: <ProductDetailPage/>},
+      { path: "*", element: <NotFoundPage/>}
     ],
   },
 

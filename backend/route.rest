@@ -85,3 +85,7 @@ GET http://localhost:3000/api/autobids/product/69111c5306251b39d3acd669
 ### 
 DELETE http://localhost:3000/api/autobids/69114056a6e7454b85c2299b
 
+###
+GET http://localhost:3000/api/product/69111c5306251b39d3acd669
+###
+GET http://localhost:3000/api/questions/69111c5306251b39d3acd669

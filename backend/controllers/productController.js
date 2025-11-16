@@ -84,7 +84,7 @@ export const getProductById = async (req, res) => {
     try{
         const { id:p_i } = req.params;
 
-        const product = await Product.findById(p_i);
+        const product = await Product.findById(p_i).populate("seller_id");
 
         if (!product) return res.status(400).json({message: "No product found"});
         else return res.status(200).json(product);
