@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import ReCAPTCHA from "react-google-recaptcha";
 import api from "../api/axios";
+import { toast } from "react-toastify";
 
 const Register = ({ toLogin }) => {
   const {
@@ -10,7 +11,6 @@ const Register = ({ toLogin }) => {
     handleSubmit,
     formState: { errors },
     watch,
-    setValue,
   } = useForm();
 
   const [captcha, setCaptcha] = useState(null);
@@ -21,20 +21,19 @@ const Register = ({ toLogin }) => {
 
   const onSubmit = async (data) => {
     if (!captcha) {
-      alert("Vui lòng xác nhận CAPTCHA");
+      toast.error("Vui lòng xác nhận CAPTCHA");
       return;
     }
-    console.log(JSON.stringify(data, null, 2));
     try {
       const res = await api.post("/api/auth/register", {
         ...data,
         captcha,
       });
-      console.log("Tạo tài khoản thành công: ", res.data);
+      toast.success("Tạo tài khoản thành công");
       toLogin();
     } catch (err) {
-      console.log("Đăng ký thất bại:" + err.message);
-       console.log(err.response.data.message);
+      toast.error("Đăng ký thất bại\n" + err.message);
+      if (err.response.data) console.log(err.response.data.message);
     }
   };
 

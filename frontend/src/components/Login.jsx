@@ -2,6 +2,8 @@ import { Link } from "react-router-dom";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import ReCAPTCHA from "react-google-recaptcha";
+import api from "../api/axios";
+import { toast } from "react-toastify";
 
 const Login = ({ toRegister }) => {
   const {
@@ -17,16 +19,15 @@ const Login = ({ toRegister }) => {
       alert("Vui lòng xác nhận CAPTCHA");
       return;
     }
-    console.log(JSON.stringify(data, null, 2));
     try {
       const res = await api.post("/api/auth/login", {
         ...data,
         captcha,
       });
-      console.log("Tạo tài khoản thành công: ", res.data);
+      toast.success("Đăng nhập thành công");
     } catch (err) {
-      console.log("Đăng nhập thất bại:" + err.message);
-      console.log(err.response.data.message);
+      toast.err("Đăng nhập thất bại\n" + err.message);
+      if (err.response.data) console.log(err.response.data.message);
     }
   };
 
