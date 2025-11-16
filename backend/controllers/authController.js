@@ -1,75 +1,139 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import {
-  ACCESS_SECRET,
-  REFRESH_SECRET,
-  accessTokenExpiry,
-  refreshTokenExpiry,
-} from "../config/jwt.js";
 import User from "../models/user.model.js";
 
 const generateTokens = (user) => {
   const accessToken = jwt.sign(
     { id: user.id, email: user.email },
-    ACCESS_SECRET,
-    { expiresIn: accessTokenExpiry }
+    process.env.ACCESS_SECRET,
+    { expiresIn: process.env.accessTokenExpiry }
   );
 
   const refreshToken = jwt.sign(
     { id: user.id, email: user.email },
-    REFRESH_SECRET,
-    { expiresIn: refreshTokenExpiry }
+    process.env.ACCESS_SECRET,
+    { expiresIn: process.env.refreshTokenExpiry }
   );
 
   return { accessToken, refreshToken };
 };
 
+// REGISTER - Create new user
 export const register = async (req, res) => {
-  const { username, email, password } = req.body;
+  try {
+    const { name, email, password, phone, address, dob, role } = req.body;
 
-  if (!username){
-    return res.status(400).json({ message: "Missing username" });
-  }else if (!email){
-    return res.status(400).json({ message: "Missing email" });
-  }else if (!password){
-    return res.status(400).json({ message: "Missing password" });
+    // Validate required fields
+    if (!name || !email || !password) {
+      return res
+        .status(400)
+        .json({ message: "Name, email and password are required" });
+    }
+
+    // Check if user exists
+    const existingUser = await User.findOne({
+      $or: [{ email }, { name }],
+    });
+
+    if (existingUser) {
+      return res
+        .status(400)
+        .json({ message: "User with this email or name already exists" });
+    }
+
+    // Hash password
+    const salt = await bcrypt.genSalt(10);
+    const password_hash = await bcrypt.hash(password, salt);
+
+    // Create user
+    const newUser = new User({
+      name,
+      email,
+      password_hash,
+      phone,
+      address,
+      dob,
+      role: "bidder", // Default to bidder
+      rating_pos: 0,
+      rating_neg: 0,
+      is_verified: false,
+    });
+
+    await newUser.save();
+
+    // Generate JWT token
+    const token = generateTokens(newUser);
+
+    //Send refreshToken to user cookie
+    res.cookie("refreshToken", tokens.refreshToken, {
+      httpOnly: true,
+      secure: false, // change to true in production
+      sameSite: "strict",
+    });
+
+    res.status(201).json({
+      message: "User registered successfully",
+      token,
+      user: {
+        id: newUser._id,
+        name: newUser.name,
+        email: newUser.email,
+        role: newUser.role,
+      },
+    });
+  } catch (err) {
+    console.error("Error registering user:", err);
+    res.status(500).json({ message: err.message });
   }
-
-  const hash = await bcrypt.hash(password, 10);
-
-  const newUser = new User({ username, email, hash });
-
-  await newUser.save();
-
-  const tokens = generateTokens(newUser);
-
-  res.cookie("refreshToken", tokens.refreshToken, {
-    httpOnly: true,
-    secure: false, // change to true in production
-    sameSite: "strict",
-  });
-
-  res.status(201).json({ message: "User created successfully"});
 };
 
+// LOGIN
 export const login = async (req, res) => {
-  const { email, password } = req.body;
-  const user = await User.findOne({ email });
+  try {
+    const { email, password } = req.body;
 
-  if (!user) return res.status(400).json({ message: "Wrong email or password" });
+    // Validate
+    if (!email || !password) {
+      return res
+        .status(400)
+        .json({ message: "Email and password are required" });
+    }
 
-  const valid = await bcrypt.compare(password, user.password);
-  if (!valid) return res.status(400).json({ message: "Wrong email or password" });
+    // Find user
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ message: "Wrong email or password" });
+    }
 
-  const tokens = generateTokens(user);
+    // Check password
+    const isMatch = await bcrypt.compare(password, user.password_hash);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Wrong email or password" });
+    }
 
-  res.cookie("refreshToken", tokens.refreshToken, {
-    httpOnly: true,
-    secure: false,
-    sameSite: "strict",
-  });
+    // Generate token
+    const tokens = generateTokens(user);
 
-  res.status(200).json({message: "Login successfully"});
+    res.cookie("refreshToken", tokens.refreshToken, {
+      httpOnly: true,
+      secure: false,
+      sameSite: "strict",
+    });
+
+    res.status(200).json({
+      message: "Login successfully",
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+    });
+  } catch (err) {
+    console.error("Error logging in:", err);
+    res.status(500).json({ message: err.message });
+  }
 };
 
 export const refresh = (req, res) => {
@@ -78,12 +142,12 @@ export const refresh = (req, res) => {
   if (!token) return res.status(401).json({ message: "No refresh token" });
 
   try {
-    const decoded = jwt.verify(token, REFRESH_SECRET);
+    const decoded = jwt.verify(token, process.env.ACCESS_SECRET);
 
     const newAccessToken = jwt.sign(
       { id: decoded.id, email: decoded.email },
-      ACCESS_SECRET,
-      { expiresIn: accessTokenExpiry }
+      process.env.ACCESS_SECRET,
+      { expiresIn: process.env.accessTokenExpiry }
     );
 
     res.json({ accessToken: newAccessToken });

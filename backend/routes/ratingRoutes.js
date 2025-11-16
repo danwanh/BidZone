@@ -7,11 +7,11 @@ import {
   deleteRating,
 } from "../controllers/ratingController.js";
 
-import { verifyToken } from "../middleware/verifyToken.js";
+import { authenticate } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-router.get("", verifyToken, getAllRatings);
+router.get("", authenticate, getAllRatings);
 router.get("/:id", getRatingByID);
 router.post("/", createRating);
 router.patch("/:id", updateRating);
