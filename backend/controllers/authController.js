@@ -67,7 +67,7 @@ export const register = async (req, res) => {
       is_verified: false,
     });
 
-    // await newUser.save();
+    await newUser.save();
 
     // Generate JWT token
     const tokens = generateTokens(newUser);
