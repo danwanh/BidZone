@@ -85,3 +85,14 @@ GET http://localhost:3000/api/autobids/product/69111c5306251b39d3acd669
 ### 
 DELETE http://localhost:3000/api/autobids/69114056a6e7454b85c2299b
 
+
+###
+GET http://localhost:3000/api/product/category/691220a9447c34d48270e9af
+# Content-Type: application/json
+
+# {
+#   "category_id": "691220a9447c34d48270e9af"
+# }
+
+###
+GET http://localhost:3000/api/category/

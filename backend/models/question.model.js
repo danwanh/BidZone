@@ -8,12 +8,12 @@ const QuestionSchema = mongoose.Schema(
         },
 
         seller_id: {
-            type: mongoose.Schema.Types,
+            type: mongoose.Schema.Types.ObjectId,
             refer: "User"
         },
 
         bidder_id: {
-            type: mongoose.Schema.Types,
+            type: mongoose.Schema.Types.ObjectId,
             refer: "User"
         },
 
@@ -24,6 +24,9 @@ const QuestionSchema = mongoose.Schema(
         answer: {
             type: String,
         }
+    },
+    {
+        timestamps: true
     }
 );
 
