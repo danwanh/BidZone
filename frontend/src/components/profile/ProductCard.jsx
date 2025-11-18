@@ -2,9 +2,11 @@ import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 
-const ProductCard = ({product}) => {
+const ProductCard = ({product, likedList, setLikedList}) => {
   const [remain, setRemain] = useState(0);
   const [showPopup, setShowPopup] = useState(false);
+  const [ isLiked, setIsLiked ] = useState(false);
+
 
   const is_bought = product.bidder_id === "69111e8a06251b39d3acd8f9";
 
@@ -26,9 +28,39 @@ const ProductCard = ({product}) => {
     setShowPopup(true);
   };
 
+  const handleLike = async (value) => {
+    try {
+      if (value && !isLiked){
+        const url = "http://localhost:3000/api/watchlist/69111e8a06251b39d3acd8f9";
+        const response = await fetch(url, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json", // Important!
+          },
+          body: JSON.stringify({ product_id: product._id }), // Convert object to string
+        });
+        if (!response.ok) {
+          throw new Error(`Error: ${response.status}`);
+        }
+        setIsLiked(true);
+      }
+      else if (!value && isLiked){
+        const url = `http://localhost:3000/api/watchlist/69111e8a06251b39d3acd8f9/${product._id}`; 
+        const response = await fetch(url, {
+          method: "DELETE",
+        });
+        if (!response.ok) {
+          throw new Error(`Error: ${response.status}`);
+        }
+        setIsLiked(false);
+      }
+    } catch (error) {
+      console.error("Failed to send delete:", error);
+    }
+  }
+
   useEffect(() => {
     const end_date = product.end_time ? new Date(product.end_time).getTime() : Date.now();
-    console.log(end_date);
 
     const interval = setInterval(() => {
       const now = Date.now();
@@ -41,6 +73,8 @@ const ProductCard = ({product}) => {
         setRemain(diff);
       }
     }, 1000);
+
+    if(likedList.indexOf(product._id) > -1) setIsLiked(true);
 
     return () => clearInterval(interval);
   }, [product.end_time]);
@@ -131,9 +165,9 @@ const ProductCard = ({product}) => {
         
         <div className="flex justify-between text-black-500 px-[10px] text-[14px]">
           <p>{ new Date(product.start_time).toLocaleDateString("en-GB") }</p>
-          <svg width="22" height="20" viewBox="0 0 22 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <svg onClick={() => handleLike(isLiked ? false : true)} width="22" height="20" viewBox="0 0 22 20" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M20.75 6.56387C20.75 13.1279 11.483 18.441 11.0884 18.6605C10.9844 18.7192 10.8681 18.75 10.75 18.75C10.6319 18.75 10.5156 18.7192 10.4116 18.6605C10.017 18.441 0.75 13.1279 0.75 6.56387C0.751654 5.02247 1.33541 3.5447 2.3732 2.45476C3.41099 1.36483 4.81806 0.751737 6.28571 0.75C8.12946 0.75 9.74375 2.64152 10.75 4.04904C11.7563 2.64152 13.3705 0.75 15.2143 0.75C16.6819 0.751737 18.089 1.36483 19.1268 2.45476C20.1646 3.5447 20.7483 5.02247 20.75 6.56387Z" 
-            stroke="#171B22" strokeWidth="1.5"/>
+            stroke="#171B22" strokeWidth="1.5" fill={isLiked ? "#171b22" : "none"}/>
           </svg>
 
 
