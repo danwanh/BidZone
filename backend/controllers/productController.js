@@ -95,6 +95,22 @@ export const getProductById = async (req, res) => {
     }
 }
 
+// GET /api/product/user/:id
+export const getBoughtByUserId = async (req, res) => {
+    try{
+        const { id:u_i } = req.params;
+
+        const products = await Product.find({bidder_id: u_i});
+
+        if (products.length == 0) return res.status(400).json({message: "No product found"});
+        else return res.status(200).json(products);
+    } 
+    catch (error) {
+        console.error("Error getting product: ", error);
+        res.status(500).json( {message: "Can't get product"} );
+    }
+}
+
 // GET /api/product/category/:id
 export const getProductByCategoryId = async (req, res) => {
     try{
