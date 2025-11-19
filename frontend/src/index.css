@@ -1,5 +1,14 @@
 @import "tailwindcss";
 
+
+@font-face {
+  font-family: "Inter";
+  src: url("/font/Inter-VariableFont_opsz,wght.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   --blue-main: #a9b9f8;
   --input-fill: #F3F5F6;
@@ -7,5 +16,6 @@
 }
 
 body{
-    background: var(--blue-main);
+  background: var(--blue-main);
+  font-family: "Inter", sans-serif;
 }
