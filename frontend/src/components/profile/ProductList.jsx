@@ -93,7 +93,7 @@ const ProductList = () => {
               (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-12 mt-5">
                   {products.map((p) => (
-                    <ProductCard key={p.id} product={p} likedList={likedList} setLikedList={setLikedList}/>
+                    <ProductCard key={p._id} product={p} likedList={likedList} setLikedList={setLikedList}/>
                   ))}
                 </div>
               )
