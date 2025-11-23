@@ -1,11 +1,10 @@
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import ReCAPTCHA from "react-google-recaptcha";
 import api from "../api/axios";
 import { toast } from "react-toastify";
 
-const Register = ({ toLogin }) => {
+const Register = ({ toLogin, toOTP }) => {
   const {
     register,
     handleSubmit,
@@ -13,24 +12,16 @@ const Register = ({ toLogin }) => {
     watch,
   } = useForm();
 
-  const [captcha, setCaptcha] = useState(null);
-
   const pass_confirm = (pass) => {
     return pass === watch("password") || "Mật khẩu nhập lại không khớp";
   };
 
   const onSubmit = async (data) => {
-    if (!captcha) {
-      toast.error("Vui lòng xác nhận CAPTCHA");
-      return;
-    }
     try {
-      const res = await api.post("/api/auth/register", {
-        ...data,
-        captcha,
+      await api.post("/api/otp/send", {
+        email: data.email,
       });
-      toast.success("Tạo tài khoản thành công");
-      toLogin();
+      toOTP(data);
     } catch (err) {
       toast.error("Đăng ký thất bại\n" + err.message);
       if (err.response.data) console.log(err.response.data.message);
@@ -134,18 +125,6 @@ const Register = ({ toLogin }) => {
               {errors.confirm_password && (
                 <p className="text-red-500 text-sm">
                   {errors.confirm_password.message}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <ReCAPTCHA
-                sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
-                onChange={(token) => setCaptcha(token)}
-              />
-              {!captcha && (
-                <p className="text-red-500 text-sm">
-                  Vui lòng xác nhận CAPTCHA
                 </p>
               )}
             </div>

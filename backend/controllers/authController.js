@@ -1,7 +1,7 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import User from "../models/user.model.js";
-import { verifyCaptcha } from "../middleware/verifyCaptcha.js";
+import { verifyRecaptcha } from "../middleware/verifyRecaptcha.js";
 
 const generateTokens = (user) => {
   const accessToken = jwt.sign(
@@ -22,13 +22,13 @@ const generateTokens = (user) => {
 // REGISTER - Create new user
 export const register = async (req, res) => {
   try {
-    const { name, email, password, phone, address, dob, role, captcha } =
+    const { name, email, password, phone, address, dob, role, recaptcha, otp } =
       req.body;
 
-    const isHuman = verifyCaptcha(req, res, captcha);
+    const isHuman = verifyCaptcha(req, res, recaptcha);
 
     if (!isHuman) {
-      return res.status(400).json({ message: "Captcha validation failed" });
+      return res.status(400).json({ message: "Recaptcha validation failed" });
     }
 
     // Validate required fields
@@ -97,9 +97,9 @@ export const register = async (req, res) => {
 // LOGIN
 export const login = async (req, res) => {
   try {
-    const { email, password, captcha } = req.body;
+    const { email, password, recaptcha} = req.body;
 
-    const isHuman = verifyCaptcha(req, res, captcha);
+    const isHuman = verifyCaptcha(req, res, recaptcha);
 
     if (!isHuman) {
       return res.status(400).json({ message: "Captcha validation failed" });
