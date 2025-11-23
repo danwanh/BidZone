@@ -20,7 +20,7 @@ import MainLayout from "./layouts/MainLayout";
 
 // Pages
 import { Home } from "./pages/Home";
-import { AuthPage } from "./pages/AuthPage";
+import { ProfilePage } from "./pages/Profile"
 
 const router = createBrowserRouter([
   {
@@ -28,7 +28,7 @@ const router = createBrowserRouter([
     element: <MainLayout />,
     children: [
       { path: "", element: <Home /> },
-      { path: "auth", element: <AuthPage/>},
+      { path: "/profile", element: <ProfilePage />}
     ],
   },
 

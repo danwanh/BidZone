@@ -95,6 +95,56 @@ export const getProductById = async (req, res) => {
     }
 }
 
+// GET /api/product/user/:id
+export const getBoughtByUserId = async (req, res) => {
+    try{
+        const { id:u_i } = req.params;
+
+        const products = await Product.find({bidder_id: u_i});
+
+        if (products.length == 0) return res.status(400).json({message: "No product found"});
+        else return res.status(200).json(products);
+    } 
+    catch (error) {
+        console.error("Error getting product: ", error);
+        res.status(500).json( {message: "Can't get product"} );
+    }
+}
+
+// GET /api/product/category/:id
+export const getProductByCategoryId = async (req, res) => {
+    try{
+        const { id:p_i } = req.params;
+
+        const category = await Category.findById(p_i);
+
+        if (!category) return res.status(400).json({message: "No category found"});
+
+        let products = [];
+
+        if(category.category_id == null){
+            const sub_categories = await Category.find({category_id: category._id})
+
+            const product_promises = sub_categories.map((c) => 
+                Product.find({ category_id: c._id })
+            );
+
+            const results = await Promise.all(product_promises);
+
+            products = results.flat();
+        }
+        else {
+            products= await Product.find({category_id: category._id});
+        }
+            
+        return res.status(200).json(products);
+    } 
+    catch (error) {
+        console.error("Error getting product: ", error);
+        res.status(500).json( {message: "Can't get product"} );
+    }
+}
+
 // GET /api/product/:id/seller
 export const getProductBySellerId = async (req, res) => {
     try{
