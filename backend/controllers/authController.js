@@ -1,35 +1,12 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import User from "../models/user.model.js";
-import { verifyRecaptcha } from "../middleware/verifyRecaptcha.js";
-
-const generateTokens = (user) => {
-  const accessToken = jwt.sign(
-    { id: user.id, email: user.email },
-    process.env.ACCESS_SECRET,
-    { expiresIn: process.env.accessTokenExpiry }
-  );
-
-  const refreshToken = jwt.sign(
-    { id: user.id, email: user.email },
-    process.env.ACCESS_SECRET,
-    { expiresIn: process.env.refreshTokenExpiry }
-  );
-
-  return { accessToken, refreshToken };
-};
+import { generateTokens } from "../services/tokenServices.js";
 
 // REGISTER - Create new user
 export const register = async (req, res) => {
   try {
-    const { name, email, password, phone, address, dob, role, recaptcha, otp } =
-      req.body;
-
-    const isHuman = verifyCaptcha(req, res, recaptcha);
-
-    if (!isHuman) {
-      return res.status(400).json({ message: "Recaptcha validation failed" });
-    }
+    const { name, email, password, phone, address, dob, role } = req.body;
 
     // Validate required fields
     if (!name || !email || !password) {
@@ -81,6 +58,7 @@ export const register = async (req, res) => {
 
     res.status(201).json({
       message: "User registered successfully",
+      accessToken: tokens.accessToken,
       user: {
         id: newUser._id,
         name: newUser.name,
@@ -97,13 +75,7 @@ export const register = async (req, res) => {
 // LOGIN
 export const login = async (req, res) => {
   try {
-    const { email, password, recaptcha} = req.body;
-
-    const isHuman = verifyCaptcha(req, res, recaptcha);
-
-    if (!isHuman) {
-      return res.status(400).json({ message: "Captcha validation failed" });
-    }
+    const { email, password } = req.body;
 
     // Validate
     if (!email || !password) {
@@ -135,6 +107,7 @@ export const login = async (req, res) => {
 
     res.status(200).json({
       message: "Login successfully",
+      accessToken: tokens.accessToken,
       user: {
         id: user._id,
         name: user.name,
@@ -165,5 +138,45 @@ export const refresh = (req, res) => {
     res.json({ accessToken: newAccessToken });
   } catch (err) {
     res.status(403).json({ message: "Invalid refresh token" });
+  }
+};
+
+// POST /auth/check-email
+export const checkEmail = async (req, res) => {
+  const { email } = req.body;
+  try {
+    if (!email) {
+      return res.status(400).json({ message: "Email không được rỗng" });
+    }
+    const user = await User.findOne({ email });
+    if (user) {
+      return res.status(400).json({ message: "Email này đã được sử dụng" });
+    }
+    res.status(200).json({ message: "Email hợp lệ" });
+  } catch (err) {
+    res.status(500).json({ message: "Lỗi server" });
+  }
+};
+
+export const oauthSuccess = async (req, res) => {
+  try {
+    const user = req.user; // passport attaches this
+
+    const { accessToken, refreshToken } = generateTokens(user);
+
+    // Set refreshToken cookie
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      sameSite: "strict",
+      secure: false,
+    });
+
+    // Redirect back to frontend with access token
+    res.redirect(
+      `${process.env.FRONTEND_URL}/auth/social-success?token=${accessToken}`
+    );
+  } catch (err) {
+    console.error("OAuth login error:", err);
+    res.redirect(`${process.env.FRONTEND_URL}/auth/social-failed`);
   }
 };

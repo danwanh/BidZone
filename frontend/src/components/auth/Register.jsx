@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import api from "../api/axios";
+import api from "../../api/axios";
 import { toast } from "react-toastify";
 
 const Register = ({ toLogin, toOTP }) => {
@@ -10,6 +10,7 @@ const Register = ({ toLogin, toOTP }) => {
     handleSubmit,
     formState: { errors },
     watch,
+    setError,
   } = useForm();
 
   const pass_confirm = (pass) => {
@@ -17,6 +18,14 @@ const Register = ({ toLogin, toOTP }) => {
   };
 
   const onSubmit = async (data) => {
+    try {
+      await api.post("/api/auth/check-email", { email: data.email });
+    } catch (err) {
+      const msg = err.response.data.message;
+      setError("email", { type: "manual", message: msg });
+      return;
+    }
+
     try {
       await api.post("/api/otp/send", {
         email: data.email,

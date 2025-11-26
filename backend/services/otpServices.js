@@ -18,12 +18,18 @@ export const sendOTP = async (req, res) => {
     await sendEmail(
       email,
       "Mã xác thực OTP BidZone",
-      `Mã OTP của bạn là:\n\n ${otp} \n\n Vui lòng không gửi hay chuyển tiếp mã này cho bất kì ai khác.`
+      `Mã OTP của bạn là:\n\n${otp}\n\n Vui lòng không gửi hay chuyển tiếp mã này cho bất kì ai khác.`
     );
 
     res.status(200).json({ message: "OTP sent to email" });
   } catch (err) {
-    res.status(500).json({ message: "Failed to send OTP: " + err.message });
+    res
+      .status(500)
+      .json({
+        message:
+          "Failed to send OTP or failed to save OTP to database: " +
+          err.message,
+      });
   }
 };
 
