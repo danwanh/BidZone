@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import api from "../../api/axios";
+import { BASE_URL } from "../../api/axios";
 import { toast } from "react-toastify";
 
 const Register = ({ toLogin, toOTP }) => {
@@ -146,6 +147,25 @@ const Register = ({ toLogin, toOTP }) => {
               Đăng ký
             </button>
           </form>
+          <h1> Hoặc </h1>
+          <br />
+          <div className="space-y-4">
+            {/* Google */}
+            <a
+              href={`${BASE_URL}/api/auth/google`}
+              className="w-full py-2 bg-red-500 text-white rounded-lg block text-center"
+            >
+              Đăng nhập bằng Google
+            </a>
+
+            {/* Facebook */}
+            <a
+              href={`${BASE_URL}/api/auth/facebook`}
+              className="w-full py-2 bg-blue-600 text-white rounded-lg block text-center"
+            >
+              Đăng nhập bằng Facebook
+            </a>
+          </div>
         </div>
       </div>
     </div>

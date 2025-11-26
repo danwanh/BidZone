@@ -21,9 +21,9 @@ import AuthLayout from "./layouts/AuthLayout";
 
 // Pages
 import { Home } from "./pages/Home";
-import { ProfilePage } from "./pages/Profile"
+import { ProfilePage } from "./pages/Profile";
 import { AuthPage } from "./pages/AuthPage";
-import { AuthSuccess} from "./components/auth/AuthSuccess";
+import { AuthSuccess } from "./components/auth/AuthSuccess";
 import { AuthFailed } from "./components/auth/AuthFailed.jsx";
 
 const router = createBrowserRouter([
@@ -32,7 +32,7 @@ const router = createBrowserRouter([
     element: <MainLayout />,
     children: [
       { path: "", element: <Home /> },
-      { path: "/profile", element: <ProfilePage />},
+      { path: "/profile", element: <ProfilePage /> },
     ],
   },
   {
@@ -40,17 +40,14 @@ const router = createBrowserRouter([
     element: <AuthLayout />,
     children: [
       { path: "", element: <AuthPage /> },
-      { path: "/auth/social-success", element: <AuthSuccess/>},
-      { path: "/auth/social-failed", element: <AuthFailed/>}
+      { path: "social-success", element: <AuthSuccess /> },
+      { path: "social-failed", element: <AuthFailed /> },
     ],
   },
-
-
 ]);
 
 const App = () => {
-  return <RouterProvider router={router}/>;
-  
-}
+  return <RouterProvider router={router} />;
+};
 
 export default App;

@@ -64,8 +64,7 @@ const UserSchema = mongoose.Schema(
     social_is: {
       type: String,
     },
-
-    emailVerified: { type: Boolean, default: false },
+    
     oauth: {
       google: {
         id: String,
