@@ -1,5 +1,17 @@
-import express from  "express";
-import { addProduct, getAllProducts, getProductById, getProductBySellerId, deleteProductById, changeProductById, getTop5Bid, getTop5Ending, getTop5Price, getProductByCategoryId, getBoughtByUserId } from "../controllers/productController.js";
+import express from "express";
+import {
+  addProduct,
+  getAllProducts,
+  getProductById,
+  getProductBySellerId,
+  deleteProductById,
+  changeProductById,
+  getTop5Bid,
+  getTop5Ending,
+  getTop5Price,
+  getProductByCategoryId,
+  getBoughtByUserId,
+} from "../controllers/productController.js";
 import upload from "../config/multer.js";
 const router = express.Router();
 
