@@ -21,13 +21,24 @@ export const getAllQuestions = async (req, res) => {
 export const getQuestionsByProductId = async (req, res) => {
   try {
     const { product_id } = req.params;
-    const questions = await Question.find({ product_id }).populate("bidder_id", "name email");
+
+    if (!mongoose.isValidObjectId(product_id)) {
+      return res.status(400).json({ message: "Invalid product_id format" });
+    }
+
+    const questions = await Question.find({ product_id })
+      .populate("bidder_id", "name email")
+      .populate("seller_id", "name email")
+      .sort({ createdAt: -1 });
+
     res.json(questions);
+
   } catch (err) {
-    console.error("Error fetching bids:", err);
+    console.error("Error fetching questions:", err);
     res.status(500).json({ message: "Server error" });
   }
 };
+
 
 export const createQuestion = async (req, res) => {
   try {

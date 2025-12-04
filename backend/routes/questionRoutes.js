@@ -10,7 +10,7 @@ import {
 const router = express.Router();
 
 router.get("", getAllQuestions);
-router.get("/:id", getQuestionsByProductId);
+router.get("/:product_id", getQuestionsByProductId);
 router.post("/", createQuestion);
 router.patch("/:id", updateQuestion);
 router.delete("/:id", deleteQuestion);

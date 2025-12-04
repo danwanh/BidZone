@@ -39,7 +39,7 @@ export const ProductDetailPage = () => {
     if (!name) return "Ẩn danh";
     if (name.length <= 5) return name;
 
-    const visible = name.slice(-5);           // Lấy 5 ký tự cuối
+    const visible = name.slice(-5); // Lấy 5 ký tự cuối
     const masked = "*".repeat(name.length - 5); // Che phần còn lại
 
     return masked + visible;
@@ -113,22 +113,26 @@ export const ProductDetailPage = () => {
     const res = await fetch(`http://localhost:3000/api/bids/${id}`);
     const data = await res.json();
 
-    const mapped = data.map((bid) => ({
-      user: maskName(bid.bidder_id?.name),
-      amount: bid.price,
-      time: bid.createdAt,
-    })).sort((a, b) => b.amount - a.amount);
+    const mapped = data
+      .map((bid) => ({
+        user: maskName(bid.bidder_id?.name),
+        amount: bid.price,
+        time: bid.createdAt,
+      }))
+      .sort((a, b) => b.amount - a.amount);
 
     setBidHistory(mapped);
     setCurrentBid(mapped[0].amount);
     setTotalBids(mapped.length);
 
     if (mapped.length > 0) {
-        const topBid = data[data.length - 1];
+      const topBid = data[data.length - 1];
       setHighestBidder({
         name: maskName(topBid.bidder_id?.name),
         rating_pos: topBid.bidder_id?.rating_pos || 0,
-        reviews: (topBid.bidder_id?.rating_pos || 0) + (topBid.bidder_id?.rating_neg || 0),
+        reviews:
+          (topBid.bidder_id?.rating_pos || 0) +
+          (topBid.bidder_id?.rating_neg || 0),
         avatar: topBid.bidder_id?.avatar_url,
       });
     }
@@ -138,22 +142,26 @@ export const ProductDetailPage = () => {
     const res = await fetch(`http://localhost:3000/api/autobids/${id}`);
     const data = await res.json();
 
-    const mapped = data.map((bid) => ({
-      user: maskName(bid.current_holder?.name),
-      amount: bid.price,
-      time: bid.createdAt,
-    })).sort((a, b) => b.amount - a.amount);
+    const mapped = data
+      .map((bid) => ({
+        user: maskName(bid.current_holder?.name),
+        amount: bid.price,
+        time: bid.createdAt,
+      }))
+      .sort((a, b) => b.amount - a.amount);
 
     setBidHistory(mapped);
     setCurrentBid(mapped[0].price);
     setTotalBids(mapped.length);
 
     if (mapped.length > 0) {
-        const topBid = data[data.length - 1];
+      const topBid = data[data.length - 1];
       setHighestBidder({
         name: maskName(topBid.current_holder?.name),
         rating: topBid.current_holder?.rating_pos || 0,
-        reviews: topBid.current_holder?.rating_neg + topBid.current_holder?.rating_pos || 0,
+        reviews:
+          topBid.current_holder?.rating_neg +
+            topBid.current_holder?.rating_pos || 0,
         avatar:
           topBid.current_holder?.avatar_url ||
           "https://www.gravatar.com/avatar/3b3be63a4c2a439b013787725dfce802?d=identicon",
@@ -171,14 +179,10 @@ export const ProductDetailPage = () => {
     }
   };
 
-//   useEffect(() => {
-//     fetchQuestions(id)
-//   }, [questions])
-
   const fetchRelatedProducts = async (categoryId) => {
     try {
       const res = await fetch(
-        `http://localhost:3000/api/products/category/${categoryId}`
+        `http://localhost:3000/api/product/by-category/${categoryId}`
       );
       const data = await res.json();
       setRelatedProducts(data.filter((p) => p.id !== id));
@@ -212,7 +216,7 @@ export const ProductDetailPage = () => {
     return () => clearInterval(timer);
   }, [endTime]);
 
-  function handleBid() {
+  async function handleBid() {
     setBidError("");
 
     if (!bidInput) {
@@ -223,6 +227,7 @@ export const ProductDetailPage = () => {
     const newBid = parseFloat(bidInput);
     const minBid = currentBid + bidStep;
 
+    // Kiểm tra giá tối thiểu
     if (newBid < minBid) {
       setBidError(
         `Giá đấu tối thiểu là ${minBid.toLocaleString()} VNĐ (giá hiện tại + ${bidStep.toLocaleString()} VNĐ)`
@@ -230,7 +235,7 @@ export const ProductDetailPage = () => {
       return;
     }
 
-    // Check if bid is multiple of bidStep
+    // Kiểm tra bước giá
     if ((newBid - currentBid) % bidStep !== 0) {
       setBidError(
         `Giá đấu phải tăng theo bước ${bidStep.toLocaleString()} VNĐ`
@@ -238,21 +243,102 @@ export const ProductDetailPage = () => {
       return;
     }
 
+    // --- LẤY USER ID TỪ LOCAL STORAGE ---
+    // const user = JSON.parse(localStorage.getItem("user"));
+    // if (!user?._id) {
+    //   setBidError("Bạn chưa đăng nhập!");
+    //   return;
+    // }
+    // const bidderId = user._id;
+    const bidderId = "69113d2a06251b39d3acfd0d";
+
     console.log("Bid placed:", newBid);
-    // setCurrentBid(newBid);
-    // setTotalBids(totalBids + 1);
-    // setBidInput("");
-    // gọi api: chưa có user id trên local storage
+
+    try {
+      let url;
+      let body;
+
+      if (product.is_autobid === true) {
+        // AUTO BID
+        url = "http://localhost:3000/api/autobids";
+        body = {
+          product_id: product._id,
+          bidder_id: bidderId,
+          max_price: newBid,
+        };
+      } else {
+        // NORMAL BID
+        url = "http://localhost:3000/api/bids";
+        body = {
+          product_id: product._id,
+          bidder_id: bidderId,
+          price: newBid,
+        };
+      }
+
+      const response = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setBidError(data.message || data.error || "Không thể đặt giá");
+        return;
+      }
+
+      alert("Đặt giá thành công!");
+
+      fetchProduct(id);
+
+      setBidInput("");
+    } catch (error) {
+      console.error("Bid error:", error);
+      setBidError("Có lỗi xảy ra khi đặt giá");
+    }
   }
 
-  function handleBuyNow() {
+  async function handleBuyNow() {
     if (
-      window.confirm("Bạn chắc chắn muốn mua ngay? Sản phẩm sẽ được đóng lại.")
+      !window.confirm("Bạn chắc chắn muốn mua ngay? Sản phẩm sẽ được đóng lại.")
     ) {
-    //   setProductStatus("closed");
-    //   setEndTime(new Date()); // Set end time to now
-    // gọi api
-      console.log("Product purchased with Buy Now");
+      return;
+    }
+
+    const productId = product._id;
+    const buyerId = "69113d2a06251b39d3acfd0d";
+
+    try {
+      const response = await fetch(
+        `http://localhost:3000/api/product/${productId}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            end_time: new Date(),
+            bidder_id: buyerId,
+            status: "ended",
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Không thể mua ngay sản phẩm");
+      }
+
+      const data = await response.json();
+      console.log("Buy Now thành công:", data);
+
+      alert("Mua ngay thành công! Sản phẩm đã kết thúc.");
+
+      setProduct(data);
+    } catch (error) {
+      console.error("Lỗi khi mua ngay:", error);
+      alert("Có lỗi xảy ra khi mua ngay.");
     }
   }
 
@@ -478,7 +564,8 @@ export const ProductDetailPage = () => {
                   <div className="flex items-center gap-2 mb-2">
                     {/* <span className="text-yellow-400">★★★★★</span> */}
                     <span className="text-sm text-green-600">
-                      {seller.rating_pos}/ {seller.rating_neg + seller.rating_pos} đánh giá tích cực 
+                      {seller.rating_pos}/{" "}
+                      {seller.rating_neg + seller.rating_pos} đánh giá tích cực
                     </span>
                   </div>
                   {/* Làm sau */}
@@ -493,7 +580,9 @@ export const ProductDetailPage = () => {
           {/* Highest Bidder Info */}
           <div className="md:col-span-2 bg-gradient-to-br from-green-50 to-emerald-50 p-6 rounded-xl shadow-lg border-2 border-green-300">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-2xl font-bold">Người đặt giá cao nhất hiện tại</h3>
+              <h3 className="text-2xl font-bold">
+                Người đặt giá cao nhất hiện tại
+              </h3>
             </div>
             {highestBidder && (
               <div className="flex items-center gap-6 mb-4">
@@ -512,7 +601,8 @@ export const ProductDetailPage = () => {
                   <div className="flex items-center gap-2 mb-3">
                     {/* <span className="text-yellow-400">★★★★★</span> */}
                     <span className="text-sm text-green-600 font-semibold">
-                      {highestBidder.rating_pos} / {highestBidder.reviews} đánh giá tích cực 
+                      {highestBidder.rating_pos} / {highestBidder.reviews} đánh
+                      giá tích cực
                     </span>
                   </div>
                   <button
@@ -548,15 +638,15 @@ export const ProductDetailPage = () => {
                 </div>
               </div>
               <div className="bg-white/20 p-4 rounded-lg">
-                <div className="text-sm opacity-90 mb-1">
-                  Bước giá
-                </div>
+                <div className="text-sm opacity-90 mb-1">Bước giá</div>
                 <div className="text-2xl font-bold">
                   {bidStep?.toLocaleString()} VNĐ
                 </div>
               </div>
               <div className="bg-white/20 p-4 rounded-lg">
-                <div className="text-sm opacity-90 mb-1">Giá tối thiểu cần đặt</div>
+                <div className="text-sm opacity-90 mb-1">
+                  Giá tối thiểu cần đặt
+                </div>
                 <div className="text-2xl font-bold">
                   {(currentBid + bidStep)?.toLocaleString()} VNĐ
                 </div>
@@ -642,7 +732,7 @@ export const ProductDetailPage = () => {
         {/* Q&A Section */}
         <div className="bg-white p-8 rounded-xl shadow-xl mb-6">
           <h2 className="text-2xl font-bold mb-4">
-            Hỏi & Đáp ({questions.length})
+            Hỏi đáp ({questions.length})
           </h2>
           <div className="max-h-96 overflow-y-auto space-y-4">
             {questions.length > 0 ? (
