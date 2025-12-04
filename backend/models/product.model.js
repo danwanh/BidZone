@@ -11,7 +11,7 @@ const ProductSchema = mongoose.Schema(
             type: String
         },
 
-        category_id: {
+        category_id: { // category con
             type: mongoose.Schema.Types.ObjectId, ref: "Category" 
         },
 

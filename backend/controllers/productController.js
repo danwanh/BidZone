@@ -84,7 +84,7 @@ export const getProductById = async (req, res) => {
     try{
         const { id:p_i } = req.params;
 
-        const product = await Product.findById(p_i);
+        const product = await Product.findById(p_i).populate("seller_id");
 
         if (!product) return res.status(400).json({message: "No product found"});
         else return res.status(200).json(product);
@@ -280,3 +280,62 @@ export const getTop5Price = async (req, res) => {
         res.status(500).json( {message: "Can't get top 5 most price"} );
     }
 }
+
+
+// GET /products/by-category/:id
+export const getProductsByCategory = async (req, res) => {
+    try {
+        const categoryId = req.params.id;
+        const LIMIT = 5;
+
+        const currentCategory = await Category.findById(categoryId);
+
+        if (!currentCategory) {
+            return res.status(404).json({ message: "Category not found" });
+        }
+
+        let products = await Product.find({ category_id: categoryId })
+                                    .limit(LIMIT)
+                                    .lean();
+
+        // Nếu đủ 5 sản phẩm → trả về luôn
+        if (products.length >= LIMIT) {
+            return res.json(products);
+        }
+
+        // Nếu B thiếu sản phẩm → tìm category cha (A)
+        const parentId = currentCategory.parent_id;
+
+        if (!parentId) {
+            // Category không có cha (là category gốc)
+            return res.json(products);
+        }
+
+        // Lấy tất cả category con của A: [B, C, D]
+        const siblingCategories = await Category.find({
+            parent_id: parentId,
+            _id: { $ne: categoryId }  // bỏ B đi
+        });
+
+        const missing = LIMIT - products.length;
+
+        // Lấy thêm product từ C và D
+        for (const cat of siblingCategories) {
+            if (products.length >= LIMIT) break;
+
+            const need = LIMIT - products.length;
+
+            const extraProducts = await Product.find({ category_id: cat._id })
+                                               .limit(need)
+                                               .lean();
+
+            products = [...products, ...extraProducts];
+        }
+
+        return res.json(products);
+
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ message: "Server error" });
+    }
+};
