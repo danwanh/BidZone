@@ -116,3 +116,6 @@ Content-Type: application/json
   "user_id": "69111e8a06251b39d3acd8f9",
   "product_id": ["69111c5306251b39d3acd669", "6912f7b57e185fa911aa95ca", "6915883e693852a0632821c5"]
 }
+
+###
+GET http://localhost:3000/api/upgrade

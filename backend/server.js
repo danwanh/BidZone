@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
+import jwt from "jsonwebtoken";
 
 import User from "./models/user.model.js";
 // Import routes
@@ -20,6 +21,7 @@ import chatRoutes from "./routes/chatRoutes.js";
 import upgradeRoutes from "./routes/upgradeRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import otpRoutes from "./routes/otpRoutes.js";
+import emailRoutes from "./routes/emailRoutes.js";
 
 dotenv.config();
 
@@ -58,4 +60,3 @@ app.use("/api/otp", otpRoutes);
 app.listen(process.env.PORT, () =>
   console.log(`Server running on port ${process.env.PORT}`)
 );
-
