@@ -3,10 +3,15 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import http from "../api/axios";
 import ProductTimer from "./ProductTimer";
+import { useLiked } from "../context/LikedContext";
 
-const ProductCard = ({ product, likedList, setLikedList }) => {
+const ProductCard = ({ product }) => {
   const [showPopup, setShowPopup] = useState(false);
-  const [isLiked, setIsLiked] = useState(false);
+  const { likedList, addToLikedList, removeFromLikedList } = useLiked;
+
+  let likedSet = new Set(likedList);
+
+  let isLiked = likedSet.has(product._id);
 
   const location = useLocation();
   const is_profile = location.pathname.endsWith("/profile");
@@ -39,27 +44,20 @@ const ProductCard = ({ product, likedList, setLikedList }) => {
   const handleLike = async (value) => {
     if (value && !isLiked) {
       try {
-        setIsLiked(true);
-        await http.patch("/api/watchlist/69111e8a06251b39d3acd8f9", {
-          product_id: product._id,
-        });
+        isLiked = true;
+        addToLikedList(product._id);
       } catch (error) {
         console.error("Failed to add to watchlist:", error);
       }
     } else if (!value && isLiked) {
       try {
-        setIsLiked(false);
-        await http.delete(
-          `/api/watchlist/69111e8a06251b39d3acd8f9/${product._id}`
-        );
+        isLiked = false;
+        removeFromLikedList(product._id);
       } catch (error) {
         console.error("Failed to remove from watchlist:", error);
       }
     }
   };
-  useEffect(() => {
-    if (likedList.indexOf(product._id) != -1) setIsLiked(true);
-  }, []);
 
   return (
     <div className="relative">

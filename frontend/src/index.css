@@ -1,6 +1,5 @@
 @import "tailwindcss";
 
-
 @font-face {
   font-family: "Inter";
   src: url("/font/Inter-VariableFont_opsz,wght.woff2") format("woff2");
@@ -9,13 +8,22 @@
   font-display: swap;
 }
 
-:root {
-  --blue-main: #a9b9f8;
-  --input-fill: #F3F5F6;
-  --button-fill: #667EEA;
+@font-face {
+  font-family: "Space grotesk";
+  src: url("/font/SpaceGrotesk-VariableFont_wght.ttf");
 }
 
-body{
+.Space {
+  font-family: "Space grotesk", "Inter", Arial;
+}
+
+:root {
+  --blue-main: #a9b9f8;
+  --input-fill: #f3f5f6;
+  --button-fill: #667eea;
+}
+
+body {
   background: var(--blue-main);
   font-family: "Inter", sans-serif;
 }

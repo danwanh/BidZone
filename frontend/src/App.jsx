@@ -20,7 +20,8 @@ import MainLayout from "./layouts/MainLayout";
 
 // Pages
 import { Home } from "./pages/Home";
-import { ProfilePage } from "./pages/Profile"
+import { ProfilePage } from "./pages/Profile";
+import { BecomeSellerPage } from "./pages/BecomeSeller";
 
 const router = createBrowserRouter([
   {
@@ -28,15 +29,14 @@ const router = createBrowserRouter([
     element: <MainLayout />,
     children: [
       { path: "", element: <Home /> },
-      { path: "/profile", element: <ProfilePage />}
+      { path: "/profile", element: <ProfilePage /> },
+      { path: "/becomeseller", element: <BecomeSellerPage /> },
     ],
   },
-
 ]);
 
 const App = () => {
-  return <RouterProvider router={router}/>;
-  
-}
+  return <RouterProvider router={router} />;
+};
 
 export default App;

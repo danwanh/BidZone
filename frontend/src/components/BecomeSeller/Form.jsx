@@ -1,0 +1,368 @@
+import React, { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { Link } from "react-router-dom";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import NavBar from "./NavBar";
+import axios from "../../api/axios";
+import Email from "./EmailVerify";
+
+const formSchema = z.object({
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
+  email: z.string().email("Please enter a valid email address"),
+  phoneNumber: z.string().min(1, "Phone number is required"),
+  address: z.string().min(1, "Address is required"),
+  city: z.string().min(1, "City is required"),
+  stateProvince: z.string().min(1, "State/Province is required"),
+  zipPostalCode: z.string().min(1, "Zip/Postal code is required"),
+  country: z.string().min(1, "Country is required"),
+});
+
+const Form = () => {
+  const [step, setStep] = useState(1);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    watch,
+    getValues,
+  } = useForm({
+    resolver: zodResolver(formSchema),
+  });
+
+  const onSubmit = (data) => {
+    console.log("Form submitted:", data);
+    setStep(2);
+    window.scrollTo(0, 600);
+  };
+
+  const confirm = async () => {
+    try {
+      const values = getValues();
+
+      // 1. WAIT for token
+      const tokenRes = await fetch("http://localhost:3000/api/test-token");
+      const tokenData = await tokenRes.json();
+      localStorage.setItem("token", tokenData.token);
+
+      console.log("Token saved!", tokenData.token);
+
+      // 2. Prepare data
+      const dataToSend = {
+        user_id: "69111e8a06251b39d3acd8f9",
+        admin_id: "69111e8a06251b39d3acd8f9",
+        status: "pending",
+        first_name: values.firstName,
+        last_name: values.lastName,
+        email: values.email,
+        phone_number: values.phoneNumber,
+        address: values.address,
+        city: values.city,
+        province: values.stateProvince,
+        postal: values.zipPostalCode,
+        country: values.country,
+      };
+
+      // 3. Send request WITH valid token
+      const response = await axios.post("/api/upgrade", dataToSend, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${tokenData.token}`, // ⬅ GOOD
+        },
+        withCredentials: true,
+      });
+
+      console.log("Form submitted successfully:", response.data);
+    } catch (error) {
+      console.error("Error submitting form:", error);
+    }
+  };
+
+  return (
+    <div className="mt-140 w-full z-10">
+      {step == 1 && (
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="max-w-3xl mx-auto p-6 bg-white rounded-xl shadow-lg"
+        >
+          <NavBar step={step} />
+          {/* First Name & Last Name */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 gap-x-15 mb-4">
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                First Name <span className="text-red-500">*</span>
+              </label>
+              <input
+                {...register("firstName")}
+                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                  errors.firstName ? "border-red-500" : "border-gray-300"
+                }`}
+              />
+              {errors.firstName && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.firstName.message}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Last Name <span className="text-red-500">*</span>
+              </label>
+              <input
+                {...register("lastName")}
+                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                  errors.lastName ? "border-red-500" : "border-gray-300"
+                }`}
+              />
+              {errors.lastName && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.lastName.message}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Email & Phone */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 gap-x-15 mb-4">
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Email Address <span className="text-red-500">*</span>
+              </label>
+              <input
+                {...register("email")}
+                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                  errors.email ? "border-red-500" : "border-gray-300"
+                }`}
+              />
+              {errors.email && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.email.message}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Phone Number <span className="text-red-500">*</span>
+              </label>
+              <input
+                {...register("phoneNumber")}
+                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                  errors.phoneNumber ? "border-red-500" : "border-gray-300"
+                }`}
+              />
+              {errors.phoneNumber && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.phoneNumber.message}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Address, City, State, Zip, Country */}
+          <div className="mb-4">
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Address <span className="text-red-500">*</span>
+            </label>
+            <input
+              {...register("address")}
+              className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                errors.address ? "border-red-500" : "border-gray-300"
+              }`}
+            />
+            {errors.address && (
+              <p className="text-red-500 text-xs mt-1">
+                {errors.address.message}
+              </p>
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 gap-x-15 mb-6">
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                City <span className="text-red-500">*</span>
+              </label>
+              <input
+                {...register("city")}
+                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                  errors.city ? "border-red-500" : "border-gray-300"
+                }`}
+              />
+              {errors.city && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.city.message}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                State/Province <span className="text-red-500">*</span>
+              </label>
+              <input
+                {...register("stateProvince")}
+                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                  errors.stateProvince ? "border-red-500" : "border-gray-300"
+                }`}
+              />
+              {errors.stateProvince && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.stateProvince.message}
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 gap-x-15 mb-6">
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Zip/Postal Code <span className="text-red-500">*</span>
+              </label>
+              <input
+                {...register("zipPostalCode")}
+                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                  errors.zipPostalCode ? "border-red-500" : "border-gray-300"
+                }`}
+              />
+              {errors.zipPostalCode && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.zipPostalCode.message}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Country <span className="text-red-500">*</span>
+              </label>
+              <select
+                {...register("country")}
+                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                  errors.country ? "border-red-500" : "border-gray-300"
+                }`}
+              >
+                <option value="">Select Country</option>
+                <option value="US">United States</option>
+                <option value="CA">Canada</option>
+                <option value="UK">United Kingdom</option>
+                <option value="AU">Australia</option>
+                <option value="VN">Vietnam</option>
+                <option value="JP">Japan</option>
+                <option value="KR">South Korea</option>
+                <option value="SG">Singapore</option>
+              </select>
+              {errors.country && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.country.message}
+                </p>
+              )}
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            className="w-full bg-gradient-to-r from-[#6B7FFF] to-[#6ADBB9] text-white py-3 rounded-lg font-semibold text-lg hover:brightness-85 cursor-pointer transition-all flex items-center justify-center gap-2"
+          >
+            Next Step →
+          </button>
+        </form>
+      )}
+      {step == 2 && (
+        <div
+          className={
+            "max-w-3xl mx-auto px-6 py-12 bg-white rounded-xl shadow-lg flex flex-col "
+          }
+        >
+          <NavBar step={step} />
+          <Email
+            user_email={getValues("email")}
+            first_name={getValues("firstName")}
+            step={step}
+            setStep={setStep}
+          />
+        </div>
+      )}
+
+      {step === 3 && (
+        <div className="max-w-3xl mx-auto p-6 bg-white rounded-xl shadow-lg flex flex-col">
+          <NavBar step={step} />
+
+          <h2 className="text-2xl font-bold text-gray-800 mb-6 mt-4">
+            Review Your Information
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 gap-x-15">
+            <div>
+              <p className="text-gray-500 font-semibold">First Name</p>
+              <p className="text-gray-800">{getValues("firstName")}</p>
+            </div>
+
+            <div>
+              <p className="text-gray-500 font-semibold">Last Name</p>
+              <p className="text-gray-800">{getValues("lastName")}</p>
+            </div>
+
+            <div>
+              <p className="text-gray-500 font-semibold">Email</p>
+              <p className="text-gray-800">{getValues("email")}</p>
+            </div>
+
+            <div>
+              <p className="text-gray-500 font-semibold">Phone Number</p>
+              <p className="text-gray-800">{getValues("phoneNumber")}</p>
+            </div>
+
+            <div>
+              <p className="text-gray-500 font-semibold">Address</p>
+              <p className="text-gray-800">{getValues("address")}</p>
+            </div>
+
+            <div>
+              <p className="text-gray-500 font-semibold">City</p>
+              <p className="text-gray-800">{getValues("city")}</p>
+            </div>
+
+            <div>
+              <p className="text-gray-500 font-semibold">State/Province</p>
+              <p className="text-gray-800">{getValues("stateProvince")}</p>
+            </div>
+
+            <div>
+              <p className="text-gray-500 font-semibold">Zip/Postal Code</p>
+              <p className="text-gray-800">{getValues("zipPostalCode")}</p>
+            </div>
+
+            <div>
+              <p className="text-gray-500 font-semibold">Country</p>
+              <p className="text-gray-800">{getValues("country")}</p>
+            </div>
+          </div>
+
+          <Link
+            onClick={confirm}
+            to="/profile"
+            className="flex justify-center mt-6 w-full bg-[#6ADBB9] text-white py-3 rounded-lg font-semibold hover:bg-[#39977b] cursor-pointer transition-colors"
+          >
+            Confirm & Submit
+          </Link>
+
+          <button
+            onClick={() => setStep(1)}
+            type="button"
+            className="mt-6 w-full border border-[#6ADBB9] text-black py-3 rounded-lg font-semibold hover:border-[#39977b] border-3 cursor-pointer transition-colors"
+          >
+            Return to step 1
+          </button>
+          <button onClick={console.log(localStorage.getItem("token"))}>
+            abc
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default Form;
