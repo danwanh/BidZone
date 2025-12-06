@@ -1,35 +1,45 @@
 import { useState } from "react";
-import Register from "../components/Register";
-import Login from "../components/Login";
-import VerifyOTP from "../components/VerifyOTP";
-import Recaptcha from "../components/Recaptcha";
+import Register from "../components/auth/Register";
+import Login from "../components/auth/Login";
+import VerifyOTP from "../components/auth/VerifyOTP";
+import Recaptcha from "../components/auth/Recaptcha";
+
+const STEP = {
+  LOGIN: 0,
+  REGISTER: 1,
+  OTP: 2,
+  RECAPTCHA: 3,
+  
+};
 
 export const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(false);
   //1. register -> 2.otp -> 3.recaptcha
-  const [step, setStep] = useState(2);
+  const [step, setStep] = useState(STEP.REGISTER);
 
   const [data, setData] = useState({}); // lưu data để gởi qua OTP
 
   const toLogin = () => {
-    setStep(0);
+    setStep(STEP.LOGIN);
     setIsLogin(true);
   };
 
   const toRegister = () => {
     setIsLogin(false);
-    setStep(1);
+    setStep(STEP.REGISTER);
   };
 
   // Khi đăng ký thành công (đã gửi OTP), lưu data
   const toOTP = (data) => {
     setData(data);
-    setStep(2);
+    setStep(STEP.OTP);
   };
 
   const toRecaptcha = () => {
-    setStep(3);
+    setStep(STEP.RECAPTCHA);
   };
+
+  const toHomePage = () => {};
 
   return (
     <>
@@ -38,7 +48,7 @@ export const AuthPage = () => {
       {!isLogin && step === 2 && (
         <VerifyOTP data={data} toRecaptcha={toRecaptcha} />
       )}
-      {!isLogin && step === 3 && <Recaptcha data={data} />}
+      {!isLogin && step === 3 && <Recaptcha data={data} toLogin={toLogin} />}
     </>
   );
 };
