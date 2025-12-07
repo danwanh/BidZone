@@ -1,17 +1,17 @@
 import mongoose from "mongoose";
 
 const UpgradeRequestSchema = mongoose.Schema(
-    {
-        user_id: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
-            required: true
-        },
+  {
+    user_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
 
-        admin_id: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "User"
-        },
+    admin_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
 
     status: {
       type: String,
@@ -20,6 +20,42 @@ const UpgradeRequestSchema = mongoose.Schema(
     },
 
     note: {
+      type: String,
+    },
+
+    first_name: {
+      type: String,
+    },
+
+    last_name: {
+      type: String,
+    },
+
+    email: {
+      type: String,
+    },
+
+    phone_number: {
+      type: String,
+    },
+
+    address: {
+      type: String,
+    },
+
+    city: {
+      type: String,
+    },
+
+    province: {
+      type: String,
+    },
+
+    postal: {
+      type: String,
+    },
+
+    country: {
       type: String,
     },
   },

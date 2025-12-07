@@ -25,18 +25,18 @@ const Carousel = () => {
 
   return (
     <>
-      <div className="bg-white rounded-3xl shadow-xl py-12 px-8 max-w-1/3 w-full">
-        <div className="relative h-32 flex items-center justify-center">
+      <div className="rounded-3xl mx-auto py-12 px-8 max-w-1/2 w-full">
+        <div className="relative h-38 flex items-center justify-center">
           <p
             key={currentIndex}
-            className="text-[26px] Space font-bold text-center leading-relaxed animate-fade-in"
-            style={{ color: "#3b3b3b" }}
+            className="text-[50px] Space font-bold text-center leading-relaxed animate-fade-in"
+            style={{ color: "#ffffff" }}
           >
             {benefits[currentIndex]}
           </p>
         </div>
 
-        <div className="flex justify-center gap-2 mt-6">
+        <div className="flex justify-center gap-2 mt-10">
           {benefits.map((_, index) => (
             <div
               key={index}

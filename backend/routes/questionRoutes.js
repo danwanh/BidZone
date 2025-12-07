@@ -1,16 +1,16 @@
 import express from "express"
 import {
     getAllQuestions,
-    getQuestionByID,
     createQuestion,
     updateQuestion,
-    deleteQuestion
+    deleteQuestion,
+    getQuestionsByProductId
 } from "../controllers/questionController.js";
 
 const router = express.Router();
 
 router.get("", getAllQuestions);
-router.get("/:id", getQuestionByID);
+router.get("/:product_id", getQuestionsByProductId);
 router.post("/", createQuestion);
 router.patch("/:id", updateQuestion);
 router.delete("/:id", deleteQuestion);

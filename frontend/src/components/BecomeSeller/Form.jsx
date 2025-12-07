@@ -42,14 +42,6 @@ const Form = () => {
     try {
       const values = getValues();
 
-      // 1. WAIT for token
-      const tokenRes = await fetch("http://localhost:3000/api/test-token");
-      const tokenData = await tokenRes.json();
-      localStorage.setItem("token", tokenData.token);
-
-      console.log("Token saved!", tokenData.token);
-
-      // 2. Prepare data
       const dataToSend = {
         user_id: "69111e8a06251b39d3acd8f9",
         admin_id: "69111e8a06251b39d3acd8f9",
@@ -64,19 +56,17 @@ const Form = () => {
         postal: values.zipPostalCode,
         country: values.country,
       };
+      console.log(dataToSend);
 
-      // 3. Send request WITH valid token
       const response = await axios.post("/api/upgrade", dataToSend, {
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${tokenData.token}`, // ⬅ GOOD
         },
-        withCredentials: true,
       });
 
       console.log("Form submitted successfully:", response.data);
     } catch (error) {
-      console.error("Error submitting form:", error);
+      console.log(err.response?.data?.message || err.message);
     }
   };
 
@@ -355,9 +345,6 @@ const Form = () => {
             className="mt-6 w-full border border-[#6ADBB9] text-black py-3 rounded-lg font-semibold hover:border-[#39977b] border-3 cursor-pointer transition-colors"
           >
             Return to step 1
-          </button>
-          <button onClick={console.log(localStorage.getItem("token"))}>
-            abc
           </button>
         </div>
       )}

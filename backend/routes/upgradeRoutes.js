@@ -1,12 +1,12 @@
 import express from "express";
 import {
-    createUpgradeRequest,
-    getAllUpgradeRequests,
-    getUpgradeRequestsByUser,
-    getUpgradeRequestById,
-    reviewUpgradeRequest,
-    cancelUpgradeRequest,
-    deleteUpgradeRequest
+  createUpgradeRequest,
+  getAllUpgradeRequests,
+  getUpgradeRequestsByUser,
+  getUpgradeRequestById,
+  reviewUpgradeRequest,
+  cancelUpgradeRequest,
+  deleteUpgradeRequest,
 } from "../controllers/upgradeController.js";
 import { authenticate, isAdmin } from "../middleware/authMiddleware.js";
 
@@ -15,7 +15,7 @@ const router = express.Router();
 // CREATE
 // POST /api/upgrade
 // Protected: Submit upgrade request (Bidder → Seller)
-router.post("/", authenticate, createUpgradeRequest);
+router.post("/", createUpgradeRequest);
 
 // READ
 // GET /api/upgrade

@@ -17,11 +17,17 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
 // Layout
 import MainLayout from "./layouts/MainLayout";
+import AuthLayout from "./layouts/AuthLayout";
 
 // Pages
 import { Home } from "./pages/Home";
 import { ProfilePage } from "./pages/Profile";
-import { BecomeSellerPage } from "./pages/BecomeSeller";
+import { AuthPage } from "./pages/AuthPage";
+import { AuthSuccess } from "./components/auth/AuthSuccess";
+import { AuthFailed } from "./components/auth/AuthFailed.jsx";
+import { ProductDetailPage } from "./pages/ProductDetailPage";
+import { NotFoundPage } from "./pages/NotFoundPage";
+import { BecomeSellerPage } from "./pages/BecomeSeller.jsx";
 
 const router = createBrowserRouter([
   {
@@ -31,6 +37,19 @@ const router = createBrowserRouter([
       { path: "", element: <Home /> },
       { path: "/profile", element: <ProfilePage /> },
       { path: "/becomeseller", element: <BecomeSellerPage /> },
+      { path: "/profile", element: <ProfilePage /> },
+      { path: "auth", element: <AuthPage /> },
+      { path: "products/:id", element: <ProductDetailPage /> },
+      { path: "*", element: <NotFoundPage /> },
+    ],
+  },
+  {
+    path: "/auth",
+    element: <AuthLayout />,
+    children: [
+      { path: "", element: <AuthPage /> },
+      { path: "social-success", element: <AuthSuccess /> },
+      { path: "social-failed", element: <AuthFailed /> },
     ],
   },
 ]);

@@ -4,6 +4,9 @@ import NavBar from "./NavBar";
 import http from "../../api/axios";
 import { useLiked } from "../../context/LikedContext";
 import { useSearchParams } from "react-router-dom";
+import BiddingList from "./BiddingList";
+import FavoriteList from "./FavoriteList";
+import BoughtList from "./BoughtList";
 
 const ProductList = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -13,6 +16,7 @@ const ProductList = () => {
   const [tab, setTab] = useState("Đang đấu giá");
   const { likedList } = useLiked();
   const [role, setRole] = useState("user");
+  const [totalPage, setTotalPage] = useState(1);
 
   const labels = ["Đang đấu giá", "Yêu thích", "Đã mua"];
   if (role == "seller") {
@@ -37,24 +41,6 @@ const ProductList = () => {
 
   const handleTab = async () => {
     try {
-      if (tab == labels[0]) {
-        const res = await http.get(`/api/product?${queryString}`);
-        return res.data.products;
-      }
-      if (tab == labels[1]) {
-        const res = await http.get(
-          "/api/watchlist/user/69111e8a06251b39d3acd8f9/"
-        );
-        const list = res.data.product_id;
-        console.log(list);
-        let data = [];
-        for (const id of list) {
-          const prod_res = await http.get(`/api/product/${id}/`);
-          data.push(prod_res.data);
-        }
-        return data;
-      }
-
       if (tab == labels[2]) {
         return likedList;
       }
@@ -100,40 +86,36 @@ const ProductList = () => {
     setSearchParams(next);
   };
 
-  useEffect(
-    () => {
-      let isMounted = true;
-      const loadProducts = async () => {
-        try {
-          setLoading(true);
-          setError(null);
+  useEffect(() => {
+    let isMounted = true;
+    const loadProducts = async () => {
+      try {
+        setLoading(true);
+        setError(null);
 
-          const data = await handleTab();
+        const data = await handleTab();
 
-          if (isMounted) {
-            setProducts(data);
-          }
-        } catch (error) {
-          console.error("Error loading products", error);
-          if (isMounted) setError(error.message || "Unable to load products");
-        } finally {
-          if (isMounted) setLoading(false);
+        if (isMounted) {
+          setProducts(data);
         }
-      };
-      loadProducts();
+      } catch (error) {
+        console.error("Error loading products", error);
+        if (isMounted) setError(error.message || "Unable to load products");
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+    loadProducts();
 
-      return () => {
-        isMounted = false;
-      };
-    },
-    [tab],
-    [queryString]
-  );
+    return () => {
+      isMounted = false;
+    };
+  }, [tab, queryString]);
 
   return (
     <div className="w-full bg-white p-10 rounded-[15px] shadow-lg">
       <NavBar tab={tab} setTab={setTab} labels={labels} />
-      <section className="md:col-span-3 space-y-6">
+      {/* <section className="md:col-span-3 space-y-6">
         {loading && <div>Loading</div>}
         {error && (
           <div className="text-red-500">
@@ -143,10 +125,34 @@ const ProductList = () => {
         {!loading && !error && (
           <>
             {products.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-12 mt-5">
-                {products.map((p) => (
-                  <ProductCard key={p._id} product={p} />
-                ))}
+              <div className="flex flex-col items-center gap-10">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-12 mt-5">
+                  {products.map((p) =>
+                    p.product_id?._id ? (
+                      <ProductCard key={p._id} product={p.product_id} />
+                    ) : (
+                      <ProductCard key={p._id} product={p} />
+                    )
+                  )}
+                </div>
+                <div className="flex gap-5">
+                  {totalPage > 1 &&
+                    Array.from({ length: totalPage }, (_, i) => i + 1).map(
+                      (num) => (
+                        <div
+                          onClick={() => handlePageChange(num)}
+                          key={num}
+                          className={`py-2 px-4 rounded-xl hover:-translate-y-2 transition-all duration-200 ease-out cursor-pointer ${
+                            page == num
+                              ? "text-white bg-[#667EEA]"
+                              : "text-[#666666]"
+                          }`}
+                        >
+                          {num}
+                        </div>
+                      )
+                    )}
+                </div>
               </div>
             ) : (
               <div className="w-full text-[25px] text-bold flex justify-center  mt-5">
@@ -155,7 +161,10 @@ const ProductList = () => {
             )}
           </>
         )}
-      </section>
+      </section> */}
+      {tab == "Đang đấu giá" && <BiddingList />}
+      {tab == "Yêu thích" && <FavoriteList />}
+      {tab == "Đã mua" && <BoughtList />}
     </div>
   );
 };

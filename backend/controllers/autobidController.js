@@ -79,7 +79,7 @@ export const createAutoBid = async (req, res) => {
 export const getAutoBidsByProduct = async (req, res) => {
   try {
     const { product_id } = req.params;
-    const bids = await AutoBid.find({ product_id }).populate("bidder_id", "name email");
+    const bids = await AutoBid.find({ product_id }).populate("bidder_id current_holder", "name email");
     res.json(bids);
   } catch (err) {
     console.error("Error fetching bids:", err);

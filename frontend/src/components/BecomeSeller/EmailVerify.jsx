@@ -2,38 +2,23 @@ import axios from "../../api/axios";
 import { useEffect, useState } from "react";
 
 const Email = ({ user_email, last_name, step, setStep }) => {
-  const [sentCode, setSentCode] = useState("");
   const [code, setCode] = useState("");
-  const [showSuccess, setShowSuccess] = useState(false);
-
-  const genCode = () => {
-    return Math.floor(100000 + Math.random() * 900000).toString();
-  };
-
-  const onVerify = () => {
-    console.log(sentCode + "*" + code);
-    if (sentCode == code) {
-      setStep(3);
-      window.scrollTo(0, 600);
-    } else {
-      alert("Wrong code");
-    }
-  };
+  const [isSending, setIsSending] = useState(false);
 
   const sendEmail = async () => {
+    if (isSending) return;
+    setIsSending(true);
+
     try {
-      const codeToSend = genCode();
-      setSentCode(codeToSend);
-      const response = await axios.post("/api/email/becomeSeller", {
+      await axios.post("/api/otp/send", {
         email: user_email,
-        lastName: last_name,
-        code: codeToSend,
       });
 
-      if (response.data.success) {
-      }
+      console.log("OTP sent");
     } catch (error) {
-      console.error("Error sending email:", error);
+      console.error("Error sending OTP:", error);
+    } finally {
+      setIsSending(false);
     }
   };
 
@@ -43,33 +28,50 @@ const Email = ({ user_email, last_name, step, setStep }) => {
     }
   }, [step]);
 
+  const onVerify = async () => {
+    try {
+      const res = await axios.post("/api/otp/verify", {
+        email: user_email,
+        otp: code,
+      });
+
+      if (res.data.message === "OTP verified") {
+        setStep(3);
+        window.scrollTo(0, 600);
+      } else {
+        alert("Wrong OTP");
+      }
+    } catch (error) {
+      alert("Wrong or expired OTP");
+    }
+  };
+
   return (
     <div className="flex flex-col items-center">
       <h2 className="text-2xl font-bold text-gray-800 mb-4">
         Email Verification
       </h2>
+
       <p className="text-gray-600 text-sm mb-6 text-center">
         Enter the 6-digit code sent to your email address
       </p>
 
       <div className="flex justify-center gap-3 mb-6">
-        {/* Hidden input that captures the typing */}
         <input
           type="text"
           inputMode="numeric"
           maxLength="6"
           value={code}
-          onChange={(e) => setCode(e.target.value.toString())}
+          onChange={(e) => setCode(e.target.value)}
           className="absolute opacity-0 w-full h-12 cursor-text"
           autoFocus
         />
 
-        {/* Visual squares */}
         <div className="flex gap-2">
           {[0, 1, 2, 3, 4, 5].map((idx) => (
             <div
               key={idx}
-              className="w-12 h-12 flex items-center justify-center text-2xl Space border-2 border-gray-300 rounded-lg bg-white"
+              className="w-12 h-12 flex items-center justify-center text-2xl border-2 border-gray-300 rounded-lg bg-white"
             >
               {code[idx] || ""}
             </div>
@@ -88,9 +90,11 @@ const Email = ({ user_email, last_name, step, setStep }) => {
         Didn't receive the code?{" "}
         <span
           onClick={sendEmail}
-          className="text-[#6ADBB9] hover:text-[#39977b] font-semibold cursor-pointer"
+          className={`text-[#6ADBB9] hover:text-[#39977b] font-semibold cursor-pointer ${
+            isSending && "opacity-50 cursor-not-allowed"
+          }`}
         >
-          Resend
+          {isSending ? "Sending..." : "Resend"}
         </span>
       </p>
 

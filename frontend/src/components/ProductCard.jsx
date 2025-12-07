@@ -7,15 +7,13 @@ import { useLiked } from "../context/LikedContext";
 
 const ProductCard = ({ product }) => {
   const [showPopup, setShowPopup] = useState(false);
-  const { likedList, addToLikedList, removeFromLikedList } = useLiked;
+  const { addToLikedList, removeFromLikedList, likedIds } = useLiked();
 
-  let likedSet = new Set(likedList);
-
-  let isLiked = likedSet.has(product._id);
+  const [isLiked, setIsLiked] = useState(likedIds.has(product._id));
 
   const location = useLocation();
   const is_profile = location.pathname.endsWith("/profile");
-  const is_bought = product.seller_id === "6912e02b70323bdb4045f327";
+  const is_bought = product.seller_id === "6912e02b70323bdb4045f32";
 
   const { register, handleSubmit, watch, setValue } = useForm({
     defaultValues: {
@@ -44,17 +42,17 @@ const ProductCard = ({ product }) => {
   const handleLike = async (value) => {
     if (value && !isLiked) {
       try {
-        isLiked = true;
+        setIsLiked(true);
         addToLikedList(product._id);
       } catch (error) {
-        console.error("Failed to add to watchlist:", error);
+        console.error("Failed to add to watchlist:", error.message);
       }
     } else if (!value && isLiked) {
       try {
-        isLiked = false;
+        setIsLiked(false);
         removeFromLikedList(product._id);
       } catch (error) {
-        console.error("Failed to remove from watchlist:", error);
+        console.error("Failed to remove from watchlist:", error.message);
       }
     }
   };
