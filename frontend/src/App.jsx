@@ -20,12 +20,11 @@ import MainLayout from "./layouts/MainLayout";
 import AuthLayout from "./layouts/AuthLayout";
 
 // Pages
-import { Home } from "./pages/Home";
+import { HomePage } from "./pages/HomePage";
 import { ProfilePage } from "./pages/Profile";
 import { AuthPage } from "./pages/AuthPage";
 import { AuthSuccess } from "./components/auth/AuthSuccess";
 import { AuthFailed } from "./components/auth/AuthFailed.jsx";
-import { AuthPage } from "./pages/AuthPage";
 import { ProductDetailPage } from "./pages/ProductDetailPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 
@@ -34,7 +33,7 @@ const router = createBrowserRouter([
     path: "/",
     element: <MainLayout />,
     children: [
-      { path: "", element: <Home /> },
+      { path: "", element: <HomePage /> },
       { path: "/profile", element: <ProfilePage /> },,
       { path: "auth", element: <AuthPage/>},
       { path: "products/:id", element: <ProductDetailPage/>},

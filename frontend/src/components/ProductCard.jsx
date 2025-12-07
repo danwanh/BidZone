@@ -1,17 +1,16 @@
 import { Link, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import http from "../api/axios"
+import http from "../api/axios";
 
-const ProductCard = ({product, likedList, setLikedList}) => {
+const ProductCard = ({ product, likedList, setLikedList }) => {
   const [remain, setRemain] = useState(0);
   const [showPopup, setShowPopup] = useState(false);
-  const [ isLiked, setIsLiked ] = useState(false);
+  const [isLiked, setIsLiked] = useState(false);
 
   const location = useLocation();
 
   const is_profile = location.pathname.endsWith("/profile");
-
 
   const is_bought = product.bidder_id === "69111e8a06251b39d3acd8f9";
 
@@ -28,7 +27,7 @@ const ProductCard = ({product, likedList, setLikedList}) => {
     console.log(data);
     setShowPopup(false);
   };
-  
+
   const handleClick = () => {
     setShowPopup(true);
   };
@@ -38,16 +37,17 @@ const ProductCard = ({product, likedList, setLikedList}) => {
       if (value && !isLiked) {
         try {
           await http.patch("/api/watchlist/69111e8a06251b39d3acd8f9", {
-            product_id: product._id
+            product_id: product._id,
           });
           setIsLiked(true);
         } catch (error) {
           console.error("Failed to add to watchlist:", error);
         }
-      }
-      else if (!value && isLiked) {
+      } else if (!value && isLiked) {
         try {
-          await http.delete(`/api/watchlist/69111e8a06251b39d3acd8f9/${product._id}`);
+          await http.delete(
+            `/api/watchlist/69111e8a06251b39d3acd8f9/${product._id}`
+          );
           setIsLiked(false);
         } catch (error) {
           console.error("Failed to remove from watchlist:", error);
@@ -56,10 +56,12 @@ const ProductCard = ({product, likedList, setLikedList}) => {
     } catch (error) {
       console.error("Failed to send delete:", error);
     }
-  }
+  };
 
   useEffect(() => {
-    const end_date = product.end_time ? new Date(product.end_time).getTime() : Date.now();
+    const end_date = product.end_time
+      ? new Date(product.end_time).getTime()
+      : Date.now();
 
     const interval = setInterval(() => {
       const now = Date.now();
@@ -73,7 +75,7 @@ const ProductCard = ({product, likedList, setLikedList}) => {
       }
     }, 1000);
 
-    if(likedList.indexOf(product._id) > -1) setIsLiked(true);
+    if (likedList.indexOf(product._id) > -1) setIsLiked(true);
 
     return () => clearInterval(interval);
   }, [product.end_time]);
@@ -123,7 +125,10 @@ const ProductCard = ({product, likedList, setLikedList}) => {
           </div>
 
           {/* Review Form */}
-          <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col h-full">
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="flex flex-col h-full"
+          >
             <textarea
               {...register("review")}
               className="w-full rounded-lg p-2 h-full mt-4 bg-[#f0f0f0]"
@@ -149,62 +154,96 @@ const ProductCard = ({product, likedList, setLikedList}) => {
           </form>
         </div>
       )}
-      <div className={`w-[225px] h-fit flex flex-col bg-[#ffffff] rounded-[0.6rem] gap-[5px] overflow-hidden shadow-lg relative hover:-translate-y-2 transition-transform duration-150 ease-in-out hover:cursor-pointer`}>
-
-        {is_bought && 
+      <div
+        className={`w-[225px] h-fit flex flex-col bg-[#ffffff] rounded-[0.6rem] gap-[5px] overflow-hidden shadow-lg relative hover:-translate-y-2 transition-transform duration-150 ease-in-out hover:cursor-pointer`}
+      >
+        {is_bought && (
           <div className="absolute bg-[#011876] text-[14px] font-bold text-white -rotate-45 pt-10 px-10 pb-3 -left-13 -top-5">
             ĐÃ MUA
           </div>
-        }
+        )}
         <img
           className="w-full h-[180px] object-cover object-center"
-          src={product.image_url != null && product.image_url.length > 0 ? product.image_url[0] : "https://res.cloudinary.com/onlineauctionproject/image/upload/v1763451369/unnamed_hqaokg.png"}
+          src={
+            product.image_url != null && product.image_url.length > 0
+              ? product.image_url[0]
+              : "https://res.cloudinary.com/onlineauctionproject/image/upload/v1763451369/unnamed_hqaokg.png"
+          }
           alt="Product"
         />
-        
+
         <div className="flex justify-between text-black-500 px-[10px] text-[14px]">
-          <p>{ new Date(product.start_time).toLocaleDateString("en-GB") }</p>
-          <svg onClick={() => handleLike(isLiked ? false : true)} width="22" height="20" viewBox="0 0 22 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M20.75 6.56387C20.75 13.1279 11.483 18.441 11.0884 18.6605C10.9844 18.7192 10.8681 18.75 10.75 18.75C10.6319 18.75 10.5156 18.7192 10.4116 18.6605C10.017 18.441 0.75 13.1279 0.75 6.56387C0.751654 5.02247 1.33541 3.5447 2.3732 2.45476C3.41099 1.36483 4.81806 0.751737 6.28571 0.75C8.12946 0.75 9.74375 2.64152 10.75 4.04904C11.7563 2.64152 13.3705 0.75 15.2143 0.75C16.6819 0.751737 18.089 1.36483 19.1268 2.45476C20.1646 3.5447 20.7483 5.02247 20.75 6.56387Z" 
-            stroke="#171B22" strokeWidth="1.5" fill={isLiked ? "#171b22" : "none"}/>
+          <p>{new Date(product.start_time).toLocaleDateString("en-GB")}</p>
+          <svg
+            onClick={() => handleLike(isLiked ? false : true)}
+            width="22"
+            height="20"
+            viewBox="0 0 22 20"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M20.75 6.56387C20.75 13.1279 11.483 18.441 11.0884 18.6605C10.9844 18.7192 10.8681 18.75 10.75 18.75C10.6319 18.75 10.5156 18.7192 10.4116 18.6605C10.017 18.441 0.75 13.1279 0.75 6.56387C0.751654 5.02247 1.33541 3.5447 2.3732 2.45476C3.41099 1.36483 4.81806 0.751737 6.28571 0.75C8.12946 0.75 9.74375 2.64152 10.75 4.04904C11.7563 2.64152 13.3705 0.75 15.2143 0.75C16.6819 0.751737 18.089 1.36483 19.1268 2.45476C20.1646 3.5447 20.7483 5.02247 20.75 6.56387Z"
+              stroke="#171B22"
+              strokeWidth="1.5"
+              fill={isLiked ? "#171b22" : "none"}
+            />
           </svg>
-
-
         </div>
         <div className="px-[10px] flex flex-col">
           <p className="font-bold">{product.name}</p>
-          {!is_profile && (<p className="text-15 text-[#666666]">{product.description}</p>)}
+          {!is_profile && (
+            <p className="text-15 text-[#666666]">{product.description}</p>
+          )}
         </div>
         {/* Gia and Lan ra gia */}
-        {!is_bought && 
+        {!is_bought && (
           <>
             <div className="px-[10px] flex justify-between">
               {/* Left */}
               <div className="flex flex-col leading-[24px]">
                 <p className="text-[16px] text-[#666666]">Giá cao nhất</p>
-                <p className="text-[22px] font-bold text-orange-600">${product.current_price ? product.current_price : 0}</p>
+                <p className="text-[22px] font-bold text-orange-600">
+                  ${product.current_price ? product.current_price : 0}
+                </p>
                 <p>ABC***</p>
               </div>
               {/* right */}
               <div className="flex flex-col text-right leading-[24px]">
                 <p className="text-[16px] text-[#666666]">Lần ra giá</p>
-                <p className="text-[22px] font-bold text-orange-600">{product.total_bids ? product.total_bids: 0}</p>
+                <p className="text-[22px] font-bold text-orange-600">
+                  {product.total_bids ? product.total_bids : 0}
+                </p>
               </div>
             </div>
             <div className="bg-[#FFF3CD] h-full flex justify-center items-center gap-[5px]">
-              <svg width={14} height={16} viewBox="0 0 14 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M6.70378 2.52632C3.00748 2.52632 0 5.54863 0 9.26316C0 12.9777 3.00748 16 6.70378 16C10.4001 16 13.4076 12.9777 13.4076 9.26316C13.4076 5.54863 10.4001 2.52632 6.70378 2.52632ZM7.54175 9.26316H5.8658V5.05263H7.54175V9.26316ZM4.18986 0H9.21769V1.68421H4.18986V0ZM12.3241 1.93095L14 3.61516L12.8151 4.80589L11.1392 3.12168L12.3241 1.93095Z" fill="#856404" />
+              <svg
+                width={14}
+                height={16}
+                viewBox="0 0 14 16"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M6.70378 2.52632C3.00748 2.52632 0 5.54863 0 9.26316C0 12.9777 3.00748 16 6.70378 16C10.4001 16 13.4076 12.9777 13.4076 9.26316C13.4076 5.54863 10.4001 2.52632 6.70378 2.52632ZM7.54175 9.26316H5.8658V5.05263H7.54175V9.26316ZM4.18986 0H9.21769V1.68421H4.18986V0ZM12.3241 1.93095L14 3.61516L12.8151 4.80589L11.1392 3.12168L12.3241 1.93095Z"
+                  fill="#856404"
+                />
               </svg>
               <p className="text-[#856404] text-[15px] font-bold py-2">{`${days}:${hours}:${minutes}:${seconds}`}</p>
             </div>
           </>
-        }
+        )}
 
-        {is_bought && 
+        {is_bought && (
           <div className="h-fit w-full flex justify-center items-center">
-            <p onClick={() => handleClick()} className="hover:shadow-lg border hover:border-[#180154] text-white text-[16px] font-bold bg-[#667EEA] px-5 py-1 rounded-[100px] mb-4">Đánh giá</p>
+            <p
+              onClick={() => handleClick()}
+              className="hover:shadow-lg border hover:border-[#180154] text-white text-[16px] font-bold bg-[#667EEA] px-5 py-1 rounded-[100px] mb-4"
+            >
+              Đánh giá
+            </p>
           </div>
-        }
+        )}
       </div>
     </div>
   );
