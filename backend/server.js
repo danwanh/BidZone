@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
+import errorHandler from "./middleware/errorHandler.js";
 
 import User from "./models/user.model.js";
 // Import routes
@@ -60,6 +61,8 @@ app.use("/api/upgrade", upgradeRoutes);
 //authentication
 app.use("/api/auth", authRoutes);
 app.use("/api/otp", otpRoutes);
+
+app.use(errorHandler);
 
 app.listen(process.env.PORT, () =>
   console.log(`Server running on port ${process.env.PORT}`)

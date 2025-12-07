@@ -23,9 +23,15 @@ async function findOrCreateOAuth(profile, provider) {
     user = new User({
       name: profile.displayName,
       email,
+      password_hash:"",
+      phone:"",
+      address:"",
+      dob:null,
       oauth: { [provider]: { id: profile.id, raw: profile } },
-      is_verified: true,
+      is_verified: false,
       role: "bidder",
+      rating_pos: 0,
+      rating_neg: 0,
     });
   } else {
     if (!user.oauth[provider]) {
