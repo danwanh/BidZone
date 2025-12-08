@@ -39,18 +39,18 @@ const Register = ({ toLogin, toOTP }) => {
   };
 
   return (
-    <div className="flex w-full h-screen">
+    <div className="flex -mt-25 -mb-15 w-full h-screen">
       <div className="w-full flex items-center justify-center">
-        <div className="bg-white shadow-xl p-7 rounded-md ">
+        <div className="bg-white shadow-xl p-7 px-14 rounded-2xl min-w-[30vw] ">
           <div className="flex w-full justify-between">
-            <h1 className="font-bold text-2xl"> Đăng Ký </h1>
+            <h1 className="font-bold text-4xl pb-5  "> Đăng Ký </h1>
             <Link onClick={toLogin} className="underline text-blue-500">
               Đăng nhập
             </Link>
           </div>
 
           <form
-            className="max-w-xs mx-auto p-4 space-y-7"
+            className=" mx-auto p-4 space-y-3"
             onSubmit={handleSubmit(onSubmit)}
           >
             <div>
@@ -59,7 +59,7 @@ const Register = ({ toLogin, toOTP }) => {
                 id="name"
                 type="text"
                 placeholder="Họ tên"
-                className="w-full rounded-md border p-2 bg-(--input-fill)"
+                className="w-full rounded-md border p-3 px-5 bg-(--input-fill)"
               />
               {errors.username && (
                 <p className="text-red-500 text-sm">
@@ -75,7 +75,7 @@ const Register = ({ toLogin, toOTP }) => {
                 id="address"
                 type="text"
                 placeholder="Địa chỉ"
-                className="w-full rounded-md border p-2 bg-(--input-fill)"
+                className="w-full rounded-md border p-3 px-5 bg-(--input-fill)"
               />
               {errors.address && (
                 <p className="text-red-500 text-sm">{errors.address.message}</p>
@@ -95,7 +95,7 @@ const Register = ({ toLogin, toOTP }) => {
                 id="email"
                 type="email"
                 placeholder="Email"
-                className="w-full rounded-md border p-2 bg-(--input-fill)"
+                className="w-full rounded-md border p-3 px-5 bg-(--input-fill)"
               />
               {errors.email && (
                 <p className="text-red-500 text-sm">{errors.email.message}</p>
@@ -111,7 +111,7 @@ const Register = ({ toLogin, toOTP }) => {
                 id="password"
                 type="password"
                 placeholder="Mật khẩu"
-                className="w-full rounded-md border p-2 bg-(--input-fill)"
+                className="w-full rounded-md border p-3 px-5 bg-(--input-fill)"
               />
               {errors.password && (
                 <p className="text-red-500 text-sm">
@@ -130,7 +130,7 @@ const Register = ({ toLogin, toOTP }) => {
                 id="confirm_password"
                 type="password"
                 placeholder="Nhập lại mật khẩu"
-                className="w-full rounded-md border p-2 bg-(--input-fill)"
+                className="w-full rounded-md border p-3 px-5 bg-(--input-fill)"
               />
               {errors.confirm_password && (
                 <p className="text-red-500 text-sm">
@@ -142,18 +142,18 @@ const Register = ({ toLogin, toOTP }) => {
             <button
               type="submit"
               className="bg-(--button-fill) text-white w-full rounded-full 
-                          p-2 font-semibold text-xl cursor-pointer"
+                          p-3 px-5 font-semibold text-xl cursor-pointer"
             >
               Đăng ký
             </button>
           </form>
-          <h1> Hoặc </h1>
+          <h1 className="block text-center"> Hoặc </h1>
           <br />
           <div className="space-y-4">
             {/* Google */}
             <a
               href={`${BASE_URL}/api/auth/google`}
-              className="w-full py-2 bg-red-500 text-white rounded-lg block text-center"
+              className="w-full p-3 px-5 bg-red-500 text-white rounded-lg block text-center"
             >
               Đăng nhập bằng Google
             </a>
@@ -161,7 +161,7 @@ const Register = ({ toLogin, toOTP }) => {
             {/* Facebook */}
             <a
               href={`${BASE_URL}/api/auth/facebook`}
-              className="w-full py-2 bg-blue-600 text-white rounded-lg block text-center"
+              className="w-full p-3 px-5 bg-blue-600 text-white rounded-lg block text-center"
             >
               Đăng nhập bằng Facebook
             </a>

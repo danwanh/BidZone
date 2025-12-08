@@ -2,17 +2,18 @@ import { Link, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import http from "../api/axios";
+import ProductTimer from "./ProductTimer";
+import { useLiked } from "../context/LikedContext";
 
-const ProductCard = ({ product, likedList, setLikedList }) => {
-  const [remain, setRemain] = useState(0);
+const ProductCard = ({ product }) => {
   const [showPopup, setShowPopup] = useState(false);
-  const [isLiked, setIsLiked] = useState(false);
+  const { addToLikedList, removeFromLikedList, likedIds } = useLiked();
+
+  const [isLiked, setIsLiked] = useState(likedIds.has(product._id));
 
   const location = useLocation();
-
   const is_profile = location.pathname.endsWith("/profile");
-
-  const is_bought = product.bidder_id === "69111e8a06251b39d3acd8f9";
+  const is_bought = product.seller_id === "6912e02b70323bdb4045f32";
 
   const { register, handleSubmit, watch, setValue } = useForm({
     defaultValues: {
@@ -32,64 +33,35 @@ const ProductCard = ({ product, likedList, setLikedList }) => {
     setShowPopup(true);
   };
 
-  const handleLike = async (value) => {
-    try {
-      if (value && !isLiked) {
-        try {
-          await http.patch("/api/watchlist/69111e8a06251b39d3acd8f9", {
-            product_id: product._id,
-          });
-          setIsLiked(true);
-        } catch (error) {
-          console.error("Failed to add to watchlist:", error);
-        }
-      } else if (!value && isLiked) {
-        try {
-          await http.delete(
-            `/api/watchlist/69111e8a06251b39d3acd8f9/${product._id}`
-          );
-          setIsLiked(false);
-        } catch (error) {
-          console.error("Failed to remove from watchlist:", error);
-        }
-      }
-    } catch (error) {
-      console.error("Failed to send delete:", error);
-    }
+  const handleHuyBan = () => {
+    setValue("vote", "down");
+    setValue("review", "Người thắng không thanh toán");
+    handleSubmit(onSubmit)();
   };
 
-  useEffect(() => {
-    const end_date = product.end_time
-      ? new Date(product.end_time).getTime()
-      : Date.now();
-
-    const interval = setInterval(() => {
-      const now = Date.now();
-      const diff = end_date - now;
-
-      if (diff <= 0) {
-        clearInterval(interval);
-        setRemain(0);
-      } else {
-        setRemain(diff);
+  const handleLike = async (value) => {
+    if (value && !isLiked) {
+      try {
+        setIsLiked(true);
+        addToLikedList(product._id);
+      } catch (error) {
+        console.error("Failed to add to watchlist:", error.message);
       }
-    }, 1000);
-
-    if (likedList.indexOf(product._id) > -1) setIsLiked(true);
-
-    return () => clearInterval(interval);
-  }, [product.end_time]);
-
-  const days = Math.floor(remain / (1000 * 60 * 60 * 24));
-  const hours = Math.floor((remain / (1000 * 60 * 60)) % 24);
-  const minutes = Math.floor((remain / (1000 * 60)) % 60);
-  const seconds = Math.floor((remain / 1000) % 60);
+    } else if (!value && isLiked) {
+      try {
+        setIsLiked(false);
+        removeFromLikedList(product._id);
+      } catch (error) {
+        console.error("Failed to remove from watchlist:", error.message);
+      }
+    }
+  };
 
   return (
     <div className="relative">
       {/* REVIEW POP UP */}
       {showPopup && (
-        <div className="flex flex-col gap-2 absolute -inset-2 bg-white py-6 px-2 rounded-lg h-full shadow-lg border border-black border-[2px] z-50">
+        <div className="flex flex-col gap-2 absolute -inset-y-2 -inset-x-10 bg-white py-6 px-2 rounded-lg h-full shadow-lg border border-black border-[2px] z-50">
           {/* Upvote + Downvote */}
           <div className="flex gap-2">
             {/* UPVOTE */}
@@ -144,6 +116,15 @@ const ProductCard = ({ product, likedList, setLikedList }) => {
                 Hủy
               </button>
 
+              {product.seller_id == "6912e02b70323bdb4045f327" && (
+                <button
+                  type="button"
+                  className="px-4 bg-gray-300 rounded-[100px] font-bold"
+                  onClick={handleHuyBan}
+                >
+                  Hủy bán
+                </button>
+              )}
               <button
                 type="submit"
                 className="px-4 bg-blue-600 text-white font-bold rounded-[100px]"
@@ -216,21 +197,7 @@ const ProductCard = ({ product, likedList, setLikedList }) => {
                 </p>
               </div>
             </div>
-            <div className="bg-[#FFF3CD] h-full flex justify-center items-center gap-[5px]">
-              <svg
-                width={14}
-                height={16}
-                viewBox="0 0 14 16"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M6.70378 2.52632C3.00748 2.52632 0 5.54863 0 9.26316C0 12.9777 3.00748 16 6.70378 16C10.4001 16 13.4076 12.9777 13.4076 9.26316C13.4076 5.54863 10.4001 2.52632 6.70378 2.52632ZM7.54175 9.26316H5.8658V5.05263H7.54175V9.26316ZM4.18986 0H9.21769V1.68421H4.18986V0ZM12.3241 1.93095L14 3.61516L12.8151 4.80589L11.1392 3.12168L12.3241 1.93095Z"
-                  fill="#856404"
-                />
-              </svg>
-              <p className="text-[#856404] text-[15px] font-bold py-2">{`${days}:${hours}:${minutes}:${seconds}`}</p>
-            </div>
+            <ProductTimer end_time={product.end_time} />
           </>
         )}
 

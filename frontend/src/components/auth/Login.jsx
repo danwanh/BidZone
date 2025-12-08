@@ -36,9 +36,9 @@ const Login = ({ toRegister }) => {
   };
 
   return (
-    <div className="flex w-full h-screen">
+    <div className="flex -mt-25 -mb-15 w-full h-screen">
       <div className="w-full flex items-center justify-center">
-        <div className="bg-white shadow-xl p-7 rounded-md ">
+        <div className="bg-white shadow-xl p-7 rounded-2xl min-w-[30vw] ">
           <div className="flex w-full justify-between">
             <h1 className="font-bold text-2xl"> Đăng Nhập </h1>
             <Link onClick={toRegister} className="underline text-blue-500">
@@ -47,7 +47,7 @@ const Login = ({ toRegister }) => {
           </div>
 
           <form
-            className="max-w-xs mx-auto p-4 space-y-7"
+            className="mx-auto p-4 space-y-7 items-center"
             onSubmit={handleSubmit(onSubmit)}
           >
             <div>
@@ -56,7 +56,7 @@ const Login = ({ toRegister }) => {
                 id="email"
                 type="email"
                 placeholder="Email"
-                className="w-full rounded-md border p-2 bg-(--input-fill)"
+                className="w-full rounded-md border p-3 px-5 bg-(--input-fill)"
               />
               {errors.email && (
                 <p className="text-red-500 text-sm">{errors.email.message}</p>
@@ -71,7 +71,7 @@ const Login = ({ toRegister }) => {
                 id="password"
                 type="password"
                 placeholder="Mật khẩu"
-                className="w-full rounded-md border p-2 bg-(--input-fill)"
+                className="w-full rounded-md border p-3 px-5 bg-(--input-fill)"
               />
               {errors.password && (
                 <p className="text-red-500 text-sm">
@@ -80,7 +80,7 @@ const Login = ({ toRegister }) => {
               )}
             </div>
 
-            <div>
+            <div className="flex justify-center items-center flex-col">
               <ReCAPTCHA
                 ref={recaptchaRef}
                 sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
@@ -96,7 +96,7 @@ const Login = ({ toRegister }) => {
             <button
               type="submit"
               className="bg-(--button-fill) text-white w-full rounded-full 
-                          p-2 font-semibold text-xl cursor-pointer"
+                          p-3 px-5 font-semibold text-xl cursor-pointer"
             >
               Đăng nhập
             </button>
@@ -107,7 +107,7 @@ const Login = ({ toRegister }) => {
             {/* Google */}
             <a
               href={`${BASE_URL}/api/auth/google`}
-              className="w-full py-2 bg-red-500 text-white rounded-lg block text-center"
+              className="w-full p-3 px-5 bg-red-500 text-white rounded-lg block text-center"
             >
               Đăng nhập bằng Google
             </a>
@@ -115,7 +115,7 @@ const Login = ({ toRegister }) => {
             {/* Facebook */}
             <a
               href={`${BASE_URL}/api/auth/facebook`}
-              className="w-full py-2 bg-blue-600 text-white rounded-lg block text-center"
+              className="w-full p-3 px-5 bg-blue-600 text-white rounded-lg block text-center"
             >
               Đăng nhập bằng Facebook
             </a>

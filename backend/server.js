@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
+import jwt from "jsonwebtoken";
 import errorHandler from "./middleware/errorHandler.js";
 
 import User from "./models/user.model.js";
@@ -67,4 +68,3 @@ app.use(errorHandler);
 app.listen(process.env.PORT, () =>
   console.log(`Server running on port ${process.env.PORT}`)
 );
-

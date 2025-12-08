@@ -27,6 +27,8 @@ import { AuthSuccess } from "./components/auth/AuthSuccess";
 import { AuthFailed } from "./components/auth/AuthFailed.jsx";
 import { ProductDetailPage } from "./pages/ProductDetailPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
+import { BecomeSellerPage } from "./pages/BecomeSeller.jsx";
+import ProductList from "./components/home/ProductList.jsx";
 
 const router = createBrowserRouter([
   {
@@ -34,10 +36,12 @@ const router = createBrowserRouter([
     element: <MainLayout />,
     children: [
       { path: "", element: <HomePage /> },
-      { path: "/profile", element: <ProfilePage /> },,
-      { path: "auth", element: <AuthPage/>},
-      { path: "products/:id", element: <ProductDetailPage/>},
-      { path: "*", element: <NotFoundPage/>}
+      { path: "/profile", element: <ProfilePage /> },
+      { path: "/becomeseller", element: <BecomeSellerPage /> },
+      { path: "/profile", element: <ProfilePage /> },
+      { path: "auth", element: <AuthPage /> },
+      { path: "products/:id", element: <ProductDetailPage /> },
+      { path: "*", element: <NotFoundPage /> },
     ],
   },
   {
