@@ -5,6 +5,7 @@ import ReCAPTCHA from "react-google-recaptcha";
 import api from "../../api/axios";
 import { BASE_URL } from "../../api/axios";
 import { toast } from "react-toastify";
+import { setAccessToken } from "../../api/authToken";
 
 const Login = ({ toRegister }) => {
   const {
@@ -17,14 +18,32 @@ const Login = ({ toRegister }) => {
   const [captcha, setCaptcha] = useState(null);
   const recaptchaRef = useRef(null);
 
+  const handleForgotPassword = async () => {
+    const email = prompt("Nhập email để đặt lại mật khẩu:");
+
+    if (!email) return;
+
+    try {
+      const res = await api.post("/api/auth/reset-password", { email });
+
+      toast.success("Mật khẩu mới đã được gửi đến email của bạn!");
+    } catch (err) {
+      toast.error("Không thể đặt lại mật khẩu");
+      console.log(err.response?.data);
+    }
+  };
+
   const onSubmit = async (data) => {
     try {
       const res = await api.post("/api/auth/login", {
         ...data,
         recaptcha: captcha,
       });
+
+      setAccessToken(res.data.token); 
       toast.success("Đăng nhập thành công");
       navigate("/");
+      
     } catch (err) {
       toast.error("Đăng nhập thất bại\n" + err.message);
       if (err.response) console.log(err.response.data.message);
@@ -36,7 +55,7 @@ const Login = ({ toRegister }) => {
   };
 
   return (
-    <div className="flex -mt-25 -mb-15 w-full h-screen">
+    <div className="flex -mt-20 -mb-20 w-full h-screen">
       <div className="w-full flex items-center justify-center">
         <div className="bg-white shadow-xl p-7 rounded-2xl min-w-[30vw] ">
           <div className="flex w-full justify-between">
@@ -78,6 +97,16 @@ const Login = ({ toRegister }) => {
                   {errors.password.message}
                 </p>
               )}
+            </div>
+
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={handleForgotPassword}
+                className="text-gray-500 underline hover:text-gray-700 text-sm"
+              >
+                Quên mật khẩu?
+              </button>
             </div>
 
             <div className="flex justify-center items-center flex-col">

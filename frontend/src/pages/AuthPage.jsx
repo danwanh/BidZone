@@ -9,13 +9,14 @@ const STEP = {
   REGISTER: 1,
   OTP: 2,
   RECAPTCHA: 3,
-  
+  FORGETPASS: 4
 };
 
-export const AuthPage = () => {
+export const AuthPage = ({page}) => {
   const [isLogin, setIsLogin] = useState(false);
   //1. register -> 2.otp -> 3.recaptcha
   const [step, setStep] = useState(STEP.REGISTER);
+  if (page) setStep(STEP);
 
   const [data, setData] = useState({}); // lưu data để gởi qua OTP
 

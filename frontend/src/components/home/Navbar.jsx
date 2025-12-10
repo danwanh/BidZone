@@ -1,12 +1,17 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import api from "../../api/axios";
+import searchIcon from "../../assets/icons/search.svg";
+import sellIcon from "../../assets/icons/gavel-solid-full.svg";
+import adminIcon from "../../assets/icons/admin.svg";
+import {useAuth} from "../../context/AuthContext";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [hoveredCategory, setHoveredCategory] = useState(null);
+  const {user} = useAuth();
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -21,6 +26,19 @@ const Navbar = () => {
     };
 
     fetchCategories();
+
+    // Kiểm tra user đăng nhập
+    // const fetchUser = async () => {
+    //   try {
+    //     const res = await api.get("/api/users/me"); // API trả user nếu có token hợp lệ
+    //     setUser(res.data.user);
+    //     console.log(user);
+    //   } catch (error) {
+    //     setUser(null); // chưa đăng nhập hoặc token hết hạn
+    //   }
+    // };
+
+    // fetchUser();
   }, []);
 
   const activeCategory = hoveredCategory || selectedCategory;
@@ -106,16 +124,82 @@ const Navbar = () => {
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
             />
             <button className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400">
-              🔍
+              <img src={searchIcon} alt="Search" className="w-5 h-5" />
             </button>
           </div>
         </div>
 
+         {/* User action */}
         <div className="flex items-center gap-4">
-          <span className="text-gray-700">Đăng kí</span>
-          <button className="px-6 py-2 bg-orange-500 text-white rounded-full hover:bg-orange-600 transition-colors">
-            Đăng nhập
-          </button>
+          {!user && (
+            <>
+              <Link to="/register" className="text-gray-700 hover:underline">
+                Đăng ký
+              </Link>
+              <Link
+                to="/login"
+                className="px-6 py-2 bg-orange-500 text-white rounded-full hover:bg-orange-600 transition-colors"
+              >
+                Đăng nhập
+              </Link>
+            </>
+          )}
+
+          {user && (
+            <>
+              {/* Yêu thích */}
+              <Link
+                to="/favorites"
+                className="flex items-center text-white font-semibold text-xl bg-red-500 rounded-2xl px-2 p-1 gap-1 
+                text-gray-700 hover:text-gray-600"
+                title="Yêu thích"
+              >
+                <span>Yêu thích</span>
+              </Link>
+
+              {/* Đã mua */}
+              <Link
+                to="/purchased"
+                className="flex items-center gap-1 text-gray-700 hover:text-purple-600"
+                title="Đã mua"
+              >
+                <span className="text-xl font-semibold">Đã mua</span>
+              </Link>
+
+              {/* Seller và Admin mới thấy nút Đăng sản phẩm */}
+              {(user.role === "seller") && (
+                <Link
+                  to="/product/new"
+                  className="flex items-center gap-1 bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
+                  title="Đăng sản phẩm"
+                >
+                  <img src={sellIcon} alt="Sell" className="w-5 h-5" />
+                  <span className="">Đăng sản phẩm</span>
+                </Link>
+              )}
+
+              {/* Admin mới thấy nút Bảng admin */}
+              {user.role === "admin" && (
+                <Link
+                  to="/admin"
+                  className="flex items-center gap-1 bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700"
+                  title="Bảng admin"
+                >
+                  <img src={adminIcon } alt="Admin_Dashboard" className="w-5 h-5" />
+                  <span className="">Bảng Admin</span>
+                </Link>
+              )}
+
+              {/* Profile */}
+              <Link
+                to="/profile"
+                className="flex items-center bg-orange-500 px-2 p-1 rounded-2xl gap-1 text-gray-700 hover:text-purple-600"
+                title="Trang cá nhân"
+              >
+                 <span className="text-white text-xl font-semibol">{user.name}</span>
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </nav>
