@@ -2,7 +2,7 @@ import { useForm } from "react-hook-form";
 import api from "../../api/axios";
 import { toast } from "react-toastify";
 
-const ForgetPass = () => {
+const ForgetPass = ({ toOTP }) => {
   const {
     register,
     handleSubmit,
@@ -10,17 +10,14 @@ const ForgetPass = () => {
   } = useForm();
 
   const onSubmit = async (data) => {
-    const email = data.email;
-    console.log(data);
     try {
-      const res = await api.post("/api/auth/reset-password", { email });
-      if (res)
-        toast.success("Mật khẩu mới đã được gửi đến email của bạn!");
-      await delay(2000);
-      navigate("/auth", { state: { page: "LOGIN" } })
+        await api.post("/api/otp/send", {
+          email: data.email,
+        });
+        toOTP(data, "FORGETPASS");
+
     } catch (error) {
       toast.error("Không thể đặt lại mật khẩu");
-      console.log(error);
       console.error(error.response.data?.message || error.message);
     }
   };
@@ -30,10 +27,15 @@ const ForgetPass = () => {
       <div className="w-full flex items-center justify-center">
         <div className="bg-white shadow-xl p-7 rounded-2xl min-w-[30vw] ">
           <div className="flex w-full justify-between">
-            <h1 className="font-bold text-2xl text-center"> Tạo mật khẩu mới cho tài khoản của bạn </h1>
+            <h1 className="font-bold text-2xl text-center">
+              {" "}
+              Tạo mật khẩu mới cho tài khoản của bạn{" "}
+            </h1>
           </div>
 
-          <h2 className="font-semibold mt-2 text-gray-600 text-md">Vui lòng điền email của bạn để được gửi mật khẩu mới</h2>
+          <h2 className="font-semibold mt-2 text-gray-600 text-md">
+            Vui lòng điền email của bạn để được gửi mật khẩu mới
+          </h2>
 
           <form
             className="mx-auto p-4 space-y-7 items-center"

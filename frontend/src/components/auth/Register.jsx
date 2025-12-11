@@ -31,7 +31,7 @@ const Register = ({ toLogin, toOTP }) => {
       await api.post("/api/otp/send", {
         email: data.email,
       });
-      toOTP(data);
+      toOTP(data, "REGISTER");
     } catch (err) {
       toast.error("Đăng ký thất bại\n" + err.message);
       if (err.response.data) console.log(err.response.data.message);

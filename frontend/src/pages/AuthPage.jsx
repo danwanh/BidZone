@@ -17,6 +17,7 @@ const STEP = {
 export const AuthPage = () => {
   //1. register -> 2.otp -> 3.recaptcha
   const [step, setStep] = useState(STEP.REGISTER);
+  const [from, setFrom] = useState(0);
 
   const { state } = useLocation();
   const page = state?.page;
@@ -37,8 +38,9 @@ export const AuthPage = () => {
   };
 
   // Khi đăng ký thành công (đã gửi OTP), lưu data
-  const toOTP = (data) => {
+  const toOTP = (data, from) => {
     setData(data);
+    setFrom(from);
     setStep(STEP.OTP);
   };
 
@@ -57,10 +59,10 @@ export const AuthPage = () => {
       {step === 0 && <Login toRegister={toRegister} toForgetPass={toForgetPass} />}
       { step === 1 && <Register toLogin={toLogin} toOTP={toOTP} />}
       {step === 2 && (
-        <VerifyOTP data={data} toRecaptcha={toRecaptcha} />
+        <VerifyOTP data={data} toRecaptcha={toRecaptcha} from={from}/>
       )}
       { step === 3 && <Recaptcha data={data} toLogin={toLogin} />}
-      {step === 4 && <ForgetPass/>}
+      {step === 4 && <ForgetPass toOTP={toOTP}/>}
     </>
   );
 };

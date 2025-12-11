@@ -2,9 +2,11 @@ import { useState } from "react";
 import api from "../../api/axios";
 import { toast } from "react-toastify";
 import OTPInput from "otp-input-react";
+import {useNavigate} from "react-router-dom"
 
-const VerifyOTP = ({ data, toRecaptcha }) => {
+const VerifyOTP = ({ data, toRecaptcha, from }) => {
   const [otp, setOtp] = useState("");
+  const navigate = useNavigate();
 
   const onSubmit = async (e) => {
     e.preventDefault();
@@ -15,15 +17,25 @@ const VerifyOTP = ({ data, toRecaptcha }) => {
     }
 
     try {
-      await api.post("/api/otp/verify", {
+      const res = await api.post("/api/otp/verify", {
         email: data.email,
         otp: otp, // đã là string 6 ký tự
       });
 
       toast.success("Xác thực OTP thành công");
-      toRecaptcha();
+
+      if (from === "REGISTER") {
+        toRecaptcha();
+      } else if (from === "FORGETPASS") {
+        await api.post("/api/auth/reset-password", {
+          ...data,
+        });
+        toast.success("Mật khẩu mới đã được gửi đến email của bạn!");
+        navigate("/auth", { state: { page: "LOGIN" } });
+      }
     } catch (err) {
       toast.error("OTP không đúng hoặc đã hết hạn");
+      console.log(err.response?.data?.message || err.message);
     }
   };
 

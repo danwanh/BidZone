@@ -5,7 +5,6 @@ import ReCAPTCHA from "react-google-recaptcha";
 import api from "../../api/axios";
 import { BASE_URL } from "../../api/axios";
 import { toast } from "react-toastify";
-import { setAccessToken } from "../../api/authToken";
 import { useAuth } from "../../context/AuthContext";
 
 const Login = ({ toRegister }) => {
@@ -27,7 +26,6 @@ const Login = ({ toRegister }) => {
         recaptcha: captcha,
       });
 
-      console.log(res.data);
       login(res.data.accessToken, res.data.user);
       toast.success("Đăng nhập thành công");
       navigate("/");
