@@ -6,8 +6,10 @@ import api from "../../api/axios";
 import { BASE_URL } from "../../api/axios";
 import { toast } from "react-toastify";
 import { setAccessToken } from "../../api/authToken";
+import { useAuth } from "../../context/AuthContext";
 
 const Login = ({ toRegister }) => {
+  const { login } = useAuth();
   const {
     register,
     handleSubmit,
@@ -18,21 +20,6 @@ const Login = ({ toRegister }) => {
   const [captcha, setCaptcha] = useState(null);
   const recaptchaRef = useRef(null);
 
-  const handleForgotPassword = async () => {
-    const email = prompt("Nhập email để đặt lại mật khẩu:");
-
-    if (!email) return;
-
-    try {
-      const res = await api.post("/api/auth/reset-password", { email });
-
-      toast.success("Mật khẩu mới đã được gửi đến email của bạn!");
-    } catch (err) {
-      toast.error("Không thể đặt lại mật khẩu");
-      console.log(err.response?.data);
-    }
-  };
-
   const onSubmit = async (data) => {
     try {
       const res = await api.post("/api/auth/login", {
@@ -40,7 +27,8 @@ const Login = ({ toRegister }) => {
         recaptcha: captcha,
       });
 
-      setAccessToken(res.data.token); 
+      console.log(res.data);
+      login(res.data.accessToken, res.data.user);
       toast.success("Đăng nhập thành công");
       navigate("/");
       
@@ -100,13 +88,14 @@ const Login = ({ toRegister }) => {
             </div>
 
             <div className="flex justify-end">
-              <button
+              <Link 
+                to="/auth"
+                state={{page: "FORGETPASS"}}
                 type="button"
-                onClick={handleForgotPassword}
                 className="text-gray-500 underline hover:text-gray-700 text-sm"
               >
                 Quên mật khẩu?
-              </button>
+              </Link>
             </div>
 
             <div className="flex justify-center items-center flex-col">

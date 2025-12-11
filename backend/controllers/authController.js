@@ -173,7 +173,9 @@ export const oauthSuccess = async (req, res) => {
 
     // Redirect back to frontend with access token
     res.redirect(
-      `${process.env.FRONTEND_URL}/auth/social-success?token=${encodeURIComponent(accessToken)}`
+      `${
+        process.env.FRONTEND_URL
+      }/auth/social-success?token=${encodeURIComponent(accessToken)}`
     );
   } catch (err) {
     console.error("OAuth login error:", err);
@@ -181,10 +183,13 @@ export const oauthSuccess = async (req, res) => {
   }
 };
 
-
 const generateRandomPassword = (length = 10) => {
-  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
-  return Array.from({ length }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+  const chars =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&**()_+[]{}<>?";
+  return Array.from(
+    { length },
+    () => chars[Math.floor(Math.random() * chars.length)]
+  ).join("");
 };
 
 export const resetPassword = async (req, res) => {
@@ -222,9 +227,9 @@ export const resetPassword = async (req, res) => {
     return res.status(200).json({
       message: "Mật khẩu đã được đặt lại",
     });
-
   } catch (err) {
     console.error("Reset password error:", err);
     res.status(500).json({ message: err.message });
   }
 };
+

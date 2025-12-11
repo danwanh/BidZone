@@ -6,7 +6,8 @@ import {
     updateUser,
     updateUserRole,
     deleteUser,
-    toggleUserBan
+    toggleUserBan,
+    changePassword
 } from "../controllers/userController.js";
 import { authenticate, isAdmin } from "../middleware/authMiddleware.js";
 
@@ -40,4 +41,7 @@ router.put("/:id/ban", authenticate, isAdmin, toggleUserBan);
 // DELETE /api/users/:id - Delete user (Admin only)
 router.delete("/:id", authenticate, isAdmin, deleteUser);
 
+// POST
+// POST /api/users/change-password
+router.post("/change-password", authenticate, changePassword);
 export default router;

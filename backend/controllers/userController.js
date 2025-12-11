@@ -183,3 +183,28 @@ export const toggleUserBan = async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 };
+
+export const changePassword = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    const { oldPassword, newPassword } = req.body;
+
+    const isMatch = await bcrypt.compare(oldPassword, user.password_hash);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Wrong password" });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const newPasswordHash = await bcrypt.hash(newPassword, salt);
+
+    user.password_hash = newPasswordHash;
+    await user.save();
+
+    return res.status(200).json({
+      message: "Mật khẩu đã được đổi lại",
+    });
+  } catch (err) {
+    console.error("Reset password error:", err);
+    res.status(500).json({ message: err.message });
+  }
+};

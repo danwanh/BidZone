@@ -133,11 +133,11 @@ const Navbar = () => {
         <div className="flex items-center gap-4">
           {!user && (
             <>
-              <Link to="/register" className="text-gray-700 hover:underline">
+              <Link to="/auth" state={{page : "REGISTER"}} className="text-gray-700 hover:underline">
                 Đăng ký
               </Link>
               <Link
-                to="/login"
+                to="/auth" state={{page : "LOGIN"}}
                 className="px-6 py-2 bg-orange-500 text-white rounded-full hover:bg-orange-600 transition-colors"
               >
                 Đăng nhập
@@ -160,7 +160,7 @@ const Navbar = () => {
               {/* Đã mua */}
               <Link
                 to="/purchased"
-                className="flex items-center gap-1 text-gray-700 hover:text-purple-600"
+                className="flex items-center gap-1 text-gray-700 hover:text-gray-600"
                 title="Đã mua"
               >
                 <span className="text-xl font-semibold">Đã mua</span>

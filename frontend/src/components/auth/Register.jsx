@@ -39,7 +39,7 @@ const Register = ({ toLogin, toOTP }) => {
   };
 
   return (
-    <div className="flex -mt-25 -mb-15 w-full h-screen">
+    <div className="flex -mt-20 -mb-20 w-full h-screen">
       <div className="w-full flex items-center justify-center">
         <div className="bg-white shadow-xl p-7 px-14 rounded-2xl min-w-[30vw] ">
           <div className="flex w-full justify-between">

@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import Register from "../components/auth/Register";
 import Login from "../components/auth/Login";
 import VerifyOTP from "../components/auth/VerifyOTP";
 import Recaptcha from "../components/auth/Recaptcha";
+import ForgetPass from "../components/auth/ForgetPass";
 
 const STEP = {
   LOGIN: 0,
@@ -12,21 +14,25 @@ const STEP = {
   FORGETPASS: 4
 };
 
-export const AuthPage = ({page}) => {
-  const [isLogin, setIsLogin] = useState(false);
+export const AuthPage = () => {
   //1. register -> 2.otp -> 3.recaptcha
   const [step, setStep] = useState(STEP.REGISTER);
-  if (page) setStep(STEP);
+
+  const { state } = useLocation();
+  const page = state?.page;
+  useEffect(() => {
+    if (page && STEP[page] !== undefined) {
+      setStep(STEP[page]);
+    }
+  }, [page]);
 
   const [data, setData] = useState({}); // lưu data để gởi qua OTP
 
   const toLogin = () => {
     setStep(STEP.LOGIN);
-    setIsLogin(true);
   };
 
   const toRegister = () => {
-    setIsLogin(false);
     setStep(STEP.REGISTER);
   };
 
@@ -40,16 +46,21 @@ export const AuthPage = ({page}) => {
     setStep(STEP.RECAPTCHA);
   };
 
+  const toForgetPass = () => {
+    setStep(STEP.FORGETPASS);
+  };
+
   const toHomePage = () => {};
 
   return (
     <>
-      {isLogin && <Login toRegister={toRegister} />}
-      {!isLogin && step === 1 && <Register toLogin={toLogin} toOTP={toOTP} />}
-      {!isLogin && step === 2 && (
+      {step === 0 && <Login toRegister={toRegister} toForgetPass={toForgetPass} />}
+      { step === 1 && <Register toLogin={toLogin} toOTP={toOTP} />}
+      {step === 2 && (
         <VerifyOTP data={data} toRecaptcha={toRecaptcha} />
       )}
-      {!isLogin && step === 3 && <Recaptcha data={data} toLogin={toLogin} />}
+      { step === 3 && <Recaptcha data={data} toLogin={toLogin} />}
+      {step === 4 && <ForgetPass/>}
     </>
   );
 };

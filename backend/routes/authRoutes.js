@@ -5,7 +5,7 @@ import {
   refresh,
   checkEmail,
   oauthSuccess,
-  resetPassword
+  resetPassword,
 } from "../controllers/authController.js";
 import { verifyRecaptcha } from "../middleware/recaptchaMiddleware.js";
 import passport from "../config/passport.js";
@@ -36,6 +36,5 @@ router.get(
 );
 
 router.post("/reset-password", resetPassword);
-
 
 export default router;

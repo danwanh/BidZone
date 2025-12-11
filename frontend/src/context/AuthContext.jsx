@@ -17,8 +17,10 @@ export const AuthProvider = ({ children }) => {
   // Axios interceptor
   useEffect(() => {
     const requestInterceptor = api.interceptors.request.use((config) => {
-      if (accessTokenRef.current)
-        config.headers.Authorization = `Bearer ${accessTokenRef.current}`;
+      if (!config.url.includes("/api/auth/refresh")) {
+        if (accessTokenRef.current)
+          config.headers.Authorization = `Bearer ${accessTokenRef.current}`;
+      }
       return config;
     });
 
@@ -26,6 +28,14 @@ export const AuthProvider = ({ children }) => {
       (res) => res,
       async (error) => {
         const originalRequest = error.config;
+
+        if (!originalRequest) {
+          return Promise.reject(error);
+        }
+
+        if (originalRequest.url?.includes("/api/auth/refresh")) {
+          return Promise.reject(error);
+        }
 
         if (error.response?.status === 401 && !originalRequest._retry) {
           originalRequest._retry = true;
