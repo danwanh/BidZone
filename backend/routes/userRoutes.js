@@ -1,24 +1,22 @@
 import express from "express";
 import {
-    getAllUsers,
-    getUserById,
-    getProfile,
-    updateUser,
-    updateUserRole,
-    deleteUser,
-    toggleUserBan
+  getAllUsers,
+  getUserById,
+  getProfile,
+  updateUser,
+  updateUserRole,
+  deleteUser,
+  toggleUserBan,
 } from "../controllers/userController.js";
 import { authenticate, isAdmin } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-
-
 // PROTECTED ROUTES
 
 // READ
 // GET /api/users/me - Get current user profile
-router.get("/me", authenticate, getProfile);
+router.get("/me", getProfile);
 
 // GET /api/users - Get all users (Admin only)
 router.get("/", authenticate, isAdmin, getAllUsers);

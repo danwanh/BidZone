@@ -66,6 +66,39 @@ export const getBidByUser = async (req, res) => {
   }
 };
 
+// /api/bid/user/bidding/:id
+export const getBiddingByUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const products = await Bid.find({
+      bidder_id: id,
+    }).populate("product_id bidder_id");
+
+    const active = products.filter((p) => p.product_id.status !== "ended");
+
+    const { page = 1, per_page = 6, q = "" } = req.query;
+    const page_num = Math.max(1, Number(page) || 1);
+    const per_page_num = Math.max(1, Number(per_page) || 6);
+    const filtered = active.filter((p) =>
+      p.product_id?.name?.toLowerCase().includes(q.toLowerCase())
+    );
+
+    const result = filtered.slice(
+      (page_num - 1) * per_page_num,
+      (page_num - 1) * per_page_num + per_page_num
+    );
+    const total_page = Math.ceil(filtered.length / per_page_num);
+    res.status(200).json({
+      message: "Got bids by user id successfully!",
+      products: result,
+      total_page: total_page,
+    });
+  } catch (err) {
+    console.log("error fetching bids:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 export const getAllBids = async (req, res) => {
   const bids = await Bid.find().populate("product_id bidder_id");
   res.json(bids);

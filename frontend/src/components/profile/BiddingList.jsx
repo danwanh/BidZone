@@ -39,7 +39,7 @@ const BiddingList = () => {
         setError(null);
 
         const res = await axios.get(
-          `/api/bids/user/691981bc13b2c792583422e4?${queryString}`
+          `/api/bids/user/bidding/691981bc13b2c792583422e4?${queryString}`
         );
 
         setTotalPage(res.data.total_page);

@@ -136,15 +136,17 @@ export const getProductById = async (req, res) => {
 export const getBoughtByUserId = async (req, res) => {
   try {
     const { id: u_i } = req.params;
+    console.log(u_i);
 
     const products = await Product.find({ bidder_id: u_i, status: "ended" });
+    console.log("PRODUCTs" + products);
     const { page = 1, per_page = 6, q = "" } = req.query;
     const page_number = Math.max(1, Number(page) || 1);
     const per_page_number = Math.max(1, Number(per_page) || 1);
-
     const filtered = products.filter((p) =>
       p.name.toLowerCase().includes(q.toLowerCase())
     );
+    console.log(filtered);
     const result = filtered.slice(
       (page_number - 1) * per_page_number,
       (page_number - 1) * per_page_number + per_page_number
@@ -152,14 +154,11 @@ export const getBoughtByUserId = async (req, res) => {
 
     const total_page = Math.ceil(filtered.length / per_page_number);
 
-    if (products.length == 0)
-      return res.status(400).json({ message: "No product found" });
-    else
-      return res.status(200).json({
-        message: "Succesfully got bought list ",
-        products: result,
-        total_page: total_page,
-      });
+    res.status(200).json({
+      message: "Succesfully got bought list ",
+      products: result,
+      total_page: total_page,
+    });
   } catch (error) {
     console.error("Error getting product: ", error);
     res.status(500).json({ message: "Can't get product" });

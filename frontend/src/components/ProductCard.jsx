@@ -13,7 +13,7 @@ const ProductCard = ({ product }) => {
 
   const location = useLocation();
   const is_profile = location.pathname.endsWith("/profile");
-  const is_bought = product.seller_id === "6912e02b70323bdb4045f32";
+  const is_bought = product.bidder_id === "69111e8a06251b39d3acd8f9";
 
   const { register, handleSubmit, watch, setValue } = useForm({
     defaultValues: {

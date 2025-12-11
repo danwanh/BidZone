@@ -1,33 +1,8 @@
 import axios from "../../api/axios";
 import { useEffect, useState } from "react";
 
-const Email = ({ user_email, last_name, step, setStep }) => {
+const Email = ({ user_email, setStep, sendEmail, isSending }) => {
   const [code, setCode] = useState("");
-  const [isSending, setIsSending] = useState(false);
-
-  const sendEmail = async () => {
-    if (isSending) return;
-    setIsSending(true);
-
-    try {
-      await axios.post("/api/otp/send", {
-        email: user_email,
-      });
-
-      console.log("OTP sent");
-    } catch (error) {
-      console.error("Error sending OTP:", error);
-    } finally {
-      setIsSending(false);
-    }
-  };
-
-  useEffect(() => {
-    if (step === 2) {
-      sendEmail();
-    }
-  }, [step]);
-
   const onVerify = async () => {
     try {
       const res = await axios.post("/api/otp/verify", {

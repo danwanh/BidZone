@@ -64,7 +64,7 @@ const UserSchema = mongoose.Schema(
     social_is: {
       type: String,
     },
-    
+
     oauth: {
       google: {
         id: String,

@@ -47,9 +47,12 @@ const BoughtList = () => {
         if (isMounted) {
           setProducts(data);
         }
-      } catch (error) {
-        console.error("Error loading products", error);
-        if (isMounted) setError(error.message || "Unable to load products");
+      } catch (err) {
+        console.error(
+          err?.response?.data?.message || "Error loading products",
+          err
+        );
+        if (isMounted) setError(err.message || "Unable to load products");
       } finally {
         if (isMounted) setLoading(false);
       }
