@@ -3,6 +3,7 @@ import { useParams, useSearchParams } from "react-router-dom";
 import axios from "../../api/axios";
 import ProductCard from "../ProductCard";
 import Pagination from "./Pagination";
+import { useAuth } from "../../context/AuthContext";
 
 const BiddingList = () => {
   const [searchParams, setSearchParams] = useSearchParams("");
@@ -10,6 +11,7 @@ const BiddingList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [totalPage, setTotalPage] = useState(1);
+  const { user } = useAuth();
 
   const page = searchParams.get("page") || 1;
   const per_page = 6;
@@ -37,9 +39,8 @@ const BiddingList = () => {
       try {
         setLoading(true);
         setError(null);
-
         const res = await axios.get(
-          `/api/bids/user/691981bc13b2c792583422e4?${queryString}`
+          `/api/bids/user/bidding/69348172d3120fa2aa0fa1bf?${queryString}`
         );
 
         setTotalPage(res.data.total_page);
@@ -49,7 +50,8 @@ const BiddingList = () => {
         }
       } catch (error) {
         console.error("Error loading products", error);
-        if (isMounted) setError(error.message || "Unable to load products");
+        if (isMounted)
+          setError(error.response?.message || "Unable to load products");
       } finally {
         if (isMounted) setLoading(false);
       }
@@ -62,7 +64,7 @@ const BiddingList = () => {
   }, [queryString]);
 
   return (
-    <section className="md:col-span-3 space-y-6 min-h-[486px]">
+    <section className="md:col-span-3 space-y-6">
       {loading && <div>Loading</div>}
       {error && (
         <div className="text-red-500">

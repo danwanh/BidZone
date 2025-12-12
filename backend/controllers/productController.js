@@ -113,9 +113,7 @@ export const getAllProducts = async (req, res) => {
     }
 
     if (q) {
-       products.filter((p) =>
-        p.name.toLowerCase().includes(q.toLowerCase())
-      );
+      products.filter((p) => p.name.toLowerCase().includes(q.toLowerCase()));
     }
 
     const result = products.slice(
@@ -162,7 +160,6 @@ export const getBoughtByUserId = async (req, res) => {
     const { page = 1, per_page = 6, q = "" } = req.query;
     const page_number = Math.max(1, Number(page) || 1);
     const per_page_number = Math.max(1, Number(per_page) || 1);
-
     const filtered = products.filter((p) =>
       p.name.toLowerCase().includes(q.toLowerCase())
     );
@@ -173,14 +170,11 @@ export const getBoughtByUserId = async (req, res) => {
 
     const total_page = Math.ceil(filtered.length / per_page_number);
 
-    if (products.length == 0)
-      return res.status(400).json({ message: "No product found" });
-    else
-      return res.status(200).json({
-        message: "Succesfully got bought list ",
-        products: result,
-        total_page: total_page,
-      });
+    res.status(200).json({
+      message: "Succesfully got bought list ",
+      products: result,
+      total_page: total_page,
+    });
   } catch (error) {
     console.error("Error getting product: ", error);
     res.status(500).json({ message: "Can't get product" });
@@ -220,6 +214,7 @@ export const getProductByCategoryId = async (req, res) => {
 export const getProductBySellerId = async (req, res) => {
   try {
     const { id: p_i } = req.params;
+    const { per_page = 1, page = 1, q = "", status = "active" } = req.query;
 
     // Check if seller id is valid
     const seller = await User.findById(p_i);
@@ -228,12 +223,25 @@ export const getProductBySellerId = async (req, res) => {
     if (seller.role !== "seller")
       return res.status(403).json({ message: "User is not a seller" });
 
-    const product = await Product.find({ seller_id: p_i });
+    const products = await Product.find({ seller_id: p_i, status: status });
 
-    if (product.length == 0)
-      return res.status(400).json({ message: "No product found" });
+    if (products.length == 0)
+      return res.json({ message: "No product found", products: [{}] });
 
-    return res.status(200).json(product);
+    const page_number = Math.max(1, Number(page) || 1);
+    const per_page_number = Math.max(1, Number(per_page) || 1);
+    const filtered = products.filter((p) =>
+      p.name.toLowerCase().includes(q.toLowerCase())
+    );
+    const result = filtered.slice(
+      (page_number - 1) * per_page_number,
+      (page_number - 1) * per_page_number + per_page_number
+    );
+    const total_page = Math.ceil(filtered.length / per_page_number);
+
+    return res
+      .status(200)
+      .json({ message: "Success!", total_page: total_page, products: result });
   } catch (error) {
     console.error("Error getting seller's product: ", error);
     res.status(500).json({ message: "Can't get seller's product" });

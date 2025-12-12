@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import BecomeSeller from "./BecomeSeller";
+import axios from "../../api/axios";
 import "../../style/profile.css";
 import api from "../../api/axios";
 import { toast } from "react-toastify";
@@ -14,6 +15,8 @@ const SideBar = () => {
     register: registerPersonalInfo,
     handleSubmit: handleSubmitPersonalInfo,
     formState: { errors: errorsPersonalInfo },
+    reset,
+    Z,
   } = useForm();
 
   // UseForm cho form cập nhật mật khẩu
@@ -30,16 +33,16 @@ const SideBar = () => {
 
   // Hàm xử lý form cập nhật mật khẩu
   const onSubmitPassword = async (data) => {
-    try{
+    try {
       const res = await api.post("api/users/change-password", {
-        ...data
-      })
+        ...data,
+      });
       console.log(res);
-      if (res){
+      if (res) {
         toast.success(res.data.message);
         setShowPopUp(false);
       }
-    }catch(error){
+    } catch (error) {
       console.error(error);
     }
   };
@@ -104,7 +107,10 @@ const SideBar = () => {
       )}
 
       {/* ---------- MAIN FORM ---------- */}
-      <form className="info" onSubmit={handleSubmitPersonalInfo(onSubmitPersonalInfo)}>
+      <form
+        className="info"
+        onSubmit={handleSubmitPersonalInfo(onSubmitPersonalInfo)}
+      >
         <BecomeSeller />
         <div className="flex items-center gap-2">
           <svg
@@ -158,7 +164,7 @@ const SideBar = () => {
           <input
             {...registerPersonalInfo("username")}
             type="text"
-            placeholder="Jon"
+            placeholder={user.username}
             className="input_style"
           />
         </div>
@@ -196,9 +202,22 @@ const SideBar = () => {
 
         <div className="main_info_wrapper">
           <div className="info_header">NGÀY SINH</div>
-          <input {...registerPersonalInfo("dob")} type="date" className="input_style" />
+          <input
+            {...registerPersonalInfo("dob")}
+            type="date"
+            className="input_style"
+          />
         </div>
 
+        {/* CHANGE PASSWORD BUTTON */}
+        <div className="main_info_wrapper">
+          <p
+            className="info_header cursor-pointer hover:text-blue-700 w-fit"
+            onClick={() => setShowPopUp(true)}
+          >
+            ĐỔI MẬT KHẨU?
+          </p>
+        </div>
         {/* CHANGE PASSWORD BUTTON */}
         <div className="main_info_wrapper">
           <p

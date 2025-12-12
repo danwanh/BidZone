@@ -1,19 +1,19 @@
 import express from "express";
 import {
-    getAllUsers,
-    getUserById,
-    getProfile,
-    updateUser,
-    updateUserRole,
-    deleteUser,
-    toggleUserBan,
-    changePassword
+  getAllUsers,
+  getUserById,
+  getProfile,
+  updateUser,
+  updateUserRole,
+  deleteUser,
+  toggleUserBan,
+  rateUp,
+  rateDown,
+  changePassword,
 } from "../controllers/userController.js";
 import { authenticate, isAdmin } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
-
-
 
 // PROTECTED ROUTES
 
@@ -30,6 +30,10 @@ router.get("/:id", authenticate, getUserById);
 // UPDATE
 // PUT /api/users/:id - Update user profile
 router.put("/:id", authenticate, updateUser);
+
+router.patch("/rateup", authenticate, rateUp);
+
+router.patch("/ratedown", authenticate, rateDown);
 
 // PUT /api/users/:id/role - Update user role (Admin only)
 router.put("/:id/role", authenticate, isAdmin, updateUserRole);

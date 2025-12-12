@@ -4,16 +4,21 @@ import { useForm } from "react-hook-form";
 import http from "../api/axios";
 import ProductTimer from "./ProductTimer";
 import { useLiked } from "../context/LikedContext";
+import { useAuth } from "../context/AuthContext";
+import { ToastContainer, toast } from "react-toastify";
+import axios from "../api/axios";
 
 const ProductCard = ({ product }) => {
   const [showPopup, setShowPopup] = useState(false);
   const { addToLikedList, removeFromLikedList, likedIds } = useLiked();
+  const { user } = useAuth();
 
   const [isLiked, setIsLiked] = useState(likedIds.has(product._id));
 
   const location = useLocation();
   const is_profile = location.pathname.endsWith("/profile");
-  const is_bought = product.seller_id === "6912e02b70323bdb4045f32";
+  const is_bought =
+    product.status === "ended" && product.bidder_id === user?._id;
 
   const { register, handleSubmit, watch, setValue } = useForm({
     defaultValues: {
@@ -24,8 +29,22 @@ const ProductCard = ({ product }) => {
 
   const vote = watch("vote");
 
-  const onSubmit = (data) => {
+  const onSubmit = async (data) => {
     console.log(data);
+    try {
+      if (data?.vote == "up") {
+        const body = { id: product.seller_id };
+        const response = await axios.patch(`/api/users/rateup`, body);
+        console.log(response?.data?.message || response);
+      } else {
+        const body = { id: product.seller_id };
+        const response = await axios.patch(`/api/users/ratedown`, body);
+        console.log(response?.message || response);
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.message || err);
+    }
+
     setShowPopup(false);
   };
 
@@ -116,7 +135,7 @@ const ProductCard = ({ product }) => {
                 Hủy
               </button>
 
-              {product.seller_id == "6912e02b70323bdb4045f327" && (
+              {product.seller_id == user._id && user.role === "seller" && (
                 <button
                   type="button"
                   className="px-4 bg-gray-300 rounded-[100px] font-bold"
@@ -174,7 +193,9 @@ const ProductCard = ({ product }) => {
         <div className="px-[10px] flex flex-col">
           <p className="font-bold">{product.name}</p>
           {!is_profile && (
-            <p className="text-15 text-[#666666]">{product.description}</p>
+            <p className="text-[#666666] h-10 overflow-hidden line-clamp-2 text-sm">
+              {product.description}
+            </p>
           )}
         </div>
         {/* Gia and Lan ra gia */}
