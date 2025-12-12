@@ -6,9 +6,11 @@ import axios from "../../api/axios";
 import "../../style/profile.css";
 import api from "../../api/axios";
 import { toast } from "react-toastify";
+import { useAuth } from "../../context/AuthContext";
 
 const SideBar = () => {
   const [showPopUp, setShowPopUp] = useState(false);
+  const { user } = useAuth();
 
   // UseForm cho form thông tin cá nhân
   const {
