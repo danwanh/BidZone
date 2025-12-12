@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
+import ProductCard from "../components/ProductCard";
 
 export const ProductDetailPage = () => {
   const [product, setProduct] = useState();
@@ -770,35 +771,7 @@ export const ProductDetailPage = () => {
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             {relatedProducts.slice(0, 5).map((p) => (
-              <div
-                key={p.id}
-                className="bg-gray-50 rounded-lg overflow-hidden hover:shadow-lg transition cursor-pointer group"
-              >
-                <div className="relative overflow-hidden h-40 bg-gray-200">
-                  <img
-                    src={
-                      p.image_url?.[0] ||
-                      "/placeholder.svg?height=160&width=160&query=product"
-                    }
-                    alt={p.name}
-                    className="w-full h-full object-cover group-hover:scale-110 transition"
-                  />
-                </div>
-                <div className="p-3">
-                  <div className="font-semibold text-sm line-clamp-2 mb-2">
-                    {p.name}
-                  </div>
-                  <div className="text-indigo-500 font-bold text-sm mb-2">
-                    {p.current_price?.toLocaleString()} VNĐ
-                  </div>
-                  <div className="text-gray-500 text-xs flex justify-between">
-                    <span>{p.total_bids} lượt đấu giá</span>
-                    {p.end_time && (
-                      <span>{formatRelativeTime(p.end_time)}</span>
-                    )}
-                  </div>
-                </div>
-              </div>
+              <ProductCard product={p} />
             ))}
           </div>
         </div>

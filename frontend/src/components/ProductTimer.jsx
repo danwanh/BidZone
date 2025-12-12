@@ -31,6 +31,7 @@ const ProductTimer = ({ end_time }) => {
         height={16}
         viewBox="0 0 14 16"
         fill="none"
+        className="mb-[1px]"
         xmlns="http://www.w3.org/2000/svg"
       >
         <path
@@ -38,13 +39,20 @@ const ProductTimer = ({ end_time }) => {
           fill={remain > 1000 * 10 ? "#856404" : "#850404"}
         />
       </svg>
-      <p
-        className={`${
-          remain > 1000 * 10 ? `text-[#856404]` : `text-[#850404]`
-        } text-[15px] font-bold py-2`}
-      >
-        {`${days}:${hours}:${minutes}:${seconds}`}
-      </p>
+      {remain === 0 && (
+        <p className="text-[#850404] font-bold text-[18px] py-1.5">
+          AUCTION ENDED
+        </p>
+      )}
+      {remain > 0 && (
+        <p
+          className={`${
+            remain > 1000 * 10 ? `text-[#856404]` : `text-[#850404]`
+          } text-[15px] font-bold py-2`}
+        >
+          {`${days}:${hours}:${minutes}:${seconds}`}
+        </p>
+      )}
     </div>
   );
 };

@@ -50,7 +50,9 @@ const Navbar = () => {
     <nav className="bg-white shadow-sm relative Space text-md">
       <div className="px-[2%] py-4 flex items-center justify-between">
         <div className="flex items-center gap-8">
-          <div className="text-2xl font-bold text-purple-600">BidZone</div>
+          <Link to="/" className="text-2xl font-bold text-purple-600">
+            BidZone
+          </Link>
           <div className="relative">
             <button
               className="px-4 py-2 text-gray-700 hover:text-purple-600 transition-colors flex items-center gap-2"

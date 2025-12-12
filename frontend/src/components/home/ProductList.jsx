@@ -66,13 +66,14 @@ const ProductList = ({ title, baseURL }) => {
 
   return (
     <>
-      {title &&  <h3 className="font-semibold text-orange-600 -mb-1 text-xl">
-        {title}
-      </h3>}
+      {title && (
+        <h3 className="font-semibold text-orange-600 -mb-1 text-xl">{title}</h3>
+      )}
       {loading && <div>Loading</div>}
       {error && (
         <div className="text-red-500">
-          Error loading products: {error.response?.data?.message || error.message}{" "}
+          Error loading products:{" "}
+          {error.response?.data?.message || error.message}{" "}
         </div>
       )}
       {!loading && !error && (

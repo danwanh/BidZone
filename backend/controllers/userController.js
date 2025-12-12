@@ -211,7 +211,6 @@ export const toggleUserBan = async (req, res) => {
 export const rateUp = async (req, res) => {
   try {
     const id = req.body?.id || "";
-    console.log(id);
     const user = await User.findById(id);
     if (!user) {
       return res.status(400).json({ message: "No user with that id" });
@@ -232,8 +231,6 @@ export const rateUp = async (req, res) => {
 export const rateDown = async (req, res) => {
   try {
     const id = req.body?.id || "";
-    console.log(id);
-
     const user = await User.findById(id);
     if (!user) {
       return res.status(400).json({ message: "No user with that id" });
@@ -253,6 +250,7 @@ export const rateDown = async (req, res) => {
 
 export const changePassword = async (req, res) => {
   try {
+    console.log(req.body);
     const user = await User.findById(req.user._id);
     const { oldPassword, newPassword } = req.body;
 
