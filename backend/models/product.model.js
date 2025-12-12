@@ -38,6 +38,7 @@ const ProductSchema = mongoose.Schema(
 
     current_price: {
       type: Number,
+      required: true
     },
 
     start_time: {
@@ -47,6 +48,7 @@ const ProductSchema = mongoose.Schema(
 
     end_time: {
       type: Date,
+      required: true
     },
 
     bidder_id: {

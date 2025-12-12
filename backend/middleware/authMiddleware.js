@@ -5,11 +5,7 @@ import User from "../models/user.model.js";
 export const authenticate = async (req, res, next) => {
   try {
     // Get token from header
-    // const authHeader = req.headers.authorization;
-    // if (!authHeader) return res.status(401).json({ message: "No token" });
-    // const token = authHeader.split(" ")[1];
-
-    const token = req.header("Authorization")?.replace("Bearer ", "");
+    const token = req.headers.authorization?.replace("Bearer ", "");
 
     if (!token) {
       return res

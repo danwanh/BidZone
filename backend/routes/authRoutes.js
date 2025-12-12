@@ -4,7 +4,8 @@ import {
   login,
   refresh,
   checkEmail,
-  oauthSuccess
+  oauthSuccess,
+  resetPassword
 } from "../controllers/authController.js";
 import { verifyRecaptcha } from "../middleware/recaptchaMiddleware.js";
 import passport from "../config/passport.js";
@@ -33,6 +34,8 @@ router.get(
   passport.authenticate("facebook", { session: false }),
   oauthSuccess
 );
+
+router.post("/reset-password", resetPassword);
 
 
 export default router;

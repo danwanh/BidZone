@@ -74,7 +74,10 @@ export const getBiddingByUser = async (req, res) => {
       bidder_id: id,
     }).populate("product_id bidder_id");
 
-    const active = products.filter((p) => p.product_id.status !== "ended");
+    if (products.length === 0) {
+      return [];
+    }
+    const active = products.filter((p) => p?.product_id?.status !== "ended");
 
     const { page = 1, per_page = 6, q = "" } = req.query;
     const page_num = Math.max(1, Number(page) || 1);

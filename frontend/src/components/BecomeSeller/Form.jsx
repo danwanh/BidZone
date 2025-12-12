@@ -6,6 +6,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import NavBar from "./NavBar";
 import axios from "../../api/axios";
 import Email from "./EmailVerify";
+import { toast } from "react-toastify";
+import { useAuth } from "../../context/AuthContext";
 
 const formSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
@@ -21,6 +23,7 @@ const formSchema = z.object({
 const Form = () => {
   const [step, setStep] = useState(1);
   const [isSending, setIsSending] = useState(false);
+  const { user } = useAuth();
 
   const sendEmail = async () => {
     if (isSending) return;
@@ -28,7 +31,7 @@ const Form = () => {
 
     try {
       await axios.post("/api/otp/send", {
-        email: "giaobao2kk5@gmail.com",
+        email: user.email,
       });
 
       console.log("OTP sent");
@@ -61,12 +64,12 @@ const Form = () => {
       const values = getValues();
 
       const dataToSend = {
-        user_id: "69198a1221d99fc48a00cb34",
+        user_id: user._id,
         admin_id: "",
         status: "pending",
         first_name: values.firstName,
         last_name: values.lastName,
-        email: "giaobao2kk5@gmail.com",
+        email: user.email,
         phone_number: values.phoneNumber,
         address: values.address,
         city: values.city,
@@ -88,8 +91,11 @@ const Form = () => {
         err.response?.data?.message ===
         "You already have a pending upgrade request"
       ) {
-        alert("You've already sent an update request and it hasn't expired");
+        toast.error(
+          "You've already sent an update request and it hasn't expired"
+        );
       } else {
+        toast.error(err.response?.data?.message || err.message);
         console.log(err.response?.data?.message || err.message);
       }
     }

@@ -2,6 +2,7 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import User from "../models/user.model.js";
 import { generateTokens } from "../services/tokenServices.js";
+import { sendEmail } from "../services/mailServices.js";
 
 // REGISTER - Create new user
 export const register = async (req, res) => {
@@ -106,6 +107,7 @@ export const login = async (req, res) => {
 
     res.status(200).json({
       message: "Login successfully",
+      accessToken: tokens.accessToken,
       user: {
         id: user._id,
         name: user.name,
@@ -125,7 +127,7 @@ export const refresh = (req, res) => {
   if (!token) return res.status(401).json({ message: "No refresh token" });
 
   try {
-    const decoded = jwt.verify(token, process.env.ACCESS_SECRET);
+    const decoded = jwt.verify(token, process.env.REFRESH_SECRET);
 
     const newAccessToken = jwt.sign(
       { id: decoded.id, email: decoded.email },
@@ -171,10 +173,58 @@ export const oauthSuccess = async (req, res) => {
 
     // Redirect back to frontend with access token
     res.redirect(
-      `${process.env.FRONTEND_URL}/auth/social-success?token=${accessToken}`
+      `${process.env.FRONTEND_URL}/auth/social-success?token=${encodeURIComponent(accessToken)}`
     );
   } catch (err) {
     console.error("OAuth login error:", err);
     res.redirect(`${process.env.FRONTEND_URL}/auth/social-failed`);
+  }
+};
+
+
+const generateRandomPassword = (length = 10) => {
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
+  return Array.from({ length }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+};
+
+export const resetPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ message: "Email không được rỗng" });
+    }
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: "Không tìm thấy người dùng" });
+    }
+
+    // 1. Tạo mật khẩu mới
+    const newPassword = generateRandomPassword();
+
+    // 2. Hash mật khẩu
+    const salt = await bcrypt.genSalt(10);
+    const newPasswordHash = await bcrypt.hash(newPassword, salt);
+
+    // 3. Cập nhật DB
+    user.password_hash = newPasswordHash;
+    await user.save();
+
+    await sendEmail(
+      email,
+      "Mật khẩu mới BidZone",
+      `Mật khẩu mới của bạn là:\n\n${newPassword}\n\n Vui lòng không gửi hay chuyển tiếp mật khẩu này cho bất kì ai khác.`
+    );
+
+    // 4. (Tùy chọn) Gửi email → hiện tại trả về JSON để test
+    return res.status(200).json({
+      message: "Mật khẩu đã được đặt lại",
+    });
+
+  } catch (err) {
+    console.error("Reset password error:", err);
+    res.status(500).json({ message: err.message });
   }
 };

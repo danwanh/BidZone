@@ -1,0 +1,45 @@
+### Create Điện tử
+POST http://localhost:3000/api/category
+Content-Type: application/json
+
+{
+  "name": "Điện tử",
+  "slug": "dien-tu"
+}
+
+### Create Thời trang
+POST http://localhost:3000/api/category
+Content-Type: application/json
+
+{
+  "name": "Thời trang",
+  "slug": "thoi-trang"
+}
+
+### Create Đồng hồ
+POST http://localhost:3000/api/category
+Content-Type: application/json
+
+{
+  "name": "Đồng hồ",
+  "slug": "dong-ho"
+}
+
+### Create Xe cộ
+POST http://localhost:3000/api/category
+Content-Type: application/json
+
+{
+  "name": "Xe cộ",
+  "slug": "xe-co"
+}
+
+### Create Nội thất
+POST http://localhost:3000/api/category
+Content-Type: application/json
+
+{
+  "name": "Nội thấy",
+  "slug": "noi-that"
+}
+

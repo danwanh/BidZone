@@ -90,19 +90,38 @@ export const getAllProducts = async (req, res) => {
     const { page = 1, q = "", per_page = 6 } = req.query;
     const pageNum = Math.max(1, Number(page) || 1);
     const perPageNum = Math.max(1, Number(per_page) || 6);
+    const { categoryId } = req.query;
 
-    const allProducts = await Product.find(); // <--- await here
+    const products = await Product.find();
 
-    const filtered = allProducts.filter((p) =>
-      p.name.toLowerCase().includes(q.toLowerCase())
-    );
+    if (categoryId) {
+      const category = await Category.findById(categoryId);
 
-    const result = filtered.slice(
+      if (!category)
+        return res.status(400).json({ message: "No category found" });
+
+      // Tim vategory con
+      if (category.category_id == null) {
+        const sub_category_ids = await Category.find({
+          category_id: category._id,
+        }).select("_id");
+
+        products.filter((p) => sub_category_ids.includes(p.category_id));
+      } else {
+        products = await Product.find({ category_id: category._id });
+      }
+    }
+
+    if (q) {
+      products.filter((p) => p.name.toLowerCase().includes(q.toLowerCase()));
+    }
+
+    const result = products.slice(
       (pageNum - 1) * perPageNum,
       (pageNum - 1) * perPageNum + perPageNum
     );
 
-    const total_page = Math.ceil(filtered.length / perPageNum);
+    const total_page = Math.ceil(products.length / perPageNum);
 
     res.status(200).json({
       message: "Got product list successfully!",
@@ -112,7 +131,7 @@ export const getAllProducts = async (req, res) => {
       products: result,
     });
   } catch (error) {
-    console.error("Error getting all products: ", error);
+    console.error("Error getting all products: ", error.message);
     res.status(500).json({ message: "Can't get all products" });
   }
 };
@@ -136,17 +155,14 @@ export const getProductById = async (req, res) => {
 export const getBoughtByUserId = async (req, res) => {
   try {
     const { id: u_i } = req.params;
-    console.log(u_i);
 
     const products = await Product.find({ bidder_id: u_i, status: "ended" });
-    console.log("PRODUCTs" + products);
     const { page = 1, per_page = 6, q = "" } = req.query;
     const page_number = Math.max(1, Number(page) || 1);
     const per_page_number = Math.max(1, Number(per_page) || 1);
     const filtered = products.filter((p) =>
       p.name.toLowerCase().includes(q.toLowerCase())
     );
-    console.log(filtered);
     const result = filtered.slice(
       (page_number - 1) * per_page_number,
       (page_number - 1) * per_page_number + per_page_number
@@ -165,28 +181,24 @@ export const getBoughtByUserId = async (req, res) => {
   }
 };
 
-// GET /api/product/category/:id
 export const getProductByCategoryId = async (req, res) => {
   try {
-    const { id: p_i } = req.params;
+    const { categoryId = "" } = req.query;
 
-    const category = await Category.findById(p_i);
+    const category = await Category.findById(categoryId);
 
     if (!category)
       return res.status(400).json({ message: "No category found" });
 
-    let products = [];
+    let products = await Product.find();
 
+    // Tim vategory con
     if (category.category_id == null) {
-      const sub_categories = await Category.find({ category_id: category._id });
+      const sub_category_ids = await Category.find({
+        category_id: category._id,
+      }).select("._id");
 
-      const product_promises = sub_categories.map((c) =>
-        Product.find({ category_id: c._id })
-      );
-
-      const results = await Promise.all(product_promises);
-
-      products = results.flat();
+      products.filter((p) => sub_category_ids.includes(p.category_id));
     } else {
       products = await Product.find({ category_id: category._id });
     }
@@ -202,6 +214,7 @@ export const getProductByCategoryId = async (req, res) => {
 export const getProductBySellerId = async (req, res) => {
   try {
     const { id: p_i } = req.params;
+    const { per_page = 1, page = 1, q = "", status = "active" } = req.query;
 
     // Check if seller id is valid
     const seller = await User.findById(p_i);
@@ -210,12 +223,25 @@ export const getProductBySellerId = async (req, res) => {
     if (seller.role !== "seller")
       return res.status(403).json({ message: "User is not a seller" });
 
-    const product = await Product.find({ seller_id: p_i });
+    const products = await Product.find({ seller_id: p_i, status: status });
 
-    if (product.length == 0)
-      return res.status(400).json({ message: "No product found" });
+    if (products.length == 0)
+      return res.json({ message: "No product found", products: [{}] });
 
-    return res.status(200).json(product);
+    const page_number = Math.max(1, Number(page) || 1);
+    const per_page_number = Math.max(1, Number(per_page) || 1);
+    const filtered = products.filter((p) =>
+      p.name.toLowerCase().includes(q.toLowerCase())
+    );
+    const result = filtered.slice(
+      (page_number - 1) * per_page_number,
+      (page_number - 1) * per_page_number + per_page_number
+    );
+    const total_page = Math.ceil(filtered.length / per_page_number);
+
+    return res
+      .status(200)
+      .json({ message: "Success!", total_page: total_page, products: result });
   } catch (error) {
     console.error("Error getting seller's product: ", error);
     res.status(500).json({ message: "Can't get seller's product" });
@@ -302,7 +328,7 @@ export const getTop5Ending = async (req, res) => {
     })
       .sort({ end_time: 1 })
       .limit(5);
-    return res.status(200).json(products);
+    return res.status(200).json({ products: products });
   } catch (error) {
     console.error("Error getting top 5 ending: ", error);
     res.status(500).json({ message: "Can't get top 5 ending" });
@@ -318,7 +344,7 @@ export const getTop5Bid = async (req, res) => {
     })
       .sort({ total_bids: -1 })
       .limit(5);
-    return res.status(200).json(products);
+    return res.status(200).json({ products: products });
   } catch (error) {
     console.error("Error getting top 5 most bids: ", error);
     res.status(500).json({ message: "Can't get top 5 most bids" });
@@ -334,7 +360,7 @@ export const getTop5Price = async (req, res) => {
     })
       .sort({ current_price: -1 })
       .limit(5);
-    return res.status(200).json(products);
+    return res.status(200).json({ products: products });
   } catch (error) {
     console.error("Error getting top 5 most price: ", error);
     res.status(500).json({ message: "Can't get top 5 most price" });
@@ -363,7 +389,7 @@ export const getProductsByCategory = async (req, res) => {
     }
 
     // Nếu B thiếu sản phẩm → tìm category cha (A)
-    const parentId = currentCategory.parent_id;
+    const parentId = currentCategory.category_id;
 
     if (!parentId) {
       // Category không có cha (là category gốc)

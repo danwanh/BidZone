@@ -6,7 +6,7 @@ import { useLiked } from "../../context/LikedContext";
 import Pagination from "./Pagination";
 import { useAuth } from "../../context/AuthContext";
 
-const FavoriteList = () => {
+const SellingList = ({ status }) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -14,7 +14,6 @@ const FavoriteList = () => {
   const [totalPage, setTotalPage] = useState(1);
   const { user } = useAuth();
 
-  const { likedList } = useLiked();
   const page = searchParams.get("page") || 1;
   const per_page = 6;
   const q = searchParams.get("q") || "";
@@ -24,6 +23,7 @@ const FavoriteList = () => {
     p.set("page", page);
     p.set("per_page", per_page);
     if (q) p.set("name", q);
+    p.set("status", status);
 
     return p.toString();
   }, [page, q]);
@@ -41,31 +41,21 @@ const FavoriteList = () => {
         setLoading(true);
         setError(null);
 
-        const res = await axios.get(
-          `/api/watchlist/user/${user._id}?${queryString}`
+        const json = await axios.get(
+          `/api/product/seller/${user._id}?${queryString}`
         );
-        setTotalPage(res.data?.total_page || 1);
-        const data = res.data?.filtered;
+        setTotalPage(json.data.total_page);
+        const data = json.data.products;
 
         if (isMounted) {
           setProducts(data);
         }
-      } catch (error) {
-        const message = error.response?.data?.message;
-        if (message === "No watchlist") {
-          const body = {
-            user_id: user._id,
-            product_id: [],
-          };
-          try {
-            const res = await axios.post("/api/watchlist", body);
-          } catch (err2) {
-            console.log(err2.response?.data?.message || err2);
-          }
-        }
-        console.log("Error loading products", message || error);
-        if (isMounted)
-          setError(error.response?.message || "Unable to load products");
+      } catch (err) {
+        console.error(
+          err?.response?.data?.message || "Error loading products",
+          err
+        );
+        if (isMounted) setError(err.message || "Unable to load products");
       } finally {
         if (isMounted) setLoading(false);
       }
@@ -75,7 +65,7 @@ const FavoriteList = () => {
     return () => {
       isMounted = false;
     };
-  }, [queryString, likedList]);
+  }, [queryString]);
 
   return (
     <section className="md:col-span-3 space-y-6">
@@ -107,4 +97,4 @@ const FavoriteList = () => {
   );
 };
 
-export default FavoriteList;
+export default SellingList;

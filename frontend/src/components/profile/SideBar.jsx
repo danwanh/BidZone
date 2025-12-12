@@ -1,20 +1,45 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import BecomeSeller from "./BecomeSeller";
+import axios from "../../api/axios";
 import "../../style/profile.css";
+import { useAuth } from "../../context/AuthContext";
+import { ToastContainer, toast } from "react-toastify";
 
-const SideBar = ({ user }) => {
+const SideBar = () => {
   const [showPopUp, setShowPopUp] = useState(false);
+  const { user, loading, setUser } = useAuth();
+  if (loading) return <div>Loading...</div>;
 
   const {
     register,
     handleSubmit,
     formState: { errors },
+    reset,
   } = useForm();
 
-  const onSubmit = (data) => {
+  const onSubmit = async (data) => {
     console.log("Form submitted:", data);
+    try {
+      if (!user?._id) {
+        console.error("User not defined");
+        return;
+      }
+      const response = await axios.put(`/api/users/${user._id}`, data);
+      setUser(response?.data.user);
+      reset({
+        fullname: "",
+        username: "",
+        phonenumber: "",
+        gender: "",
+        email: "",
+      });
+      console.log(response?.data?.message || response);
+      toast.success("Success! Updated user.");
+    } catch (err) {
+      console.error(err.response?.data?.message || err);
+    }
   };
 
   return (
@@ -99,20 +124,40 @@ const SideBar = ({ user }) => {
         {/* NAME + AGE DISPLAY */}
         <div>
           <p className="text-[#171a22] font-bold text-xl mb-2">{user.name}</p>
-          <div className="flex gap-2 items-center">
-            <svg
-              width="19"
-              height="21"
-              viewBox="0 0 19 21"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M7.55198 1.95796C7.65103 0.708975 9.00264 -0.256819 10.4594 0.0611047L10.8571 0.149269C11.5626 0.304223 12.1889 0.7584 12.3992 1.43833C12.7344 2.52835 13.2114 4.79256 12.4937 7.46285C12.7181 7.43575 12.9432 7.41304 13.1687 7.39473C14.2552 7.3079 15.712 7.29855 17.0026 7.67525C17.792 7.90634 18.5173 8.58494 18.8312 9.37574C19.1116 10.0864 19.075 10.928 18.4746 11.6907C18.562 11.851 18.6321 12.0126 18.6849 12.1756C18.8022 12.5363 18.8571 12.933 18.8571 13.3191C18.8571 13.7051 18.8022 14.1019 18.6849 14.4625C18.6255 14.6429 18.5478 14.8272 18.4411 15.0022C18.6986 15.5192 18.6041 16.0962 18.4365 16.5357C18.264 16.9693 18.0129 17.3757 17.6929 17.7393C17.7752 17.9423 17.8087 18.1561 17.8087 18.3604C17.8087 18.7679 17.6731 19.1953 17.4232 19.5787C16.9142 20.3615 15.904 21 14.4762 21H9.14283C8.22093 21 7.51236 20.8918 6.90893 20.7088C6.38997 20.5429 5.89411 20.326 5.43084 20.0623L5.3577 20.0222C4.5897 19.6121 3.83542 19.2087 2.20647 19.0577C1.03924 18.9482 0 18.1227 0 16.9926V11.6493C0 10.5139 1.04381 9.73641 2.0678 9.49196C3.36152 9.18205 4.46627 8.44067 5.31656 7.60846C6.16989 6.7709 6.70932 5.89862 6.89979 5.41906C7.20303 4.65096 7.44227 3.36324 7.55198 1.9593V1.95796Z"
-                fill="#667EEA"
-              />
-            </svg>
-            <p className="text-[#667eea] font-bold">36</p>
+          <div className="flex"></div>
+          <div className="flex gap-5">
+            <div className="flex gap-2 items-center">
+              <svg
+                width="19"
+                height="21"
+                viewBox="0 0 19 21"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M7.55198 1.95796C7.65103 0.708975 9.00264 -0.256819 10.4594 0.0611047L10.8571 0.149269C11.5626 0.304223 12.1889 0.7584 12.3992 1.43833C12.7344 2.52835 13.2114 4.79256 12.4937 7.46285C12.7181 7.43575 12.9432 7.41304 13.1687 7.39473C14.2552 7.3079 15.712 7.29855 17.0026 7.67525C17.792 7.90634 18.5173 8.58494 18.8312 9.37574C19.1116 10.0864 19.075 10.928 18.4746 11.6907C18.562 11.851 18.6321 12.0126 18.6849 12.1756C18.8022 12.5363 18.8571 12.933 18.8571 13.3191C18.8571 13.7051 18.8022 14.1019 18.6849 14.4625C18.6255 14.6429 18.5478 14.8272 18.4411 15.0022C18.6986 15.5192 18.6041 16.0962 18.4365 16.5357C18.264 16.9693 18.0129 17.3757 17.6929 17.7393C17.7752 17.9423 17.8087 18.1561 17.8087 18.3604C17.8087 18.7679 17.6731 19.1953 17.4232 19.5787C16.9142 20.3615 15.904 21 14.4762 21H9.14283C8.22093 21 7.51236 20.8918 6.90893 20.7088C6.38997 20.5429 5.89411 20.326 5.43084 20.0623L5.3577 20.0222C4.5897 19.6121 3.83542 19.2087 2.20647 19.0577C1.03924 18.9482 0 18.1227 0 16.9926V11.6493C0 10.5139 1.04381 9.73641 2.0678 9.49196C3.36152 9.18205 4.46627 8.44067 5.31656 7.60846C6.16989 6.7709 6.70932 5.89862 6.89979 5.41906C7.20303 4.65096 7.44227 3.36324 7.55198 1.9593V1.95796Z"
+                  fill="#667EEA"
+                />
+              </svg>
+              <p className="text-[#667eea] font-bold">{user.rating_pos}</p>
+            </div>
+
+            <div className="flex gap-2 items-center">
+              <svg
+                width="19"
+                height="21"
+                viewBox="0 0 19 21"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                className="rotate-180"
+              >
+                <path
+                  d="M7.55198 1.95796C7.65103 0.708975 9.00264 -0.256819 10.4594 0.0611047L10.8571 0.149269C11.5626 0.304223 12.1889 0.7584 12.3992 1.43833C12.7344 2.52835 13.2114 4.79256 12.4937 7.46285C12.7181 7.43575 12.9432 7.41304 13.1687 7.39473C14.2552 7.3079 15.712 7.29855 17.0026 7.67525C17.792 7.90634 18.5173 8.58494 18.8312 9.37574C19.1116 10.0864 19.075 10.928 18.4746 11.6907C18.562 11.851 18.6321 12.0126 18.6849 12.1756C18.8022 12.5363 18.8571 12.933 18.8571 13.3191C18.8571 13.7051 18.8022 14.1019 18.6849 14.4625C18.6255 14.6429 18.5478 14.8272 18.4411 15.0022C18.6986 15.5192 18.6041 16.0962 18.4365 16.5357C18.264 16.9693 18.0129 17.3757 17.6929 17.7393C17.7752 17.9423 17.8087 18.1561 17.8087 18.3604C17.8087 18.7679 17.6731 19.1953 17.4232 19.5787C16.9142 20.3615 15.904 21 14.4762 21H9.14283C8.22093 21 7.51236 20.8918 6.90893 20.7088C6.38997 20.5429 5.89411 20.326 5.43084 20.0623L5.3577 20.0222C4.5897 19.6121 3.83542 19.2087 2.20647 19.0577C1.03924 18.9482 0 18.1227 0 16.9926V11.6493C0 10.5139 1.04381 9.73641 2.0678 9.49196C3.36152 9.18205 4.46627 8.44067 5.31656 7.60846C6.16989 6.7709 6.70932 5.89862 6.89979 5.41906C7.20303 4.65096 7.44227 3.36324 7.55198 1.9593V1.95796Z"
+                  fill="#4b60ba"
+                />
+              </svg>
+              <p className="text-[#667eea] font-bold">{user.rating_neg}</p>
+            </div>
           </div>
         </div>
 
@@ -122,7 +167,7 @@ const SideBar = ({ user }) => {
           <input
             {...register("fullname")}
             type="text"
-            placeholder="Jon"
+            placeholder={user.name}
             className="input_style"
           />
         </div>
@@ -132,18 +177,18 @@ const SideBar = ({ user }) => {
           <input
             {...register("username")}
             type="text"
-            placeholder="Jon"
+            placeholder={user.username}
             className="input_style"
           />
         </div>
 
-        <div className="flex flex-col lg:flex-row justify-between w-fill">
+        <div className="flex flex-col xl:flex-row justify-between w-fill">
           <div className="main_info_wrapper">
             <div className="info_header">SỐ ĐIỆN THOẠI</div>
             <input
               {...register("phonenumber")}
               type="text"
-              placeholder="09999"
+              placeholder={user.phone}
               className="input_style"
             />
           </div>
@@ -151,9 +196,15 @@ const SideBar = ({ user }) => {
           <div className="main_info_wrapper max-w-fit">
             <div className="info_header">GIỚI TÍNH</div>
             <select {...register("gender")} className="input_style">
-              <option value="">Nam</option>
-              <option>Nữ</option>
-              <option>Khác</option>
+              <option value="">{user.gender}</option>
+
+              {["Nam", "Nữ", "Khác"]
+                .filter((g) => g !== user.gender)
+                .map((g) => (
+                  <option className="!text-black" key={g} value={g}>
+                    {g}
+                  </option>
+                ))}
             </select>
           </div>
         </div>
@@ -163,14 +214,19 @@ const SideBar = ({ user }) => {
           <input
             {...register("email")}
             type="email"
-            placeholder="Jon@email"
+            placeholder={user.email}
             className="input_style"
           />
         </div>
 
         <div className="main_info_wrapper">
           <div className="info_header">NGÀY SINH</div>
-          <input {...register("dob")} type="date" className="input_style" />
+          <input
+            {...register("dob")}
+            type="date"
+            className="input_style"
+            defaultValue={user?.dob ? user.dob.slice(0, 10) : ""}
+          />
         </div>
 
         {/* CHANGE PASSWORD BUTTON */}

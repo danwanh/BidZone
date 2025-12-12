@@ -9,10 +9,20 @@ const UserSchema = mongoose.Schema(
       required: [true, "Please enter role"],
     },
 
+    username: {
+      type: String,
+      required: [true, "Please enter username"],
+    },
+
     name: {
       type: String,
       required: [true, "Please enter name"],
       unique: true,
+    },
+
+    gender: {
+      type: String,
+      enum: ["Nam", "Nữ", "Khác"],
     },
 
     email: {

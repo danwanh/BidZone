@@ -39,9 +39,19 @@
   border-radius: 8px;
   padding: 5px 15px;
 }
-input::placeholder {
+
+.input_style::placeholder {
+  color: rgb(106, 106, 106);
+}
+
+select:only-of-type {
+  color: rgb(106, 106, 106); /* placeholder color */
+}
+
+select option {
   color: black;
 }
+
 .button {
   background: linear-gradient(35deg, #667eea, #764ba2);
   height: fit-content;

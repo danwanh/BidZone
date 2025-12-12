@@ -7,6 +7,8 @@ import {
   updateUserRole,
   deleteUser,
   toggleUserBan,
+  rateUp,
+  rateDown,
 } from "../controllers/userController.js";
 import { authenticate, isAdmin } from "../middleware/authMiddleware.js";
 
@@ -16,7 +18,7 @@ const router = express.Router();
 
 // READ
 // GET /api/users/me - Get current user profile
-router.get("/me", getProfile);
+router.get("/me", authenticate, getProfile);
 
 // GET /api/users - Get all users (Admin only)
 router.get("/", authenticate, isAdmin, getAllUsers);
@@ -27,6 +29,10 @@ router.get("/:id", authenticate, getUserById);
 // UPDATE
 // PUT /api/users/:id - Update user profile
 router.put("/:id", authenticate, updateUser);
+
+router.patch("/rateup", authenticate, rateUp);
+
+router.patch("/ratedown", authenticate, rateDown);
 
 // PUT /api/users/:id/role - Update user role (Admin only)
 router.put("/:id/role", authenticate, isAdmin, updateUserRole);

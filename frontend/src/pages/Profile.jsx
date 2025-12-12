@@ -3,29 +3,20 @@ import ProductCard from "../components/ProductCard";
 import SideBar from "../components/profile/SideBar";
 import ProductList from "../components/profile/ProductList";
 import axios from "../api/axios";
+import { useAuth } from "../context/AuthContext";
 
 export const ProfilePage = () => {
-  const [user, setUser] = useState(null);
-
-  useEffect(() => {
-    console.log("aasdasd");
-    const load_user = async () => {
-      try {
-        const res = await axios.get("/api/users/me");
-        setUser(res.data);
-        // console.log(res.data);
-        console.log("aasdasd");
-      } catch (err) {
-        console.error(err?.message || err);
-      }
-    };
-    load_user();
-  }, []);
+  const { user, loading, setUser } = useAuth();
+  if (loading) return <div>Loading...</div>;
   return (
     <>
-      <div className="w-1/3">{/* <SideBar user={user} /> */}</div>
+      <div className="w-1/3">
+        <SideBar />
+      </div>
 
-      <div className="flex-1">{/* <ProductList /> */}</div>
+      <div className="flex-1">
+        <ProductList user={user || {}} />
+      </div>
     </>
   );
 };

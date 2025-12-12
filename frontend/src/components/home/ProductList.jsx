@@ -1,37 +1,36 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
-import axios from "../../api/axios";
+import api from "../../api/axios";
 import ProductCard from "../ProductCard";
-import { useLiked } from "../../context/LikedContext";
-import Pagination from "./Pagination";
-import { useAuth } from "../../context/AuthContext";
+import Pagination from "../profile/Pagination";
 
-const FavoriteList = () => {
+const ProductList = ({ title, baseURL }) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [totalPage, setTotalPage] = useState(1);
-  const { user } = useAuth();
 
-  const { likedList } = useLiked();
   const page = searchParams.get("page") || 1;
   const per_page = 6;
   const q = searchParams.get("q") || "";
+
+  const categoryId = searchParams.get("categoryId") || "";
 
   const queryString = useMemo(() => {
     const p = new URLSearchParams();
     p.set("page", page);
     p.set("per_page", per_page);
     if (q) p.set("name", q);
-
+    if (categoryId) p.set("categoryId", categoryId);
     return p.toString();
-  }, [page, q]);
+  }, [page, q, categoryId]);
 
   useEffect(() => {
-    const p = new URLSearchParams(searchParams);
-    p.set("page", 1);
-    setSearchParams(p);
+    const next = new URLSearchParams(searchParams);
+    if (!page) next.delete("page");
+    else next.set("page", 1);
+    setSearchParams(next);
   }, []);
 
   useEffect(() => {
@@ -41,31 +40,19 @@ const FavoriteList = () => {
         setLoading(true);
         setError(null);
 
-        const res = await axios.get(
-          `/api/watchlist/user/${user._id}?${queryString}`
-        );
-        setTotalPage(res.data?.total_page || 1);
-        const data = res.data?.filtered;
+        const res = await api.get(`${baseURL}?${queryString}`);
+
+        setTotalPage(res.data.total_page);
 
         if (isMounted) {
-          setProducts(data);
+          setProducts(res.data.products);
         }
       } catch (error) {
-        const message = error.response?.data?.message;
-        if (message === "No watchlist") {
-          const body = {
-            user_id: user._id,
-            product_id: [],
-          };
-          try {
-            const res = await axios.post("/api/watchlist", body);
-          } catch (err2) {
-            console.log(err2.response?.data?.message || err2);
-          }
-        }
-        console.log("Error loading products", message || error);
-        if (isMounted)
-          setError(error.response?.message || "Unable to load products");
+        console.error(
+          "Error loading products",
+          error.response?.data?.message || error.message
+        );
+        if (isMounted) setError(error.message || "Unable to load products");
       } finally {
         if (isMounted) setLoading(false);
       }
@@ -75,24 +62,31 @@ const FavoriteList = () => {
     return () => {
       isMounted = false;
     };
-  }, [queryString, likedList]);
+  }, [queryString]);
 
   return (
-    <section className="md:col-span-3 space-y-6">
+    <>
+      {title &&  <h3 className="font-semibold text-orange-600 -mb-1 text-xl">
+        {title}
+      </h3>}
       {loading && <div>Loading</div>}
       {error && (
         <div className="text-red-500">
-          Error loading products: {error.message}{" "}
+          Error loading products: {error.response?.data?.message || error.message}{" "}
         </div>
       )}
       {!loading && !error && (
         <>
-          {products.length > 0 ? (
+          {products?.length > 0 ? (
             <div className="flex flex-col items-center gap-10">
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-12 mt-5">
-                {products.map((p) => (
-                  <ProductCard key={p._id} product={p} />
-                ))}
+              <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-12 mt-5">
+                {products.map((p) =>
+                  p.product_id?._id ? (
+                    <ProductCard key={p._id} product={p.product_id} />
+                  ) : (
+                    <ProductCard key={p._id} product={p} />
+                  )
+                )}
               </div>
               <Pagination totalPage={totalPage} />
             </div>
@@ -103,8 +97,8 @@ const FavoriteList = () => {
           )}
         </>
       )}
-    </section>
+    </>
   );
 };
 
-export default FavoriteList;
+export default ProductList;
