@@ -35,6 +35,18 @@ router.get(
   oauthSuccess
 );
 
+// Github
+router.get(
+  "/github",
+  passport.authenticate("github", { scope: ["user:email"] })
+);
+
+router.get(
+  "/github/callback",
+  passport.authenticate("github", { session: false }),
+  oauthSuccess
+);
+
 router.post("/reset-password", resetPassword);
 
 export default router;

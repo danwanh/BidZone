@@ -11,13 +11,13 @@ const UserSchema = mongoose.Schema(
 
     username: {
       type: String,
-      required: [true, "Please enter username"],
+      // required: [true, "Please enter username"],
     },
 
     name: {
       type: String,
       required: [true, "Please enter name"],
-      unique: true,
+      // unique: true,
     },
 
     gender: {
@@ -81,6 +81,10 @@ const UserSchema = mongoose.Schema(
         raw: Object,
       },
       facebook: {
+        id: String,
+        raw: Object,
+      },
+      github: {
         id: String,
         raw: Object,
       },

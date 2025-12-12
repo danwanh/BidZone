@@ -132,10 +132,10 @@ const Login = ({ toRegister }) => {
 
             {/* Facebook */}
             <a
-              href={`${BASE_URL}/api/auth/facebook`}
-              className="w-full p-3 px-5 bg-blue-600 text-white rounded-lg block text-center"
+              href={`${BASE_URL}/api/auth/github`}
+              className="w-full p-3 px-5 bg-gray-700 text-white rounded-lg block text-center"
             >
-              Đăng nhập bằng Facebook
+              Đăng nhập bằng Github
             </a>
           </div>
         </div>

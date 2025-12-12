@@ -100,6 +100,7 @@ export const updateUser = async (req, res) => {
       if (emailExists) {
         return res.status(400).json({ message: "Email already in use" });
       }
+      
       user.email = email;
     }
     if (phonenumber) user.phone = phonenumber;
