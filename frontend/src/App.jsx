@@ -16,6 +16,7 @@ import { ProductDetailPage } from "./pages/ProductDetailPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { BecomeSellerPage } from "./pages/BecomeSeller.jsx";
 import ProductList from "./components/home/ProductList.jsx";
+import UploadProductPage from "./pages/UploadProductPage.jsx";
 
 const router = createBrowserRouter([
   {
@@ -28,6 +29,7 @@ const router = createBrowserRouter([
       { path: "/profile", element: <ProfilePage /> },
       { path: "auth", element: <AuthPage /> },
       { path: "products/:id", element: <ProductDetailPage /> },
+      { path: "/products/new", element: <UploadProductPage/>},
       { path: "*", element: <NotFoundPage /> },
     ],
   },

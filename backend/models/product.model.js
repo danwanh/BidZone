@@ -7,9 +7,12 @@ const ProductSchema = mongoose.Schema(
       required: true,
     },
 
-    description: {
-      type: String,
-    },
+    description_history: [
+      {
+        description: { type: String },
+        updated_at: { type: Date, default: Date.now }
+      }
+    ],
 
     category_id: {
       // category con

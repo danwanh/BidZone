@@ -15,6 +15,11 @@ const BidSchema = mongoose.Schema(
         price: {
             type: Number,
             required: true
+        },
+
+        status: {
+            type: Boolean,
+            default: true
         }
     },
     {

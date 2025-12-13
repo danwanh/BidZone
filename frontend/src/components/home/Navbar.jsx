@@ -175,7 +175,7 @@ const Navbar = () => {
               {/* Seller và Admin mới thấy nút Đăng sản phẩm */}
               {user.role === "seller" && (
                 <Link
-                  to="/product/new"
+                  to="/products/new"
                   className="flex items-center gap-1 bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
                   title="Đăng sản phẩm"
                 >

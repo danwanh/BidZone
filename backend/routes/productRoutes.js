@@ -13,6 +13,7 @@ import {
   getTop5Ending,
   getTop5Price,
   getLikedProducts,
+  addDescriptionHistory,
 } from "../controllers/productController.js";
 import upload from "../config/multer.js";
 const router = express.Router();
@@ -31,5 +32,6 @@ router.patch("/:id", changeProductById);
 router.get("/by-category/:id", getProductsByCategory);
 router.get("/liked/:id", getLikedProducts);
 router.get("/:id", getProductById);
+router.patch("/des-history/:id/", addDescriptionHistory);
 
 export default router;

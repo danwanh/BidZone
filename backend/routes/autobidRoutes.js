@@ -4,13 +4,17 @@ import {
   getAutoBidsByProduct,
   getAllAutoBids,
   deleteAutoBid,
+  getAutoBidById,
+  updateBidStatus
 } from "../controllers/autobidController.js";
 
 const router = express.Router();
 
 router.post("/", createAutoBid);
 router.get("/", getAllAutoBids);
+router.get("/:id", getAutoBidById);
 router.get("/product/:product_id", getAutoBidsByProduct);
 router.delete("/:id", deleteAutoBid);
+router.patch("/:id", updateBidStatus);
 
 export default router;

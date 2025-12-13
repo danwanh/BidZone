@@ -3,20 +3,22 @@ import {
   createBid,
   getBidsByProduct,
   getAllBids,
-  updateBid,
   deleteBid,
   getBidByUser,
   getBiddingByUser,
+  getBidById,
+  updateBidStatus
 } from "../controllers/bidController.js";
 
 const router = express.Router();
 
 router.post("/", createBid);
-router.get("/:product_id", getBidsByProduct);
+router.get("/:id", getBidById);
+router.get("/product/:product_id", getBidsByProduct);
 router.get("/user/:id", getBidByUser);
 router.get("/user/bidding/:id", getBiddingByUser);
 router.get("/", getAllBids);
-router.put("/:id", updateBid);
+router.patch("/:id", updateBidStatus);
 router.delete("/:id", deleteBid);
 
 export default router;
