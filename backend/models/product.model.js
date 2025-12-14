@@ -70,7 +70,7 @@ const ProductSchema = mongoose.Schema(
 
     status: {
       type: String,
-      enum: ["active", "ended", "cancelled"],
+      enum: ["active", "ended", "cancelled", "sold"],
     },
 
     total_bids: {

@@ -343,10 +343,10 @@ export const ProductDetailPage = () => {
   const handleToggleWatchlist = async () => {
     try {
       setWatchlistLoading(true);
-      const response = await fetch("http://localhost:3000/api/watchlist", {
-        method: isWatchlisted ? "DELETE" : "POST",
+      const response = await fetch(`http://localhost:3000/api/watchlist/${currentUserId}`, {
+        method: isWatchlisted ? "DELETE" : "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ productId: id }),
+        body: JSON.stringify({ product_id: id }),
       });
       if (response.ok) {
         setIsWatchlisted(!isWatchlisted);
