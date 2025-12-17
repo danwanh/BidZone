@@ -1,5 +1,25 @@
 import mongoose from "mongoose";
 
+const MessageSchema = new mongoose.Schema(
+  {
+    sender: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    content: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    // isRead: {
+    //   type: Boolean,
+    //   default: false,
+    // },
+  },
+  { timestamps: true }
+);
+
 const OrderSchema = mongoose.Schema(
   {
     product_id: {
@@ -20,17 +40,9 @@ const OrderSchema = mongoose.Schema(
       required: true,
     },
 
-    address: {
-      type: String,
-    },
-
-    invoice_info: {
-      type: String,
-    },
-
-    delivery_info: {
-      type: String,
-    },
+    address: String,
+    invoice_info: String,
+    delivery_info: String,
 
     status: {
       type: String,
@@ -42,14 +54,15 @@ const OrderSchema = mongoose.Schema(
         "cancelled",
       ],
       default: "pending_payment",
-      cancellation_reason:{
-        type: String,
-      },
-      cancelled_by:{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-      }
     },
+
+    cancellation_reason: String,
+    cancelled_by: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+
+    messages: [MessageSchema],
   },
   {
     timestamps: true,

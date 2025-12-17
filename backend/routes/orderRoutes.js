@@ -5,7 +5,9 @@ import {
     getOrdersByUser,
     getOrderById,
     updateOrder,
-    deleteOrder, getOrderByProductId 
+    deleteOrder, getOrderByProductId,
+    sendMessage,
+    getMessages 
 } from "../controllers/orderController.js";
 import { 
     authenticate, 
@@ -34,6 +36,8 @@ router.get("/user/:user_id", authenticate, getOrdersByUser);
 // GET /api/orders/:id
 // Protected: Only order owner (buyer/seller) or admin
 router.get("/:id", authenticate, isOwner("order"), getOrderById);
+router.get("/:id/messages", authenticate, getMessages);
+router.post("/:id/messages", authenticate, sendMessage);
 
 // UPDATE
 // PUT /api/orders/:id

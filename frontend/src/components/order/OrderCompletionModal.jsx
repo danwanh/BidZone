@@ -3,45 +3,82 @@
 import { useState, useEffect } from "react"
 
 function ChatInterface({ orderId, currentUserId, sellerId, buyerId, seller, buyer }) {
-  const [messages, setMessages] = useState([])
-  const [newMessage, setNewMessage] = useState("")
-  const [loading, setLoading] = useState(false)
+  const [messages, setMessages] = useState([]);
+  const [newMessage, setNewMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (orderId) {
-      loadMessages()
-      const interval = setInterval(loadMessages, 3000)
-      return () => clearInterval(interval)
-    }
-  }, [orderId])
+    if (!orderId) return;
+
+    loadMessages();
+    const interval = setInterval(loadMessages, 3000);
+
+    return () => clearInterval(interval);
+  }, [orderId]);
 
   const loadMessages = async () => {
-    // TODO: Fetch messages
-    // const response = await fetch(`/api/chats/order/${orderId}`);
-    // const data = await response.json();
-    // setMessages(data);
-  }
+    try {
+      const token = localStorage.getItem("accessToken");
+
+      const response = await fetch(
+        `http://localhost:3000/api/orders/${orderId}/messages`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        console.error("Fetch messages failed");
+        return;
+      }
+
+      const data = await response.json();
+      setMessages(data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const handleSendMessage = async () => {
-    if (!newMessage.trim()) return
+    if (!newMessage.trim()) return;
 
-    setLoading(true)
-    // TODO: Send message
-    // await fetch("/api/chats", {
-    //   method: "POST",
-    //   headers: { "Content-Type": "application/json" },
-    //   body: JSON.stringify({
-    //     order_id: orderId,
-    //     seller_id: sellerId,
-    //     bidder_id: buyerId,
-    //     sender_id: currentUserId,
-    //     content: newMessage.trim()
-    //   })
-    // });
-    setNewMessage("")
-    setLoading(false)
-    loadMessages()
-  }
+    try {
+      setLoading(true);
+      const token = localStorage.getItem("accessToken");
+
+      const res = await fetch(
+        `http://localhost:3000/api/orders/${orderId}/messages`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            content: newMessage, // ✅ FIX
+          }),
+        }
+      );
+
+      if (!res.ok) {
+        console.error("Send message failed");
+        return;
+      }
+
+      const result = await res.json();
+
+      // append message mới (đỡ phải reload)
+      setMessages((prev) => [...prev, result.data]);
+      setNewMessage("");
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const isSeller = currentUserId === sellerId
   const otherUser = isSeller ? buyer : seller

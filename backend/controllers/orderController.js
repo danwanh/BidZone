@@ -253,3 +253,76 @@ export const deleteOrder = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+export const sendMessage = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { content } = req.body;
+    const userId = req.user._id; // lấy từ JWT middleware
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Invalid order ID" });
+    }
+
+    if (!content || !content.trim()) {
+      return res.status(400).json({ message: "Message content is required" });
+    }
+
+    const order = await Order.findById(id);
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    // chỉ buyer hoặc seller được chat
+    if (
+      !order.buyer_id.equals(userId) &&
+      !order.seller_id.equals(userId)
+    ) {
+      return res.status(403).json({ message: "Not allowed to chat" });
+    }
+
+    order.messages.push({
+      sender: userId,
+      content,
+    });
+
+    await order.save();
+
+    res.status(201).json({
+      message: "Message sent",
+      data: order.messages[order.messages.length - 1],
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+export const getMessages = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user._id;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Invalid order ID" });
+    }
+
+    const order = await Order.findById(id)
+      .populate("messages.sender", "name")
+      .select("messages buyer_id seller_id");
+
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    if (
+      !order.buyer_id.equals(userId) &&
+      !order.seller_id.equals(userId)
+    ) {
+      return res.status(403).json({ message: "Not allowed" });
+    }
+
+    res.json(order.messages);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
