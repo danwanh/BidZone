@@ -39,24 +39,34 @@ export const ProductDetailPage = () => {
   const [showAnswerForm, setShowAnswerForm] = useState({});
   const [questionText, setQuestionText] = useState("");
   const [showQuestionForm, setShowQuestionForm] = useState(false);
-
+  const [currentUser, setCurrentUser] = useState(null);
   const { id } = useParams();
 
-  useEffect(() => {
-    fetchProduct(id);
-    // checkUserRole();
-  }, [id]);
+  const fetchCurrentUser = async () => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      if (!token) return null;
 
-  // const checkUserRole = () => {
-  //   // Check if current user is the seller
-  //   // In production, get from localStorage or context
-  //   // For now, hardcoded logic
-  //   if (product && product.seller_id?._id === currentUserId) {
-  //     setUserRole("seller");
-  //   } else {
-  //     setUserRole("bidder");
-  //   }
-  // };
+      const res = await fetch("http://localhost:3000/api/auth/me", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) throw new Error("Không thể lấy thông tin user");
+
+      const user = await res.json();
+
+      if (user) {
+        setCurrentUser(user);
+        setUserRole(user._id === product?.seller_id?._id ? "seller" : "bidder");
+        setCurrentUserId(user._id);
+      }
+    } catch (err) {
+      console.error("Fetch user error:", err);
+      return null;
+    }
+  };
 
   const fetchProduct = async (id) => {
     const res = await fetch(`http://localhost:3000/api/product/${id}`);
@@ -100,6 +110,7 @@ export const ProductDetailPage = () => {
   };
 
   useEffect(() => {
+    fetchProduct(id);
     if (!product) return;
     setMainImage(product.image_url?.[0]);
     setThumbnails(product.image_url || []);
@@ -130,7 +141,13 @@ export const ProductDetailPage = () => {
 
     fetchRelatedProducts(product.category_id);
     fetchQuestions(id);
-    // checkUserRole();
+    const token = localStorage.getItem("accessToken");
+    if (token) {
+      fetchCurrentUser();
+    } else {
+      setUserRole("bidder");
+      setCurrentUser(null);
+    }
   }, [product]);
 
   const fetchBids = async (id) => {
@@ -343,11 +360,14 @@ export const ProductDetailPage = () => {
   const handleToggleWatchlist = async () => {
     try {
       setWatchlistLoading(true);
-      const response = await fetch(`http://localhost:3000/api/watchlist/${currentUserId}`, {
-        method: isWatchlisted ? "DELETE" : "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ product_id: id }),
-      });
+      const response = await fetch(
+        `http://localhost:3000/api/watchlist/${currentUserId}`,
+        {
+          method: isWatchlisted ? "DELETE" : "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ product_id: id }),
+        }
+      );
       if (response.ok) {
         setIsWatchlisted(!isWatchlisted);
         console.log("Watchlist toggled successfully");
@@ -400,7 +420,6 @@ export const ProductDetailPage = () => {
     }
   };
 
-  // NEW: Reject bidder
   const handleRejectBid = async (bidId, bidderId) => {
     if (!window.confirm("Bạn chắc chắn muốn từ chối người đấu giá này?")) {
       return;
@@ -421,12 +440,12 @@ export const ProductDetailPage = () => {
       // Add to banned_bidders
       console.log(bidderId);
       await fetch(`http://localhost:3000/api/product/${product._id}`, {
-  method: "PATCH",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({
-    ban_bidder_id: bidderId,
-  }),
-});
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ban_bidder_id: bidderId,
+        }),
+      });
 
       alert("Đã từ chối người đấu giá");
 
@@ -633,7 +652,7 @@ export const ProductDetailPage = () => {
               </span>
             </div>
 
-            {
+            { userRole === "seller" &&
               <button
                 onClick={() => setIsEditMode(!isEditMode)}
                 className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition text-sm font-semibold"
@@ -727,7 +746,7 @@ export const ProductDetailPage = () => {
             </div>
 
             {/* Form thêm mô tả */}
-            {isEditMode && (
+            {userRole == "seller" && isEditMode && (
               <div className="mt-6 pt-4 border-t border-gray-300">
                 <div className="text-sm font-semibold mb-2 text-blue-600">
                   Bổ sung mô tả cho sản phẩm
@@ -835,7 +854,7 @@ export const ProductDetailPage = () => {
               Người đặt giá cao nhất hiện tại
             </h3>
           </div>
-          {highestBidder && (
+          {highestBidder ? (
             <div className="flex items-center gap-6 mb-4">
               <img
                 src={
@@ -872,6 +891,8 @@ export const ProductDetailPage = () => {
                 <div className="text-xs text-gray-500 mt-1">VNĐ</div>
               </div>
             </div>
+          ) : (
+            <div className="text-gray-600">Chưa có người đặt giá nào.</div>
           )}
         </div>
       </div>
@@ -983,7 +1004,7 @@ export const ProductDetailPage = () => {
                   {b.amount?.toLocaleString()} VNĐ
                 </div>
 
-                {b.status && (
+                {userRole == "seller" && b.status && (
                   <button
                     onClick={() => handleRejectBid(b.id, b.userId)}
                     className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition text-sm"

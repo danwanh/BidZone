@@ -9,9 +9,14 @@ import {
 } from "../controllers/authController.js";
 import { verifyRecaptcha } from "../middleware/recaptchaMiddleware.js";
 import passport from "../config/passport.js";
+import { authenticate } from "../middleware/authMiddleware.js";
+
 
 const router = express.Router();
 
+router.get("/me", authenticate, (req, res) => {
+  res.status(200).json(req.user);
+});
 router.post("/register", verifyRecaptcha, register);
 router.post("/login", verifyRecaptcha, login);
 router.get("/refresh", refresh);
