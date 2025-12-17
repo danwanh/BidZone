@@ -144,16 +144,11 @@ export const ProductDetailPage = () => {
 
   const data = await res.json();
   console.log("Order response:", data);
-
-  const order = data.orders?.[0];
-  if (!order) return;
-
-  console.log("Parsed order:", order);
-  setOrder(order);
+  setOrder(data)
 
   if (
-    currentUserId === order.seller_id._id ||
-    currentUserId === order.buyer_id._id
+    currentUserId === data.seller_id._id ||
+    currentUserId === data.buyer_id._id
   ) {
     setShowOrderModal(true);
   }

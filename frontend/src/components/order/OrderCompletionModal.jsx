@@ -128,21 +128,33 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
   const [activeTab, setActiveTab] = useState("process")
   const [showCancelDialog, setShowCancelDialog] = useState(false)
 
-  const isSeller = currentUserId === orderData?.seller_id
-  const isBuyer = currentUserId === orderData?.buyer_id
+  const isSeller = currentUserId === orderData?.seller_id._id
+  const isBuyer = currentUserId === orderData?.buyer_id._id
 
   useEffect(() => {
-    if (isOpen && orderData) {
-      loadOrderData()
-      loadUserRating()
-    }
-  }, [isOpen, orderData])
+  if (isOpen && order?._id) {
+    loadOrderData()
+    loadUserRating()
+  }
+}, [isOpen, order?._id])
 
   const loadOrderData = async () => {
-    // TODO: Fetch order data từ API
-    // const response = await fetch(`/api/orders/${orderData._id}`);
-    // const data = await response.json();
-    // setOrderData(data);
+    const token = localStorage.getItem("accessToken");
+      if (!token) return null;
+    const response = await fetch(
+  `http://localhost:3000/api/orders/${order._id}`,
+  {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  }
+);
+
+    const data = await response.json();
+    setOrderData(data);
+    console.log("Reloaded order data:", data);
   }
 
   const loadUserRating = async () => {
@@ -160,16 +172,15 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
       alert("Vui lòng nhập đầy đủ thông tin")
       return
     }
-    // TODO: Submit thông tin thanh toán
-    // await fetch(`/api/orders/${orderData._id}`, {
-    //   method: "PATCH",
-    //   headers: { "Content-Type": "application/json" },
-    //   body: JSON.stringify({
-    //     payment_invoice: paymentInvoice,
-    //     delivery_address: deliveryAddress,
-    //     status: "pending_shipping"
-    //   })
-    // });
+    await fetch(`http://localhost:3000/api/orders/${orderData._id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        invoice_info: paymentInvoice,
+        address: deliveryAddress,
+        status: "pending_shipping"
+      })
+    });
     alert("Đã gửi thông tin thanh toán!")
     loadOrderData()
   }
@@ -179,28 +190,26 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
       alert("Vui lòng nhập mã vận đơn")
       return
     }
-    // TODO: Xác nhận đã nhận tiền và gửi hóa đơn vận chuyển
-    // await fetch(`/api/orders/${orderData._id}`, {
-    //   method: "PATCH",
-    //   headers: { "Content-Type": "application/json" },
-    //   body: JSON.stringify({
-    //     shipping_invoice: shippingInvoice,
-    //     status: "pending_delivery"
-    //   })
-    // });
+    await fetch(`http://localhost:3000/api/orders/${orderData._id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        shipping_invoice: shippingInvoice,
+        status: "pending_delivery"
+      })
+    });
     alert("Đã xác nhận và gửi hàng!")
     loadOrderData()
   }
 
   const handleConfirmDelivery = async () => {
-    // TODO: Xác nhận đã nhận hàng
-    // await fetch(`/api/orders/${orderData._id}`, {
-    //   method: "PATCH",
-    //   headers: { "Content-Type": "application/json" },
-    //   body: JSON.stringify({
-    //     status: "completed"
-    //   })
-    // });
+    await fetch(`http://localhost:3000/api/orders/${orderData._id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        status: "completed"
+      })
+    });
     alert("Đã xác nhận nhận hàng!")
     loadOrderData()
   }
@@ -211,16 +220,16 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
       return
     }
     // TODO: Hủy đơn hàng và tự động tạo rating -1
-    // await fetch(`/api/orders/${orderData._id}`, {
-    //   method: "PATCH",
-    //   headers: { "Content-Type": "application/json" },
-    //   body: JSON.stringify({
-    //     status: "cancelled",
-    //     cancelled_by: currentUserId,
-    //     cancellation_reason: cancelReason
-    //   })
-    // });
-    //
+    await fetch(`http://localhost:3000/api/orders/${orderData._id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        status: "cancelled",
+        cancelled_by: currentUserId,
+        cancellation_reason: cancelReason
+      })
+    });
+    
     // // Create automatic -1 rating for buyer
     // await fetch("/api/ratings", {
     //   method: "POST",

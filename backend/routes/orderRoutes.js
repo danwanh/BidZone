@@ -5,7 +5,7 @@ import {
     getOrdersByUser,
     getOrderById,
     updateOrder,
-    deleteOrder, getOrdersByProductId 
+    deleteOrder, getOrderByProductId 
 } from "../controllers/orderController.js";
 import { 
     authenticate, 
@@ -15,6 +15,7 @@ import {
 } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
+router.get("/product/:product_id", getOrderByProductId);
 
 // CREATE
 // POST /api/orders
@@ -25,7 +26,6 @@ router.post("/", createOrder);
 // GET /api/orders
 // Protected: Admin only - get all orders
 router.get("/", authenticate, isAdmin, getAllOrders);
-router.get("/product/:product_id", getOrdersByProductId);
 
 // GET /api/orders/user/:user_id?role=buyer
 // Protected: Get orders for specific user (as buyer or seller)
@@ -38,8 +38,8 @@ router.get("/:id", authenticate, isOwner("order"), getOrderById);
 // UPDATE
 // PUT /api/orders/:id
 // Protected: Only order owner or admin can update
-router.put("/:id", authenticate, isOwner("order"), updateOrder);
-
+// router.put("/:id", authenticate, isOwner("order"), updateOrder);
+router.put("/:id", updateOrder);
 // DELETE
 // DELETE /api/orders/:id
 // Protected: Admin only
