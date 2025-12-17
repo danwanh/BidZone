@@ -4,50 +4,107 @@ import mongoose from "mongoose";
 
 // CREATE - Create new order (when auction ends)
 export const createOrder = async (req, res) => {
-    try {
-        const { product_id, seller_id, buyer_id, address } = req.body;
+  try {
+    const { product_id, seller_id, buyer_id } = req.body;
 
-        // Validate ObjectIds
-        if (!mongoose.Types.ObjectId.isValid(product_id)) {
-            return res.status(400).json({ message: "Invalid product_id" });
-        }
-        if (!mongoose.Types.ObjectId.isValid(seller_id)) {
-            return res.status(400).json({ message: "Invalid seller_id" });
-        }
-        if (!mongoose.Types.ObjectId.isValid(buyer_id)) {
-            return res.status(400).json({ message: "Invalid buyer_id" });
-        }
-
-        // Check if product exists and auction ended
-        const product = await Product.findById(product_id);
-        if (!product) {
-            return res.status(404).json({ message: "Product not found" });
-        }
-        if (product.status !== "ended") {
-            return res.status(400).json({ message: "Auction is still active" });
-        }
-
-        // Check if order already exists for this product
-        const existingOrder = await Order.findOne({ product_id });
-        if (existingOrder) {
-            return res.status(400).json({ message: "Order already exists for this product" });
-        }
-
-        const newOrder = new Order({
-            product_id,
-            seller_id,
-            buyer_id,
-            address,
-            status: "unpaid"
-        });
-
-        await newOrder.save();
-        res.status(201).json({ message: "Order created", order: newOrder });
-    } catch (err) {
-        console.error("Error creating order:", err);
-        res.status(500).json({ message: err.message });
+    if (!product_id || !seller_id || !buyer_id) {
+      return res.status(400).json({
+        message: "Thiếu product_id, seller_id hoặc buyer_id"
+      });
     }
+
+    const order = new Order({
+      product_id,
+      seller_id,
+      buyer_id
+    });
+
+    await order.save();
+
+    res.status(201).json({
+      message: "Tạo order thành công",
+      order
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Lỗi tạo order",
+      error: error.message
+    });
+  }
 };
+
+export const getOrdersByProductId = async (req, res) => {
+  try {
+    const { product_id } = req.params;
+
+    const orders = await Order.find({ product_id })
+      .populate("product_id")
+      .populate("seller_id", "name email")
+      .populate("buyer_id", "name email");
+
+    if (orders.length === 0) {
+      return res.status(404).json({
+        message: "Không có order nào cho product này"
+      });
+    }
+
+    res.status(200).json({
+      orders
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Lỗi lấy order",
+      error: error.message
+    });
+  }
+};
+
+
+// export const createOrder = async (req, res) => {
+//     try {
+//         const { product_id, seller_id, buyer_id, address } = req.body;
+
+//         // Validate ObjectIds
+//         if (!mongoose.Types.ObjectId.isValid(product_id)) {
+//             return res.status(400).json({ message: "Invalid product_id" });
+//         }
+//         if (!mongoose.Types.ObjectId.isValid(seller_id)) {
+//             return res.status(400).json({ message: "Invalid seller_id" });
+//         }
+//         if (!mongoose.Types.ObjectId.isValid(buyer_id)) {
+//             return res.status(400).json({ message: "Invalid buyer_id" });
+//         }
+
+//         // Check if product exists and auction ended
+//         const product = await Product.findById(product_id);
+//         if (!product) {
+//             return res.status(404).json({ message: "Product not found" });
+//         }
+//         if (product.status !== "ended") {
+//             return res.status(400).json({ message: "Auction is still active" });
+//         }
+
+//         // Check if order already exists for this product
+//         const existingOrder = await Order.findOne({ product_id });
+//         if (existingOrder) {
+//             return res.status(400).json({ message: "Order already exists for this product" });
+//         }
+
+//         const newOrder = new Order({
+//             product_id,
+//             seller_id,
+//             buyer_id,
+//             address,
+//             status: "unpaid"
+//         });
+
+//         await newOrder.save();
+//         res.status(201).json({ message: "Order created", order: newOrder });
+//     } catch (err) {
+//         console.error("Error creating order:", err);
+//         res.status(500).json({ message: err.message });
+//     }
+// };
 
 // READ - Get all orders (Admin only, or filter by user)
 export const getAllOrders = async (req, res) => {

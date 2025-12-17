@@ -5,7 +5,7 @@ import {
     getOrdersByUser,
     getOrderById,
     updateOrder,
-    deleteOrder
+    deleteOrder, getOrdersByProductId 
 } from "../controllers/orderController.js";
 import { 
     authenticate, 
@@ -19,12 +19,13 @@ const router = express.Router();
 // CREATE
 // POST /api/orders
 // Protected: Any authenticated user can create order
-router.post("/", authenticate, validateOrderData, createOrder);
+router.post("/", createOrder);
 
 // READ
 // GET /api/orders
 // Protected: Admin only - get all orders
 router.get("/", authenticate, isAdmin, getAllOrders);
+router.get("/product/:product_id", getOrdersByProductId);
 
 // GET /api/orders/user/:user_id?role=buyer
 // Protected: Get orders for specific user (as buyer or seller)

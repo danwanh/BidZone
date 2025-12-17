@@ -5,13 +5,13 @@ import cloudinary from "../config/cloudinary.js";
 import multer from "multer";
 import fs from "fs";
 import Watchlist from "../models/watchlist.model.js";
-
+import Order from "../models/order.model.js";
 // POST /api/product
 export const addProduct = async (req, res) => {
   try {
     const {
       name,
-      description, 
+      description,
       category_id,
       seller_id,
       start_price,
@@ -66,9 +66,7 @@ export const addProduct = async (req, res) => {
       allow_unrated_bidders,
       slug,
 
-      description_history: description
-        ? [{ description }]
-        : [],
+      description_history: description ? [{ description }] : [],
     });
 
     await newProduct.save();
@@ -134,17 +132,34 @@ export const getAllProducts = async (req, res) => {
 
 // GET /api/product/:id
 export const getProductById = async (req, res) => {
-  try {
-    const { id: p_i } = req.params;
+  const product = await Product.findById(req.params.id).populate("seller_id");
 
-    const product = await Product.findById(p_i).populate("seller_id");
-
-    if (!product) return res.status(400).json({ message: "No product found" });
-    else return res.status(200).json(product);
-  } catch (error) {
-    console.error("Error getting product: ", error);
-    res.status(500).json({ message: "Can't get product" });
+  if (!product) {
+    return res.status(404).json({ message: "Không tìm thấy sản phẩm" });
   }
+
+  const auctionEnded = new Date(product.end_time) < new Date();
+
+  if (auctionEnded && product.status !== "ended") {
+    const existedOrder = await Order.findOne({
+      product_id: product._id,
+    });
+
+    if (!existedOrder) {
+      await Order.create({
+        product_id: product._id,
+        seller_id: product.seller_id,
+        buyer_id: product.bidder_id,
+        status: "pending",
+      });
+    }
+  }
+
+  product.status = "ended";
+  await product.save();
+
+  res.json(product);
+  
 };
 
 // GET /api/product/user/:id
@@ -293,7 +308,6 @@ export const changeProductById = async (req, res) => {
     res.status(500).json({ message: "Can't change product" });
   }
 };
-
 
 // DELETE
 export const deleteProductById = async (req, res) => {
@@ -471,5 +485,3 @@ export const addDescriptionHistory = async (req, res) => {
     });
   }
 };
-
-

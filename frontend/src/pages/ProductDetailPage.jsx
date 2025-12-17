@@ -1,8 +1,11 @@
+"use client";
+
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-
+import OrderCompletionModal from "../components/order/OrderCompletionModal";
 export const ProductDetailPage = () => {
-  const [product, setProduct] = useState();
+  const params = useParams();
+  const [product, setProduct] = useState(null);
   const [currentBid, setCurrentBid] = useState(12500);
   const [totalBids, setTotalBids] = useState(24);
   const [bidStep, setBidStep] = useState(500);
@@ -23,9 +26,7 @@ export const ProductDetailPage = () => {
   const [isWatchlisted, setIsWatchlisted] = useState(false);
   const [watchlistLoading, setWatchlistLoading] = useState(false);
   const [descriptionHistory, setDescriptionHistory] = useState([]);
-
-  // New states for enhanced features
-  const [userRole, setUserRole] = useState("bidder"); // "bidder" | "seller"
+  const [userRole, setUserRole] = useState("bidder");
   const [currentUserId, setCurrentUserId] = useState(
     "69113d2a06251b39d3acfd0d"
   );
@@ -40,7 +41,12 @@ export const ProductDetailPage = () => {
   const [questionText, setQuestionText] = useState("");
   const [showQuestionForm, setShowQuestionForm] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
-  const { id } = useParams();
+
+  const [order, setOrder] = useState(null);
+  const [showOrderModal, setShowOrderModal] = useState(false);
+  const [buyer, setBuyer] = useState(null);
+
+  const id = params?.id;
 
   const fetchCurrentUser = async () => {
     try {
@@ -68,11 +74,91 @@ export const ProductDetailPage = () => {
     }
   };
 
+  useEffect(() => {
+    fetchProduct(id);
+  }, [id]);
+
   const fetchProduct = async (id) => {
     const res = await fetch(`http://localhost:3000/api/product/${id}`);
     const data = await res.json();
     setProduct(data);
   };
+
+  useEffect(() => {
+    if (!product) return;
+
+    setMainImage(product.image_url?.[0]);
+    setThumbnails(product.image_url || []);
+    setCurrentBid(
+      product.current_price == 0 ? product.start_price : product.current_price
+    );
+    setTotalBids(product.total_bids);
+    setBidStep(product.bid_step);
+    setEndTime(product.end_time);
+    setPostedTime(formatPostedTime(product.date));
+    setEditDescription("");
+    setDescriptionHistory(product.description_history || []);
+
+    setSeller({
+      _id: product.seller_id?._id,
+      name: product.seller_id?.name,
+      rating_pos: product.seller_id?.rating_pos || 0,
+      rating_neg: product.seller_id?.rating_neg || 0,
+      avatar_url:
+        product.seller_id?.avatar_url ||
+        "https://www.gravatar.com/avatar/3b3be63a4c2a439b013787725dfce802?d=identicon",
+    });
+
+    if (product.is_autobid) {
+      fetchAutoBid(id);
+    } else {
+      fetchBids(id);
+    }
+
+    fetchRelatedProducts(product.category_id);
+    fetchQuestions(id);
+
+    const token = localStorage.getItem("accessToken");
+    if (token) {
+      fetchCurrentUser();
+    } else {
+      setUserRole("bidder");
+      setCurrentUser(null);
+    }
+
+    checkAndLoadOrder();
+  }, [product]);
+
+  const checkAndLoadOrder = async () => {
+  if (!product) return;
+  if (product.status !== "ended") return;
+
+  const res = await fetch(
+    `http://localhost:3000/api/orders/product/${product._id}`
+  );
+
+  if (!res.ok) {
+    console.log("No order found");
+    return;
+  }
+
+  const data = await res.json();
+  console.log("Order response:", data);
+
+  const order = data.orders?.[0];
+  if (!order) return;
+
+  console.log("Parsed order:", order);
+  setOrder(order);
+
+  if (
+    currentUserId === order.seller_id._id ||
+    currentUserId === order.buyer_id._id
+  ) {
+    setShowOrderModal(true);
+  }
+};
+
 
   const maskName = (name) => {
     if (!name) return "Ẩn danh";
@@ -109,47 +195,6 @@ export const ProductDetailPage = () => {
     return `vừa mới`;
   };
 
-  useEffect(() => {
-    fetchProduct(id);
-    if (!product) return;
-    setMainImage(product.image_url?.[0]);
-    setThumbnails(product.image_url || []);
-    setCurrentBid(
-      product.current_price == 0 ? product.start_price : product.current_price
-    );
-    setTotalBids(product.total_bids);
-    setBidStep(product.bid_step);
-    setEndTime(product.end_time);
-    setPostedTime(formatPostedTime(product.date));
-    setEditDescription("");
-    setDescriptionHistory(product.description_history || []);
-    console.log(product.description_history);
-    setSeller({
-      name: product.seller_id?.name,
-      rating_pos: product.seller_id?.rating_pos || 0,
-      rating_neg: product.seller_id?.rating_neg || 0,
-      avatar:
-        product.seller_id?.avatar_url ||
-        "https://www.gravatar.com/avatar/3b3be63a4c2a439b013787725dfce802?d=identicon",
-    });
-
-    if (product.is_autobid) {
-      fetchAutoBid(id);
-    } else {
-      fetchBids(id);
-    }
-
-    fetchRelatedProducts(product.category_id);
-    fetchQuestions(id);
-    const token = localStorage.getItem("accessToken");
-    if (token) {
-      fetchCurrentUser();
-    } else {
-      setUserRole("bidder");
-      setCurrentUser(null);
-    }
-  }, [product]);
-
   const fetchBids = async (id) => {
     const res = await fetch(`http://localhost:3000/api/bids/product/${id}`);
     const data = await res.json();
@@ -169,7 +214,7 @@ export const ProductDetailPage = () => {
     const activeBids = mapped.filter((b) => b.status);
     if (activeBids.length > 0) {
       setCurrentBid(activeBids[0].amount);
-      setTotalBids(activeBids.length);
+      // setTotalBids(activeBids.length);
 
       const topBidData = data.find((b) => b._id === activeBids[0].id);
       if (topBidData) {
@@ -180,6 +225,16 @@ export const ProductDetailPage = () => {
             (topBidData.bidder_id?.rating_pos || 0) +
             (topBidData.bidder_id?.rating_neg || 0),
           avatar: topBidData.bidder_id?.avatar_url,
+        });
+
+        setBuyer({
+          _id: topBidData.bidder_id?._id,
+          name: topBidData.bidder_id?.name,
+          rating_pos: topBidData.bidder_id?.rating_pos || 0,
+          rating_neg: topBidData.bidder_id?.rating_neg || 0,
+          avatar_url:
+            topBidData.bidder_id?.avatar_url ||
+            "https://www.gravatar.com/avatar/3b3be63a4c2a439b013787725dfce802?d=identicon",
         });
       }
     }
@@ -215,6 +270,16 @@ export const ProductDetailPage = () => {
             (topBidData.current_holder?.rating_neg || 0) +
             (topBidData.current_holder?.rating_pos || 0),
           avatar:
+            topBidData.current_holder?.avatar_url ||
+            "https://www.gravatar.com/avatar/3b3be63a4c2a439b013787725dfce802?d=identicon",
+        });
+
+        setBuyer({
+          _id: topBidData.current_holder?._id,
+          name: topBidData.current_holder?.name,
+          rating_pos: topBidData.current_holder?.rating_pos || 0,
+          rating_neg: topBidData.current_holder?.rating_neg || 0,
+          avatar_url:
             topBidData.current_holder?.avatar_url ||
             "https://www.gravatar.com/avatar/3b3be63a4c2a439b013787725dfce802?d=identicon",
         });
@@ -254,6 +319,7 @@ export const ProductDetailPage = () => {
           setRelativeTime("Đã kết thúc");
           setProductStatus("closed");
           clearInterval(timer);
+          checkAndLoadOrder();
           return;
         }
         const h = Math.floor(diff / 3600000);
@@ -272,7 +338,8 @@ export const ProductDetailPage = () => {
       setBidError("Vui lòng nhập giá đấu");
       return;
     }
-    const newBid = parseFloat(bidInput);
+    const newBid = Number.parseFloat(bidInput);
+   
     const minBid = currentBid + bidStep;
     if (newBid < minBid) {
       setBidError(
@@ -289,7 +356,7 @@ export const ProductDetailPage = () => {
 
     const bidderId = currentUserId;
     console.log("Bid placed:", newBid);
-
+    
     try {
       let url;
       let body;
@@ -323,6 +390,29 @@ export const ProductDetailPage = () => {
     }
   }
 
+  async function createOrder(productId, sellerId, buyerId) {
+    try {
+      const response = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          product_id: productId,
+          seller_id: sellerId,
+          buyer_id: buyerId,
+        }),
+      });
+      if (!response.ok) {
+        throw new Error("Không thể tạo order");
+      }
+      const data = await response.json();
+      console.log("[v0] Order created:", data);
+      return data;
+    } catch (error) {
+      console.error("[v0] Create order error:", error);
+      throw error;
+    }
+  }
+
   async function handleBuyNow() {
     if (
       !window.confirm("Bạn chắc chắn muốn mua ngay? Sản phẩm sẽ được đóng lại.")
@@ -331,7 +421,9 @@ export const ProductDetailPage = () => {
     }
     const productId = product._id;
     const buyerId = currentUserId;
+    const sellerId = product.seller_id;
     try {
+      // Cập nhật sản phẩm: kết thúc phiên đấu giá
       const response = await fetch(
         `http://localhost:3000/api/product/${productId}`,
         {
@@ -348,11 +440,17 @@ export const ProductDetailPage = () => {
         throw new Error("Không thể mua ngay sản phẩm");
       }
       const data = await response.json();
-      console.log("Buy Now thành công:", data);
-      alert("Mua ngay thành công! Sản phẩm đã kết thúc.");
+      console.log("[v0] Buy Now thành công:", data);
+
+      await createOrder(productId, sellerId, buyerId);
+
+      alert("Mua ngay thành công! Order đã được tạo.");
       setProduct(data);
+
+      // Reload để hiển thị modal hoàn tất đơn hàng
+      window.location.reload();
     } catch (error) {
-      console.error("Lỗi khi mua ngay:", error);
+      console.error("[v0] Lỗi khi mua ngay:", error);
       alert("Có lỗi xảy ra khi mua ngay.");
     }
   }
@@ -409,7 +507,6 @@ export const ProductDetailPage = () => {
 
       setDescriptionHistory(data.description_history);
 
-      // reset UI
       setNewDescription("");
       setIsEditMode(false);
 
@@ -426,18 +523,14 @@ export const ProductDetailPage = () => {
     }
 
     try {
-      // Update bid status to false
       const bidUrl = product.is_autobid
         ? `http://localhost:3000/api/autobids/${bidId}`
         : `http://localhost:3000/api/bids/${bidId}`;
 
-      await fetch(bidUrl, {
+      await fetch(`http://localhost:3000/api/bids/${bidId}/reject`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: false }),
       });
 
-      // Add to banned_bidders
       console.log(bidderId);
       await fetch(`http://localhost:3000/api/product/${product._id}`, {
         method: "PATCH",
@@ -449,7 +542,6 @@ export const ProductDetailPage = () => {
 
       alert("Đã từ chối người đấu giá");
 
-      // Refresh bids
       if (product.is_autobid) {
         fetchAutoBid(id);
       } else {
@@ -462,38 +554,41 @@ export const ProductDetailPage = () => {
     }
   };
 
-  // const handleSubmitReview = async () => {
-  //   if (!reviewText.trim()) {
-  //     alert("Vui lòng nhập đánh giá");
-  //     return;
-  //   }
+  const handleSubmitReview = async () => {
+    if (!reviewText.trim()) {
+      alert("Vui lòng nhập đánh giá");
+      return;
+    }
 
-  //   try {
-  //     const response = await fetch("http://localhost:3000/api/reviews", {
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify({
-  //         product_id: product._id,
-  //         seller_id: product.seller_id._id,
-  //         reviewer_id: currentUserId,
-  //         rating: reviewRating,
-  //         comment: reviewText,
-  //       }),
-  //     });
+    // TODO: Submit review
+    // try {
+    //   const response = await fetch("http://localhost:3000/api/reviews", {
+    //     method: "POST",
+    //     headers: { "Content-Type": "application/json" },
+    //     body: JSON.stringify({
+    //       product_id: product._id,
+    //       seller_id: product.seller_id._id,
+    //       reviewer_id: currentUserId,
+    //       rating: reviewRating,
+    //       comment: reviewText,
+    //     }),
+    //   });
+    //
+    //   if (response.ok) {
+    //     alert("Đã gửi đánh giá thành công!");
+    //     setReviewText("");
+    //     setReviewRating(5);
+    //     setShowReviewForm(false);
+    //   } else {
+    //     alert("Không thể gửi đánh giá");
+    //   }
+    // } catch (error) {
+    //   console.error("Error submitting review:", error);
+    //   alert("Có lỗi xảy ra");
+    // }
 
-  //     if (response.ok) {
-  //       alert("Đã gửi đánh giá thành công!");
-  //       setReviewText("");
-  //       setReviewRating(5);
-  //       setShowReviewForm(false);
-  //     } else {
-  //       alert("Không thể gửi đánh giá");
-  //     }
-  //   } catch (error) {
-  //     console.error("Error submitting review:", error);
-  //     alert("Có lỗi xảy ra");
-  //   }
-  // };
+    alert("Chức năng đánh giá sẽ được kích hoạt sau!");
+  };
 
   const handleAnswerQuestion = async (questionId) => {
     const answer = answerText[questionId];
@@ -560,6 +655,10 @@ export const ProductDetailPage = () => {
     }
   };
 
+  const isSellerOrBuyer =
+    order &&
+    (currentUserId === order.seller_id || currentUserId === order.buyer_id);
+
   if (!product) return <p className="p-6">Đang tải...</p>;
 
   return (
@@ -570,6 +669,52 @@ export const ProductDetailPage = () => {
       >
         ← Quay lại
       </button>
+
+      {productStatus === "closed" && isSellerOrBuyer && order && (
+        <div className="mb-6 bg-yellow-50 border-2 border-yellow-400 rounded-xl p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-bold text-lg text-yellow-800">
+                Hoàn tất đơn hàng
+              </h3>
+              <p className="text-sm text-yellow-700">
+                Phiên đấu giá đã kết thúc. Vui lòng hoàn tất giao dịch.
+              </p>
+            </div>
+            <button
+              onClick={() => setShowOrderModal(true)}
+              className="px-6 py-3 bg-yellow-500 text-white font-bold rounded-lg hover:bg-yellow-600 transition"
+            >
+              Mở quy trình
+            </button>
+          </div>
+        </div>
+      )}
+
+      {productStatus === "closed" && !isSellerOrBuyer && (
+        <div className="mb-6 bg-gray-100 border-2 border-gray-300 rounded-xl p-4">
+          <div className="text-center">
+            <h3 className="font-bold text-lg text-gray-700">
+              Sản phẩm đã kết thúc
+            </h3>
+            <p className="text-sm text-gray-600">
+              Phiên đấu giá đã kết thúc và có người thắng cuộc.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {showOrderModal && order && (
+        <OrderCompletionModal
+          isOpen={showOrderModal}
+          onClose={() => setShowOrderModal(false)}
+          order={order}
+          currentUserId={currentUserId}
+          product={product}
+          seller={seller}
+          buyer={buyer}
+        />
+      )}
 
       <div className="grid md:grid-cols-2 gap-8 bg-white p-8 rounded-xl shadow-2xl mb-6">
         <div>
@@ -652,7 +797,7 @@ export const ProductDetailPage = () => {
               </span>
             </div>
 
-            { userRole === "seller" &&
+            {
               <button
                 onClick={() => setIsEditMode(!isEditMode)}
                 className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition text-sm font-semibold"
@@ -703,7 +848,7 @@ export const ProductDetailPage = () => {
               </div>
             </div>
             <div className="bg-gray-100 p-4 rounded-lg text-center">
-              <div className="text-gray-600 text-sm">Số người đấu giá</div>
+              <div className="text-gray-600 text-sm">Số lượt đấu giá</div>
               <div className="text-black text-2xl font-bold">{totalBids}</div>
             </div>
           </div>
@@ -726,7 +871,6 @@ export const ProductDetailPage = () => {
           <div className="bg-gray-100 p-4 rounded-lg">
             <div className="text-lg font-bold mb-3">Mô tả chi tiết</div>
 
-            {/* Lịch sử mô tả */}
             <div className="space-y-4">
               {[...descriptionHistory]
                 .sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at))
@@ -745,8 +889,7 @@ export const ProductDetailPage = () => {
                 ))}
             </div>
 
-            {/* Form thêm mô tả */}
-            {userRole == "seller" && isEditMode && (
+            {isEditMode && (
               <div className="mt-6 pt-4 border-t border-gray-300">
                 <div className="text-sm font-semibold mb-2 text-blue-600">
                   Bổ sung mô tả cho sản phẩm
@@ -776,7 +919,7 @@ export const ProductDetailPage = () => {
           {seller && (
             <div className="flex items-center gap-4">
               <img
-                src={seller.avatar}
+                src={seller.avatar_url || "/placeholder.svg"}
                 alt={seller.name}
                 className="w-20 h-20 rounded-full object-cover border-2 border-indigo-200"
               />
@@ -813,7 +956,7 @@ export const ProductDetailPage = () => {
                     <select
                       value={reviewRating}
                       onChange={(e) =>
-                        setReviewRating(parseInt(e.target.value))
+                        setReviewRating(Number.parseInt(e.target.value))
                       }
                       className="w-full p-2 border border-gray-300 rounded text-sm"
                     >
@@ -854,12 +997,16 @@ export const ProductDetailPage = () => {
               Người đặt giá cao nhất hiện tại
             </h3>
           </div>
-          {highestBidder ? (
+          {highestBidder && (
             <div className="flex items-center gap-6 mb-4">
               <img
                 src={
                   highestBidder.avatar ||
-                  "https://www.gravatar.com/avatar/3b3be63a4c2a439b013787725dfce802?d=identicon"
+                  "https://www.gravatar.com/avatar/3b3be63a4c2a439b013787725dfce802?d=identicon" ||
+                  "/placeholder.svg" ||
+                  "/placeholder.svg" ||
+                  "/placeholder.svg" ||
+                  "/placeholder.svg"
                 }
                 alt="Người đấu giá"
                 className="w-24 h-24 rounded-full object-cover border-3 border-green-400"
@@ -891,8 +1038,6 @@ export const ProductDetailPage = () => {
                 <div className="text-xs text-gray-500 mt-1">VNĐ</div>
               </div>
             </div>
-          ) : (
-            <div className="text-gray-600">Chưa có người đặt giá nào.</div>
           )}
         </div>
       </div>
@@ -1004,7 +1149,7 @@ export const ProductDetailPage = () => {
                   {b.amount?.toLocaleString()} VNĐ
                 </div>
 
-                {userRole == "seller" && b.status && (
+                {b.status && (
                   <button
                     onClick={() => handleRejectBid(b.id, b.userId)}
                     className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition text-sm"
@@ -1167,6 +1312,19 @@ export const ProductDetailPage = () => {
           ))}
         </div>
       </div>
+
+      {order && showOrderModal && (
+        <OrderCompletionModal
+          isOpen={showOrderModal}
+          onClose={() => setShowOrderModal(false)}
+          order={order}
+          currentUserId={currentUserId}
+          product={product}
+          seller={seller}
+          buyer={buyer}
+        />
+      )}
     </div>
   );
 };
+export default ProductDetailPage;

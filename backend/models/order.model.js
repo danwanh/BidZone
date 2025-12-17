@@ -21,9 +21,8 @@ const OrderSchema = mongoose.Schema(
         },
 
         address: {
-            type: String,
-            required: true
-        },
+            type: String
+                },
 
         invoice_info: {
             type: String
