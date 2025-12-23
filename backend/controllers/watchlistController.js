@@ -22,8 +22,11 @@ export const createWatchlist = async (req, res) => {
       });
 
     // Check if productId is in database
-    if (!(await Product.findById(p_i)))
-      return res.status(404).json({ message: `Product id not found: ${p_i}` });
+    for (let id of p_i) {
+      if (!(await Product.findById(id))) {
+        return res.status(404).json({ message: `Product id not found: ${id}` });
+      }
+    }
 
     const newWatchlist = new Watchlist({
       user_id: u_i,
@@ -31,7 +34,9 @@ export const createWatchlist = async (req, res) => {
     });
     const savedWatchlist = await newWatchlist.save();
 
-    res.status(201).json(savedWatchlist);
+    res
+      .status(201)
+      .json({ message: "Create watchlist success", watchlist: savedWatchlist });
   } catch (error) {
     console.error("Error creating watchlist: ", error);
     res.status(500).json({ message: "Can't create watchlist" });
@@ -81,34 +86,31 @@ export const getWatchlistByUserId = async (req, res) => {
     const watchlist = await Watchlist.findOne({ user_id: userId }).populate(
       "product_id"
     );
-
+    if (!watchlist) {
+      console.log("No watchlist");
+      return res
+        .status(400)
+        .json({ message: "No watchlist", products: watchlist });
+    }
     const { page = 1, per_page = 6, q = "" } = req.query;
     const page_num = Math.max(1, Number(page) || 1);
     const per_page_num = Math.max(1, Number(per_page) || 6);
-    const filtered = watchlist.product_id.filter((p) =>
+    const filtered = watchlist?.product_id?.filter((p) =>
       p?.name?.toLowerCase().includes(q.toLowerCase())
     );
 
-    const result = filtered.slice(
+    const result = filtered?.slice(
       (page_num - 1) * per_page_num,
       (page_num - 1) * per_page_num + per_page_num
     );
-    const total_page = Math.ceil(filtered.length / per_page_num);
+    const total_page = Math.ceil(filtered?.length / per_page_num);
 
-    if (!watchlist) {
-      console.log(`No watchlist with user id: ${userId}`);
-      return res
-        .status(404)
-        .json({ message: `No watchlist found for user: ${userId}` });
-    } else
-      res
-        .status(200)
-        .json({
-          message: "Got successfully",
-          watchlist: watchlist,
-          total_page: total_page,
-          filtered: result,
-        });
+    res.status(200).json({
+      message: "Got successfully",
+      watchlist: watchlist,
+      total_page: total_page,
+      filtered: result,
+    });
   } catch (error) {
     console.error("Error reading watchlist: ", error);
     res.status(500).json({ message: "Can't read watchlist using user id" });
@@ -118,7 +120,7 @@ export const getWatchlistByUserId = async (req, res) => {
 // PATCH /api/watchlislt/:userId
 export const addToWatchlist = async (req, res) => {
   try {
-    const { userId: u_i } = req.params;
+    const { u_i } = req.params;
     let p_i;
     if (req.body.product_id === undefined) p_i = null;
     else p_i = req.body.product_id;
@@ -159,12 +161,15 @@ export const addToWatchlist = async (req, res) => {
 // DELETE /api/watchlislt/:userId/:productId
 export const removeFromWatchlist = async (req, res) => {
   try {
-    const { userId: u_i, productId: p_i } = req.params;
+    const { u_i } = req.params;
+    let p_i;
+    if (req.body.product_id === undefined) p_i = null;
+    else p_i = req.body.product_id;
 
-    if (!u_i || !p_i)
-      return res
-        .status(400)
-        .json({ message: "Missing required user id or product id" });
+    if (!u_i)
+      return res.status(400).json({ message: "Missing required user id" });
+    if (!p_i)
+      return res.status(400).json({ message: "Missing required product id" });
 
     // Check if userId is in database
     if (!(await User.findById(u_i)))

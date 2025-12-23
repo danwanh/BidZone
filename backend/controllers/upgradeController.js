@@ -5,19 +5,22 @@ import mongoose from "mongoose";
 // CREATE - Submit upgrade request (Bidder → Seller)
 export const createUpgradeRequest = async (req, res) => {
   try {
-    console.log("Backend");
-    const { user_id } = req.body;
-    console.log(req.body);
+    const {
+      user_id,
+      note = "",
+      first_name = "",
+      last_name = "",
+      email = "",
+      phone_number = "",
+      address = "",
+      city = "",
+      province = "",
+      postal = "",
+      country = "",
+    } = req.body;
     if (!mongoose.Types.ObjectId.isValid(user_id)) {
       return res.status(400).json({ message: "Invalid user_id" });
     }
-
-    // Check that user making request is the same as user_id (or admin)
-    // if (req.user._id.toString() !== user_id && req.user.role !== "admin") {
-    //   return res
-    //     .status(403)
-    //     .json({ message: "You can only request upgrade for yourself" });
-    // }
 
     // Check if user exists
     const user = await User.findById(user_id);
@@ -37,17 +40,25 @@ export const createUpgradeRequest = async (req, res) => {
       user_id: user_id,
       status: "pending",
     });
-    console.log(10);
     if (existingRequest) {
       return res
         .status(400)
         .json({ message: "You already have a pending upgrade request" });
     }
-    console.log(50);
 
     const newRequest = new UpgradeRequest({
-      user_id,
+      user_id: user_id,
       status: "pending",
+      note: note,
+      first_name: first_name,
+      last_name: last_name,
+      phone_number: phone_number,
+      address: address,
+      city: city,
+      province: province,
+      postal: postal,
+      country: country,
+      email: email,
     });
 
     await newRequest.save();

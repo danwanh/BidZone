@@ -1,19 +1,23 @@
 import { Link, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import http from "../api/axios";
 import ProductTimer from "./ProductTimer";
 import { useLiked } from "../context/LikedContext";
+import { useAuth } from "../context/AuthContext";
+import { toast } from "react-toastify";
+import axios from "../api/axios";
 
 const ProductCard = ({ product }) => {
   const [showPopup, setShowPopup] = useState(false);
   const { addToLikedList, removeFromLikedList, likedIds } = useLiked();
+  const { user } = useAuth();
 
   const [isLiked, setIsLiked] = useState(likedIds.has(product._id));
 
   const location = useLocation();
   const is_profile = location.pathname.endsWith("/profile");
-  const is_bought = product.seller_id === "6912e02b70323bdb4045f32";
+  const is_bought =
+    product.status === "ended" && product.bidder_id === user?._id;
 
   const { register, handleSubmit, watch, setValue } = useForm({
     defaultValues: {
@@ -24,9 +28,22 @@ const ProductCard = ({ product }) => {
 
   const vote = watch("vote");
 
-  const onSubmit = (data) => {
-    console.log(data);
-    setShowPopup(false);
+  const onSubmit = async (data) => {
+    try {
+      if (data?.vote == "up") {
+        const body = { id: product.seller_id };
+        setShowPopup(false);
+        const response = await axios.patch(`/api/users/rateup`, body);
+        console.log(response.data?.message || response);
+      } else if (data?.vote == "down") {
+        const body = { id: product.seller_id };
+        setShowPopup(false);
+        const response = await axios.patch(`/api/users/ratedown`, body);
+      }
+      setShowPopup(false);
+    } catch (err) {
+      toast.error(err.response?.data?.message || err);
+    }
   };
 
   const handleClick = () => {
@@ -37,6 +54,7 @@ const ProductCard = ({ product }) => {
     setValue("vote", "down");
     setValue("review", "Người thắng không thanh toán");
     handleSubmit(onSubmit)();
+    setShowPopup(false);
   };
 
   const handleLike = async (value) => {
@@ -61,7 +79,7 @@ const ProductCard = ({ product }) => {
     <div className="relative">
       {/* REVIEW POP UP */}
       {showPopup && (
-        <div className="flex flex-col gap-2 absolute -inset-y-2 -inset-x-10 bg-white py-6 px-2 rounded-lg h-full shadow-lg border border-black border-[2px] z-50">
+        <div className="flex flex-col gap-2 absolute -inset-y-2 -inset-x-5 bg-white py-6 px-2 rounded-lg h-10shadow-lg border border-black border-[2px] z-50">
           {/* Upvote + Downvote */}
           <div className="flex gap-2">
             {/* UPVOTE */}
@@ -110,16 +128,16 @@ const ProductCard = ({ product }) => {
             <div className="flex justify-end gap-4 mt-4">
               <button
                 type="button"
-                className="px-4 bg-gray-300 rounded-[100px] font-bold"
+                className="px-4 bg-gray-300 rounded-[100px] font-bold cursor-pointer"
                 onClick={() => setShowPopup(false)}
               >
                 Hủy
               </button>
 
-              {product.seller_id == "6912e02b70323bdb4045f327" && (
+              {product.seller_id == user._id && user.role === "seller" && (
                 <button
                   type="button"
-                  className="px-4 bg-gray-300 rounded-[100px] font-bold"
+                  className="px-4 bg-gray-300 rounded-[100px] font-bold cursor-pointer"
                   onClick={handleHuyBan}
                 >
                   Hủy bán
@@ -127,7 +145,7 @@ const ProductCard = ({ product }) => {
               )}
               <button
                 type="submit"
-                className="px-4 bg-blue-600 text-white font-bold rounded-[100px]"
+                className="px-4 bg-blue-600 text-white font-bold rounded-[100px] cursor-pointer"
               >
                 Đăng
               </button>
@@ -135,7 +153,8 @@ const ProductCard = ({ product }) => {
           </form>
         </div>
       )}
-      <div
+      <Link
+        to={`/products/${product._id}`}
         className={`w-[225px] h-fit flex flex-col bg-[#ffffff] rounded-[0.6rem] gap-[5px] overflow-hidden shadow-lg relative hover:-translate-y-2 transition-transform duration-150 ease-in-out hover:cursor-pointer`}
       >
         {is_bought && (
@@ -174,7 +193,9 @@ const ProductCard = ({ product }) => {
         <div className="px-[10px] flex flex-col">
           <p className="font-bold">{product.name}</p>
           {!is_profile && (
-            <p className="text-15 text-[#666666]">{product.description}</p>
+            <p className="text-[#666666] h-10 overflow-hidden line-clamp-2 text-sm">
+              {product.description}
+            </p>
           )}
         </div>
         {/* Gia and Lan ra gia */}
@@ -205,13 +226,13 @@ const ProductCard = ({ product }) => {
           <div className="h-fit w-full flex justify-center items-center">
             <p
               onClick={() => handleClick()}
-              className="hover:shadow-lg border hover:border-[#180154] text-white text-[16px] font-bold bg-[#667EEA] px-5 py-1 rounded-[100px] mb-4"
+              className="hover:shadow-lg cursor-pointer border hover:border-[#180154] text-white text-[16px] font-bold bg-[#667EEA] px-5 py-1 rounded-[100px] mb-4"
             >
               Đánh giá
             </p>
           </div>
         )}
-      </div>
+      </Link>
     </div>
   );
 };

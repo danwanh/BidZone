@@ -1,7 +1,9 @@
-import { useState } from "react";
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 
-const NavBar = ({ tab, setTab, labels }) => {
+const NavBar = ({ labels }) => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [tab, setTab] = useState(searchParams.get("tab") ?? "Đang đấu giá");
   const icons = [
     <svg
       width="26"
@@ -105,6 +107,19 @@ const NavBar = ({ tab, setTab, labels }) => {
       />
     </svg>,
   ];
+
+  useEffect(() => {
+    const currentTab = searchParams.get("tab") ?? "Đang đấu giá";
+    if (currentTab !== tab) {
+      setTab(currentTab);
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
+    const next = new URLSearchParams(searchParams);
+    next.set("tab", tab);
+    setSearchParams(next);
+  }, [tab]);
 
   return (
     <>

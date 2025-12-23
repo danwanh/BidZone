@@ -4,14 +4,14 @@ import api from "../../api/axios";
 import searchIcon from "../../assets/icons/search.svg";
 import sellIcon from "../../assets/icons/gavel-solid-full.svg";
 import adminIcon from "../../assets/icons/admin.svg";
-import {useAuth} from "../../context/AuthContext";
+import { useAuth } from "../../context/AuthContext";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [hoveredCategory, setHoveredCategory] = useState(null);
-  const {user} = useAuth();
+  const { user } = useAuth();
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -47,10 +47,12 @@ const Navbar = () => {
     : [];
 
   return (
-    <nav className="bg-white shadow-sm relative">
-      <div className="px-[6%] py-4 flex items-center justify-between">
+    <nav className="bg-white shadow-sm relative Space text-md">
+      <div className="px-[2%] py-4 flex items-center justify-between">
         <div className="flex items-center gap-8">
-          <div className="text-2xl font-bold text-purple-600">BidZone</div>
+          <Link to="/" className="text-2xl font-bold text-purple-600">
+            BidZone
+          </Link>
           <div className="relative">
             <button
               className="px-4 py-2 text-gray-700 hover:text-purple-600 transition-colors flex items-center gap-2"
@@ -129,15 +131,20 @@ const Navbar = () => {
           </div>
         </div>
 
-         {/* User action */}
-        <div className="flex items-center gap-4">
+        {/* User action */}
+        <div className="flex items-center gap-4 text-md">
           {!user && (
             <>
-              <Link to="/auth" state={{page : "REGISTER"}} className="text-gray-700 hover:underline">
+              <Link
+                to="/auth"
+                state={{ page: "REGISTER" }}
+                className="text-gray-700 hover:underline"
+              >
                 Đăng ký
               </Link>
               <Link
-                to="/auth" state={{page : "LOGIN"}}
+                to="/auth"
+                state={{ page: "LOGIN" }}
                 className="px-6 py-2 bg-orange-500 text-white rounded-full hover:bg-orange-600 transition-colors"
               >
                 Đăng nhập
@@ -146,12 +153,11 @@ const Navbar = () => {
           )}
 
           {user && (
-            <>
+            <div className="text-[18px] flex gap-2">
               {/* Yêu thích */}
               <Link
-                to="/favorites"
-                className="flex items-center text-white font-semibold text-xl bg-red-500 rounded-2xl px-2 p-1 gap-1 
-                text-gray-700 hover:text-gray-600"
+                to="/profile?tab=Yêu+thích&page=1"
+                className="flex items-center text-[#1e0c4d] font-semibold rounded-xl px-4 hover:shadow"
                 title="Yêu thích"
               >
                 <span>Yêu thích</span>
@@ -159,17 +165,17 @@ const Navbar = () => {
 
               {/* Đã mua */}
               <Link
-                to="/purchased"
-                className="flex items-center gap-1 text-gray-700 hover:text-gray-600"
+                to="/profile?tab=Đã+mua&page=1"
+                className="flex items-center text-[#1e0c4d] font-semibold rounded-xl px-4 hover:shadow"
                 title="Đã mua"
               >
-                <span className="text-xl font-semibold">Đã mua</span>
+                <span className="font-semibold">Đã mua</span>
               </Link>
 
               {/* Seller và Admin mới thấy nút Đăng sản phẩm */}
-              {(user.role === "seller") && (
+              {user.role === "seller" && (
                 <Link
-                  to="/product/new"
+                  to="/products/new"
                   className="flex items-center gap-1 bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
                   title="Đăng sản phẩm"
                 >
@@ -185,7 +191,11 @@ const Navbar = () => {
                   className="flex items-center gap-1 bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700"
                   title="Bảng admin"
                 >
-                  <img src={adminIcon } alt="Admin_Dashboard" className="w-5 h-5" />
+                  <img
+                    src={adminIcon}
+                    alt="Admin_Dashboard"
+                    className="w-5 h-5"
+                  />
                   <span className="">Bảng Admin</span>
                 </Link>
               )}
@@ -193,12 +203,12 @@ const Navbar = () => {
               {/* Profile */}
               <Link
                 to="/profile"
-                className="flex items-center bg-orange-500 px-2 p-1 rounded-2xl gap-1 text-gray-700 hover:text-purple-600"
+                className="flex items-center bg-[#f4955e] px-4 p-1 rounded-xl gap-1 hover:shadow-lg"
                 title="Trang cá nhân"
               >
-                 <span className="text-white text-xl font-semibol">{user.name}</span>
+                <span className="text-white font-semibold">{user.name}</span>
               </Link>
-            </>
+            </div>
           )}
         </div>
       </div>

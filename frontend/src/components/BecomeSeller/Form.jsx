@@ -6,11 +6,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import NavBar from "./NavBar";
 import axios from "../../api/axios";
 import Email from "./EmailVerify";
+import { toast } from "react-toastify";
+import { useAuth } from "../../context/AuthContext";
 
 const formSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),
-  email: z.string().email("Please enter a valid email address"),
   phoneNumber: z.string().min(1, "Phone number is required"),
   address: z.string().min(1, "Address is required"),
   city: z.string().min(1, "City is required"),
@@ -21,6 +22,25 @@ const formSchema = z.object({
 
 const Form = () => {
   const [step, setStep] = useState(1);
+  const [isSending, setIsSending] = useState(false);
+  const { user } = useAuth();
+
+  const sendEmail = async () => {
+    if (isSending) return;
+    setIsSending(true);
+
+    try {
+      await axios.post("/api/otp/send", {
+        email: user.email,
+      });
+
+      console.log("OTP sent");
+    } catch (error) {
+      console.error("Error sending OTP:", error);
+    } finally {
+      setIsSending(false);
+    }
+  };
 
   const {
     register,
@@ -34,6 +54,7 @@ const Form = () => {
 
   const onSubmit = (data) => {
     console.log("Form submitted:", data);
+    sendEmail();
     setStep(2);
     window.scrollTo(0, 600);
   };
@@ -43,12 +64,12 @@ const Form = () => {
       const values = getValues();
 
       const dataToSend = {
-        user_id: "69111e8a06251b39d3acd8f9",
-        admin_id: "69111e8a06251b39d3acd8f9",
+        user_id: user._id,
+        admin_id: "",
         status: "pending",
         first_name: values.firstName,
         last_name: values.lastName,
-        email: values.email,
+        email: user.email,
         phone_number: values.phoneNumber,
         address: values.address,
         city: values.city,
@@ -65,8 +86,18 @@ const Form = () => {
       });
 
       console.log("Form submitted successfully:", response.data);
-    } catch (error) {
-      console.log(err.response?.data?.message || err.message);
+    } catch (err) {
+      if (
+        err.response?.data?.message ===
+        "You already have a pending upgrade request"
+      ) {
+        toast.error(
+          "You've already sent an update request and it hasn't expired"
+        );
+      } else {
+        toast.error(err.response?.data?.message || err.message);
+        console.log(err.response?.data?.message || err.message);
+      }
     }
   };
 
@@ -117,23 +148,6 @@ const Form = () => {
 
           {/* Email & Phone */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 gap-x-15 mb-4">
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Email Address <span className="text-red-500">*</span>
-              </label>
-              <input
-                {...register("email")}
-                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-                  errors.email ? "border-red-500" : "border-gray-300"
-                }`}
-              />
-              {errors.email && (
-                <p className="text-red-500 text-xs mt-1">
-                  {errors.email.message}
-                </p>
-              )}
-            </div>
-
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 Phone Number <span className="text-red-500">*</span>
@@ -268,10 +282,10 @@ const Form = () => {
         >
           <NavBar step={step} />
           <Email
-            user_email={getValues("email")}
-            first_name={getValues("firstName")}
-            step={step}
+            user_email={"giaobao2kk5@gmail.com"}
             setStep={setStep}
+            sendEmail={sendEmail}
+            isSending={isSending}
           />
         </div>
       )}
@@ -293,11 +307,6 @@ const Form = () => {
             <div>
               <p className="text-gray-500 font-semibold">Last Name</p>
               <p className="text-gray-800">{getValues("lastName")}</p>
-            </div>
-
-            <div>
-              <p className="text-gray-500 font-semibold">Email</p>
-              <p className="text-gray-800">{getValues("email")}</p>
             </div>
 
             <div>

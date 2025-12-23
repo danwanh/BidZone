@@ -9,10 +9,20 @@ const UserSchema = mongoose.Schema(
       required: [true, "Please enter role"],
     },
 
+    username: {
+      type: String,
+      // required: [true, "Please enter username"],
+    },
+
     name: {
       type: String,
       required: [true, "Please enter name"],
-      unique: true,
+      // unique: true,
+    },
+
+    gender: {
+      type: String,
+      enum: ["Nam", "Nữ", "Khác"],
     },
 
     email: {
@@ -64,13 +74,17 @@ const UserSchema = mongoose.Schema(
     social_is: {
       type: String,
     },
-    
+
     oauth: {
       google: {
         id: String,
         raw: Object,
       },
       facebook: {
+        id: String,
+        raw: Object,
+      },
+      github: {
         id: String,
         raw: Object,
       },

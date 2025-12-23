@@ -4,6 +4,7 @@ import axios from "../../api/axios";
 import ProductCard from "../ProductCard";
 import { useLiked } from "../../context/LikedContext";
 import Pagination from "./Pagination";
+import { useAuth } from "../../context/AuthContext";
 
 const BoughtList = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -11,6 +12,7 @@ const BoughtList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [totalPage, setTotalPage] = useState(1);
+  const { user } = useAuth();
 
   const page = searchParams.get("page") || 1;
   const per_page = 6;
@@ -26,7 +28,7 @@ const BoughtList = () => {
   }, [page, q]);
 
   useEffect(() => {
-    const p = new URLSearchParams();
+    const p = new URLSearchParams(searchParams);
     p.set("page", 1);
     setSearchParams(p);
   }, []);
@@ -39,7 +41,7 @@ const BoughtList = () => {
         setError(null);
 
         const json = await axios.get(
-          `/api/product/user/69111e8a06251b39d3acd8f9?${queryString}`
+          `/api/product/user/${user._id}?${queryString}`
         );
         setTotalPage(json.data.total_page);
         const data = json.data.products;
@@ -47,9 +49,12 @@ const BoughtList = () => {
         if (isMounted) {
           setProducts(data);
         }
-      } catch (error) {
-        console.error("Error loading products", error);
-        if (isMounted) setError(error.message || "Unable to load products");
+      } catch (err) {
+        console.error(
+          err?.response?.data?.message || "Error loading products",
+          err
+        );
+        if (isMounted) setError(err.message || "Unable to load products");
       } finally {
         if (isMounted) setLoading(false);
       }
