@@ -1,25 +1,38 @@
 import Category from "../models/category.model.js";
+import Product from "../models/product.model.js";
+import mongoose from "mongoose";
+const { ObjectId } = mongoose.Types;
 
 // POST /api/category
 export const createCategory = async (req, res) => {
   try {
     const { category_id, name, slug } = req.body;
 
+    if (
+      category_id &&
+      category_id !== "" &&
+      !mongoose.isValidObjectId(category_id)
+    ) {
+      return res.status(400).json({ message: "Invalid category_id format" });
+    }
+    const CATEGORY_ID = category_id === "" ? null : new ObjectId(category_id);
+
     if (!name) {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
-    if (category_id) {
-      const parent = await Category.findById(category_id);
+    if (CATEGORY_ID) {
+      const parent = await Category.findById(CATEGORY_ID);
       if (!parent)
-        return res.status(400).json({ message: `Can't find parent id: ${category_id}` });
+        return res
+          .status(400)
+          .json({ message: `Can't find parent id: ${CATEGORY_ID}` });
     }
 
-    const newCategory = new Category({ category_id, name, slug });
+    const newCategory = new Category({ category_id: CATEGORY_ID, name, slug });
     const savedCategory = await newCategory.save();
 
     res.status(201).json(savedCategory);
-    
   } catch (err) {
     console.error("Error creating category:", err);
     res.status(500).json({ message: "Can't create category" });
@@ -41,7 +54,9 @@ export const getAllCategories = async (req, res) => {
 export const getAllTopCategories = async (req, res) => {
   try {
     const categories = await Category.find({ category_id: null });
-    res.status(200).json(categories);
+    res
+      .status(200)
+      .json({ message: "Successful pull", categories: categories || [] });
   } catch (err) {
     console.error("Error fetching top level categories:", err);
     res.status(500).json({ message: `Can't get top categories` });
@@ -66,16 +81,19 @@ export const getLowerCategoriesById = async (req, res) => {
     const { categoryId: c_i } = req.params;
 
     // Check if id is in database
-    if(!await Category.findById(c_i))
-      return res.status(404).json({message: "ID not found"});
-
+    if (!(await Category.findById(c_i)))
+      return res.status(404).json({ message: "ID not found" });
 
     const categories = await Category.find({ category_id: c_i });
     if (categories.length === 0) {
       console.log(`No child found for: ${c_i}`);
-      res.status(404).json({ message: "No child found" });
+      res
+        .status(200)
+        .json({ message: `No child foud for ${c_i}`, categories: categories });
     } else {
-      res.status(200).json(categories);
+      res
+        .status(200)
+        .json({ message: "Successful pull", categories: categories });
     }
   } catch (err) {
     console.error("Error fetching lower categories:", err);
@@ -87,23 +105,24 @@ export const getLowerCategoriesById = async (req, res) => {
 export const changeCategoryById = async (req, res) => {
   try {
     const { categoryId: c_i } = req.params;
-    
+
     // Check if id is in database
-    if(!await Category.findById(c_i))
-      return res.status(404).json({message: "ID not found"});
-    
+    if (!(await Category.findById(c_i)))
+      return res.status(404).json({ message: "ID not found" });
+
     const updates = {};
 
-    if (req.body.category_id !== undefined){
+    if (req.body.category_id !== undefined) {
       const cat_id = req.body.category_id;
       const parent = await Category.findById(cat_id);
       if (!parent)
-        return res.status(400).json({ message: `Can't find parent id: ${cat_id}` });
+        return res
+          .status(400)
+          .json({ message: `Can't find parent id: ${cat_id}` });
       updates.category_id = cat_id;
-    } 
+    }
     if (req.body.name !== undefined) updates.name = req.body.name;
     if (req.body.slug !== undefined) updates.slug = req.body.slug;
-
 
     const updated_category = await Category.findByIdAndUpdate(
       c_i,
@@ -111,8 +130,9 @@ export const changeCategoryById = async (req, res) => {
       { new: true, runValidators: true } // return updated doc
     );
 
-    if (!updated_category) return res.status(404).json({ message: "Category not found" });
-    else return res.status(200).json( updated_category );
+    if (!updated_category)
+      return res.status(404).json({ message: "Category not found" });
+    else return res.status(200).json(updated_category);
   } catch (err) {
     console.error("Error changing category:", err);
     res.status(500).json({ message: "Couldn't change category" });
@@ -121,22 +141,32 @@ export const changeCategoryById = async (req, res) => {
 
 // [DELETE] /api/category/:categoryID
 export const deleteCategoryById = async (req, res) => {
-  try{
-      const { categoryId: c_i } = req.params;
-    
-      // Check if id is in database
-      if(!await Category.findById(c_i))
-        return res.status(404).json({message: "ID not found"});
-    
-      const category = await Category.findById(c_i);
-      if (!category) return res.status(404).json({ message: "Category not found" });
-    
-      await Category.deleteMany({ category_id: c_i });
-      await Category.findByIdAndDelete(c_i);
-      res.status(204).json({ message: `Deleted category: ${c_i} and all child category` });
-  }
-  catch (error){
+  try {
+    const { categoryId } = req.params;
+
+    const category = await Category.findById(categoryId);
+    if (!category)
+      return res.status(404).json({ message: "Category not found" });
+
+    const cat_id_list = await Category.find({
+      $or: [{ _id: categoryId }, { category_id: categoryId }],
+    }).select("_id");
+
+    const products = await Product.find({ category_id: { $in: cat_id_list } });
+
+    if (products.length > 0) {
+      return res
+        .status(404)
+        .json({ message: "Can't delete category with products" });
+    }
+
+    await Category.deleteMany({ category_id: categoryId });
+    await Category.findByIdAndDelete(categoryId);
+    res.status(204).json({
+      message: `Deleted category: ${categoryId} and all child category`,
+    });
+  } catch (error) {
     console.error("Error deleting category:", error);
-    res.status(500).json({ message: `Couldn't delete category: ${c_i}` });
+    res.status(500).json({ message: `Couldn't delete category` });
   }
 };

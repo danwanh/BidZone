@@ -181,6 +181,44 @@ export const getBoughtByUserId = async (req, res) => {
   }
 };
 
+// GET /api/product/category/:id
+export const getBoughtByCategoryId = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const categories = await Category.find({
+      $or: [{ _id: id }, { category_id: id }],
+    }).select(_id);
+
+    categories.map((c) => {});
+    const products = await Product.find({
+      category_id: { $in: categories },
+      status: "ended",
+    });
+    const { page = 1, per_page = 10000, q = "" } = req.query;
+    const page_number = Math.max(1, Number(page) || 1);
+    const per_page_number = Math.max(1, Number(per_page) || 1);
+    const filtered = products.filter((p) =>
+      p.name.toLowerCase().includes(q.toLowerCase())
+    );
+    const result = filtered.slice(
+      (page_number - 1) * per_page_number,
+      (page_number - 1) * per_page_number + per_page_number
+    );
+
+    const total_page = Math.ceil(filtered.length / per_page_number);
+
+    res.status(200).json({
+      message: "Succesfully got bought list ",
+      products: result,
+      total_page: total_page,
+    });
+  } catch (error) {
+    console.error("Error getting product: ", error);
+    res.status(500).json({ message: "Can't get product" });
+  }
+};
+
 export const getProductByCategoryId = async (req, res) => {
   try {
     const { categoryId = "" } = req.query;
@@ -416,6 +454,40 @@ export const getProductsByCategory = async (req, res) => {
 
       products = [...products, ...extraProducts];
     }
+
+    return res.json(products);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+// GET /products/by-category/simple/:id
+export const getProductsByCategoryIdSimple = async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    const categories = await Category.find({
+      $or: [{ _id: id }, { category_id: id }],
+    }).select("_id");
+
+    if (categories.length === 0) {
+      return res.status(404).json({ message: "Category not found" });
+    }
+
+    const { status = "" } = req.query;
+    const STATUS =
+      status !== "" && status !== "active" && status !== "ended" ? "" : status;
+
+    const queryFilter = {
+      category_id: { $in: categories },
+    };
+
+    if (STATUS !== "") {
+      queryFilter.status = STATUS;
+    }
+
+    let products = await Product.find(queryFilter).lean();
 
     return res.json(products);
   } catch (err) {

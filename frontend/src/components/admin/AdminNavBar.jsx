@@ -78,9 +78,9 @@ const AdminNavBar = () => {
   ];
 
   return (
-    <div className="w-60 h-fill bg-[rgba(154,66,66,0.65)] text-white">
+    <div className="w-53 h-fill bg-[rgba(154,66,66,0.65)] text-white">
       {/* Header */}
-      <div className="p-6 border-b border-rose-300">
+      <div className="py-4 px-6">
         <div className="flex items-center gap-2">
           <svg
             width="40"
@@ -109,15 +109,15 @@ const AdminNavBar = () => {
       </div>
 
       {/* Menu Items */}
-      <nav className="py-4">
+      <nav className="py-2">
         {menuItems.map((item) => (
           <button
             key={item.id}
             onClick={() => setTab(item.label)}
-            className={`w-full px-6 py-3 flex items-center gap-3 transition-colors ${
+            className={`w-full px-6 py-3 flex items-center gap-3 cursor-pointer ${
               tab === item.label
                 ? "bg-[#523232af] border-l-4 border-white text-white"
-                : "hover:bg-[#391e1e82] hover:border-l-1 hover:border-white text-[#404040]"
+                : "hover:bg-[#5f363644] hover:border-l-1 hover:border-white text-[#404040]"
             }`}
           >
             {item.icon}

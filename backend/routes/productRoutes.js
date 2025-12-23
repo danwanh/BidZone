@@ -6,6 +6,8 @@ import {
   getAllProducts,
   getProductById,
   getBoughtByUserId,
+  getBoughtByCategoryId,
+  getProductsByCategoryIdSimple,
   getProductBySellerId,
   deleteProductById,
   changeProductById,
@@ -22,6 +24,8 @@ const MAXIMUM_PICTURE_SENT = 25;
 router.post("/", addProduct);
 router.get("/", getAllProducts);
 router.get("/user/:id", getBoughtByUserId);
+router.get("/by-category/bought/:id", getBoughtByCategoryId);
+router.get("/by-category/simple/:id", getProductsByCategoryIdSimple);
 router.get("/top5/ending", getTop5Ending);
 router.get("/top5/bid", getTop5Bid);
 router.get("/top5/price", getTop5Price);
