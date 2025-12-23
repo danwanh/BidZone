@@ -1,5 +1,18 @@
 import Bid from "../models/bid.model.js";
 import Product from "../models/product.model.js";
+export const getBidById = async (req, res) => {
+    try {
+      const { id: bid_id } = req.params;
+  
+      const bid = await Product.findById(bid_id);
+  
+      if (!bid) return res.status(400).json({ message: "No bid found" });
+      else return res.status(200).json(bid);
+    } catch (error) {
+      console.error("Error getting bid: ", error);
+      res.status(500).json({ message: "Can't get bid" });
+    }
+}
 export const createBid = async (req, res) => {
   const { product_id, bidder_id, price } = req.body;
 
@@ -107,12 +120,12 @@ export const getAllBids = async (req, res) => {
   res.json(bids);
 };
 
-export const updateBid = async (req, res) => {
-  const { price } = req.body;
+export const updateBidStatus = async (req, res) => {
+  const { status } = req.body;
   const bid = await Bid.findById(req.params.id);
   if (!bid) return res.status(404).json({ message: "Bid not found" });
 
-  bid.price = price;
+  bid.status = status;
   await bid.save();
   res.json(bid);
 };
