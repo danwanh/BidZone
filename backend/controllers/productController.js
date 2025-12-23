@@ -11,7 +11,7 @@ export const addProduct = async (req, res) => {
   try {
     const {
       name,
-      description,
+      description, 
       category_id,
       seller_id,
       start_price,
@@ -20,7 +20,6 @@ export const addProduct = async (req, res) => {
       current_price,
       start_time,
       end_time,
-      bidder_id,
       is_autobid,
       status,
       total_bids,
@@ -30,26 +29,20 @@ export const addProduct = async (req, res) => {
       image_url,
     } = req.body;
 
-    // Check required fields
-    if (!name || !seller_id || !start_price) {
+    if (!name || !seller_id || !start_price || !end_time) {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
-    // Check if seller id is valid
     const seller = await User.findById(seller_id);
     if (!seller)
       return res.status(400).json({ message: "No user with that id" });
     if (seller.role !== "seller")
       return res.status(403).json({ message: "User is not a seller" });
 
-    // Check if valid category id
     const category = await Category.findById(category_id);
     if (!category)
-      return res
-        .status(400)
-        .json({ message: `No category with that id: ${category_id}` });
+      return res.status(400).json({ message: "No category found" });
 
-    // Check valid status
     const valid_statuses = ["active", "ended", "cancelled"];
     if (!valid_statuses.includes(status)) {
       return res.status(400).json({ message: "Wrong status value" });
@@ -57,7 +50,6 @@ export const addProduct = async (req, res) => {
 
     const newProduct = new Product({
       name,
-      description,
       category_id,
       seller_id,
       start_price,
@@ -66,7 +58,6 @@ export const addProduct = async (req, res) => {
       current_price,
       start_time,
       end_time,
-      bidder_id,
       is_autobid,
       image_url,
       status,
@@ -74,15 +65,20 @@ export const addProduct = async (req, res) => {
       banned_bidders,
       allow_unrated_bidders,
       slug,
+
+      description_history: description
+        ? [{ description }]
+        : [],
     });
 
     await newProduct.save();
     res.status(201).json(newProduct);
   } catch (error) {
-    console.error("Error adding product: ", error);
+    console.error("Error adding product:", error);
     res.status(500).json({ message: "Can't add product" });
   }
 };
+
 // GET
 // GET /api/product
 export const getAllProducts = async (req, res) => {
@@ -290,19 +286,23 @@ export const getProductBySellerId = async (req, res) => {
 export const changeProductById = async (req, res) => {
   try {
     const { id: p_i } = req.params;
+    const { ban_bidder_id } = req.body;
 
-    // Find poduct
     const product = await Product.findById(p_i);
     if (!product) {
       return res.status(404).json({ message: "No product found with that id" });
     }
 
-    // Only update fields that exist in req.body
+    if (ban_bidder_id) {
+      if (!product.banned_bidders.includes(ban_bidder_id)) {
+        product.banned_bidders.push(ban_bidder_id);
+      }
+    }
+
     const allowedFields = [
       "name",
       "description",
       "category_id",
-      "seller_id",
       "start_price",
       "bid_step",
       "buy_now_price",
@@ -314,7 +314,6 @@ export const changeProductById = async (req, res) => {
       "image_url",
       "status",
       "total_bids",
-      "banned_bidders",
       "allow_unrated_bidders",
       "slug",
     ];
@@ -325,15 +324,14 @@ export const changeProductById = async (req, res) => {
       }
     });
 
-    // Save updated product
     const updatedProduct = await product.save();
-
     return res.status(200).json(updatedProduct);
   } catch (error) {
     console.error("Error changing product:", error);
     res.status(500).json({ message: "Can't change product" });
   }
 };
+
 
 // DELETE
 export const deleteProductById = async (req, res) => {
@@ -503,3 +501,47 @@ export const getLikedProducts = (req, res) => {
     return res.status(500).json({ message: "Server error" });
   }
 };
+
+export const addDescriptionHistory = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { description } = req.body;
+
+    if (!description) {
+      return res.status(400).json({
+        message: "Description is required",
+      });
+    }
+
+    const product = await Product.findByIdAndUpdate(
+      id,
+      {
+        $push: {
+          description_history: {
+            description,
+            updated_at: new Date(),
+          },
+        },
+      },
+      { new: true }
+    );
+
+    if (!product) {
+      return res.status(404).json({
+        message: "Product not found",
+      });
+    }
+
+    res.status(200).json({
+      message: "Description history added successfully",
+      description_history: product.description_history,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Server error",
+      error: error.message,
+    });
+  }
+};
+
+
