@@ -88,7 +88,7 @@ export const getAllProducts = async (req, res) => {
     const perPageNum = Math.max(1, Number(per_page) || 6);
     const { categoryId } = req.query;
 
-    const products = await Product.find();
+    let products = await Product.find();
 
     if (categoryId) {
       const category = await Category.findById(categoryId);

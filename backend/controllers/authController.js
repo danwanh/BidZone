@@ -1,7 +1,7 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import User from "../models/user.model.js";
-import { generateTokens } from "../services/tokenServices.js";
+import { generateTokens, generateRandomPassword } from "../services/authServices.js";
 import { sendEmail } from "../services/mailServices.js";
 
 // REGISTER - Create new user
@@ -183,15 +183,6 @@ export const oauthSuccess = async (req, res) => {
   }
 };
 
-const generateRandomPassword = (length = 10) => {
-  const chars =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&**()_+[]{}<>?";
-  return Array.from(
-    { length },
-    () => chars[Math.floor(Math.random() * chars.length)]
-  ).join("");
-};
-
 export const resetPassword = async (req, res) => {
   try {
     const { email } = req.body;
@@ -217,10 +208,57 @@ export const resetPassword = async (req, res) => {
     user.password_hash = newPasswordHash;
     await user.save();
 
+    const html = `
+    <div style="font-family: Arial, sans-serif; background-color: #f4f6f8; padding: 20px;">
+      <div style="max-width: 500px; margin: auto; background: #ffffff; padding: 24px; border-radius: 8px;">
+        
+        <h2 style="color: #2d3748; text-align: center;">
+          Đặt lại mật khẩu BidZone
+        </h2>
+
+        <p style="color: #4a5568;">
+          Xin chào,
+        </p>
+
+        <p style="color: #4a5568;">
+          Chúng tôi đã tạo <strong>mật khẩu mới</strong> cho tài khoản của bạn:
+        </p>
+
+        <div style="
+          background: #edf2f7;
+          padding: 12px;
+          font-size: 18px;
+          text-align: center;
+          letter-spacing: 1px;
+          border-radius: 6px;
+          margin: 16px 0;
+          font-weight: bold;
+        ">
+          ${newPassword}
+        </div>
+
+        <p style="color: #e53e3e; font-weight: bold;">
+           Vui lòng KHÔNG chia sẻ mật khẩu này cho bất kỳ ai.
+        </p>
+
+        <p style="color: #4a5568;">
+          Sau khi đăng nhập, bạn nên đổi mật khẩu ngay để đảm bảo an toàn.
+        </p>
+
+        <hr style="margin: 24px 0;" />
+
+        <p style="font-size: 12px; color: #718096; text-align: center;">
+          © ${new Date().getFullYear()} BidZone. All rights reserved.
+        </p>
+
+        </div>
+      </div>
+      `;
+
     await sendEmail(
       email,
       "Mật khẩu mới BidZone",
-      `Mật khẩu mới của bạn là:\n\n${newPassword}\n\n Vui lòng không gửi hay chuyển tiếp mật khẩu này cho bất kì ai khác.`
+      html
     );
 
     // 4. (Tùy chọn) Gửi email → hiện tại trả về JSON để test
@@ -232,4 +270,3 @@ export const resetPassword = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
-

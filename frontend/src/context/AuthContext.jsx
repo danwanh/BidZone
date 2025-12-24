@@ -41,18 +41,18 @@ export const AuthProvider = ({ children }) => {
           originalRequest._retry = true;
 
           try {
-            // 1. refresh token
+            // refresh token
             const refreshRes = await api.get("/api/auth/refresh");
             const newAccessToken = refreshRes.data.accessToken;
 
             accessTokenRef.current = newAccessToken;
             setAccessToken(newAccessToken);
 
-            // 2. retry request ban đầu
+            //retry request ban đầu
             originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
             const retryRes = await api(originalRequest);
 
-            // 3. lấy user lại (đây là phần quan trọng!)
+            // lấy user lại
             try {
               const meRes = await api.get("/api/users/me");
               setUser(meRes.data);
@@ -107,7 +107,7 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider
-      value={{ user, setUser, login, logout, accessToken, loading }}
+      value={{ user, setUser, login, logout, accessToken, setAccessToken, loading }}
     >
       {children}
     </AuthContext.Provider>

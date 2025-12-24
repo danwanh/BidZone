@@ -27,18 +27,6 @@ const Navbar = () => {
 
     fetchCategories();
 
-    // Kiểm tra user đăng nhập
-    // const fetchUser = async () => {
-    //   try {
-    //     const res = await api.get("/api/users/me"); // API trả user nếu có token hợp lệ
-    //     setUser(res.data.user);
-    //     console.log(user);
-    //   } catch (error) {
-    //     setUser(null); // chưa đăng nhập hoặc token hết hạn
-    //   }
-    // };
-
-    // fetchUser();
   }, []);
 
   const activeCategory = hoveredCategory || selectedCategory;
@@ -91,7 +79,7 @@ const Navbar = () => {
                             }`}
                             onMouseEnter={() => setHoveredCategory(category)}
                             onClick={() => setSelectedCategory(category)}
-                            to={`?categoryId=${category._id}`}
+                            to={`/products/?categoryId=${category._id}`}
                           >
                             {category.name}
                           </Link>
@@ -102,14 +90,15 @@ const Navbar = () => {
 
                 {/* Subcategories */}
                 {activeSubcategories.length > 0 && (
-                  <div className="bg-white rounded-r-lg shadow-lg border border-l-0 border-gray-200 py-2 min-w-[200px]">
+                  <div className="flex flex-col bg-white rounded-r-lg shadow-lg border border-l-0 border-gray-200 py-2 min-w-[200px]">
                     {activeSubcategories.map((subcategory) => (
-                      <button
+                      <Link
                         key={subcategory.name}
                         className="w-full text-left px-6 py-3 hover:bg-gray-100 transition-colors text-gray-700"
+                        to={`/products/?categoryId=${subcategory._id}`}
                       >
                         {subcategory.name}
-                      </button>
+                      </Link>
                     ))}
                   </div>
                 )}
