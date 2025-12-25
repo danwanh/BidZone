@@ -4,15 +4,13 @@ import axios from "../../api/axios";
 import ProductCard from "../ProductCard";
 import { useLiked } from "../../context/LikedContext";
 import Pagination from "./Pagination";
-import { useAuth } from "../../context/AuthContext";
 
-const SellingList = ({ status }) => {
+const SellingList = ({ status, userId }) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [totalPage, setTotalPage] = useState(1);
-  const { user } = useAuth();
 
   const page = searchParams.get("page") || 1;
   const per_page = 6;
@@ -42,7 +40,7 @@ const SellingList = ({ status }) => {
         setError(null);
 
         const json = await axios.get(
-          `/api/product/seller/${user._id}?${queryString}`
+          `/api/product/seller/${userId}?${queryString}`
         );
         setTotalPage(json.data.total_page);
         const data = json.data.products;

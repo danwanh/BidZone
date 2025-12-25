@@ -3,7 +3,12 @@ import api from "../../api/axios";
 import { toast } from "react-toastify";
 import { useForm } from "react-hook-form";
 
-const CategoryDetail = ({ category, categories, updateAction }) => {
+const CategoryDetail = ({
+  category,
+  categories,
+  updateAction,
+  deleteAction,
+}) => {
   const [isParent, setIsParent] = useState(false);
   const [parentName, setParentName] = useState("");
   const [childCategory, setChildCategory] = useState(0);
@@ -44,8 +49,8 @@ const CategoryDetail = ({ category, categories, updateAction }) => {
     try {
       setDeleting(true);
       const res = await api.delete(`api/category/${category._id}`);
+      deleteAction();
       toast.success("Đã xóa danh mục!");
-      updateAction();
     } catch (err) {
       const message = err.response?.data?.message || err.message;
       if (message === "Can't delete category with products") {
@@ -145,7 +150,11 @@ const CategoryDetail = ({ category, categories, updateAction }) => {
             className="text-center w-full ring-1 ring-gray-500 ring-inset. rounded-md py-2.5"
           />
         )}
-        {loading && <p className="py-2.5">LOADING</p>}
+        {loading && (
+          <div className="flex justify-center w-full">
+            <div className="h-12 w-12 animate-spin rounded-full border-4 border-rose-500 border-t-transparent" />
+          </div>
+        )}
         {!loading && !editing && <p className="py-2.5">{category.name}</p>}
       </h4>
       <form

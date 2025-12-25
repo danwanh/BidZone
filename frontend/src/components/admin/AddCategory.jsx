@@ -28,6 +28,7 @@ const AddCategory = ({ setAdd, parentCategory, updateAction }) => {
       };
       console.log("Form submitted", body);
       const response = await api.post("api/category", body);
+      console.log(response.data);
       toast.success("Success! Added category.");
       setAdd(false);
       updateAction();
@@ -65,7 +66,7 @@ const AddCategory = ({ setAdd, parentCategory, updateAction }) => {
       >
         <option value={""}>Không có danh mục cha</option>
         {parentCategory.map((n, index) => (
-          <option key={index} value={n.id}>
+          <option key={index} value={n._id}>
             {n.name}
           </option>
         ))}

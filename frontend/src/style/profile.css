@@ -95,3 +95,10 @@ select {
 option {
   border-radius: 10px;
 }
+
+.other_users_text {
+  color: #282e40;
+  padding: 2px 0px;
+  font-size: 18px;
+  font-weight: 600;
+}

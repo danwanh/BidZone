@@ -30,7 +30,11 @@ const SubCategoryList = ({ id, color, setSelected }) => {
 
   return (
     <div>
-      {loading && <div>Loading</div>}
+      {loading && (
+        <div
+          className={`h-8 w-8 animate-spin rounded-full border-3 border-[#a2a2a2] border-t-transparent`}
+        />
+      )}
       {error && (
         <div className="text-red-500">
           Error loading subcategories: {error.message}

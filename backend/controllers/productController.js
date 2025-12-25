@@ -11,7 +11,7 @@ export const addProduct = async (req, res) => {
   try {
     const {
       name,
-      description, 
+      description,
       category_id,
       seller_id,
       start_price,
@@ -66,9 +66,7 @@ export const addProduct = async (req, res) => {
       allow_unrated_bidders,
       slug,
 
-      description_history: description
-        ? [{ description }]
-        : [],
+      description_history: description ? [{ description }] : [],
     });
 
     await newProduct.save();
@@ -83,48 +81,74 @@ export const addProduct = async (req, res) => {
 // GET /api/product
 export const getAllProducts = async (req, res) => {
   try {
-    const { page = 1, q = "", per_page = 6 } = req.query;
+    const { page = 1, q = "", per_page = 6, categoryId, status } = req.query;
+
     const pageNum = Math.max(1, Number(page) || 1);
     const perPageNum = Math.max(1, Number(per_page) || 6);
-    const { categoryId } = req.query;
+    const skip = (pageNum - 1) * perPageNum;
 
-    const products = await Product.find();
+    let filter = {};
 
+    // --- 1. HANDLE CATEGORY LOGIC ---
     if (categoryId) {
-      const category = await Category.findById(categoryId);
+      const ids = categoryId.split(",");
 
-      if (!category)
+      const selectedCategories = await Category.find({ _id: { $in: ids } });
+
+      if (!selectedCategories.length) {
         return res.status(400).json({ message: "No category found" });
+      }
 
-      // Tim vategory con
-      if (category.category_id == null) {
-        const sub_category_ids = await Category.find({
-          category_id: category._id,
+      let targetCategoryIds = [];
+      const parentCategoryIds = [];
+      selectedCategories.forEach((cat) => {
+        if (cat.category_id == null) {
+          // Đây là danh mục cha -> Đẩy vào danh sách cần tìm con
+          parentCategoryIds.push(cat._id);
+        } else {
+          // Đây là danh mục con -> Lấy luôn ID này
+          targetCategoryIds.push(cat._id);
+        }
+      });
+
+      if (parentCategoryIds.length > 0) {
+        const subCategories = await Category.find({
+          category_id: { $in: parentCategoryIds },
         }).select("_id");
 
-        products.filter((p) => sub_category_ids.includes(p.category_id));
-      } else {
-        products = await Product.find({ category_id: category._id });
+        const subIds = subCategories.map((c) => c._id);
+        targetCategoryIds = [...targetCategoryIds, ...subIds];
+      }
+
+      if (targetCategoryIds.length > 0) {
+        filter.category_id = { $in: targetCategoryIds };
       }
     }
 
     if (q) {
-      products.filter((p) => p.name.toLowerCase().includes(q.toLowerCase()));
+      filter.name = { $regex: q, $options: "i" };
     }
 
-    const result = products.slice(
-      (pageNum - 1) * perPageNum,
-      (pageNum - 1) * perPageNum + perPageNum
-    );
+    if (status) {
+      filter.status = status;
+    }
+    const totalDocs = await Product.countDocuments(filter);
 
-    const total_page = Math.ceil(products.length / perPageNum);
+    // Fetch the actual data with Pagination
+    const products = await Product.find(filter)
+      .populate("category_id", "name")
+      .populate("seller_id", "username email")
+      .skip(skip)
+      .limit(perPageNum);
+
+    const total_page = Math.ceil(totalDocs / perPageNum);
 
     res.status(200).json({
       message: "Got product list successfully!",
       total_page: total_page,
       page: pageNum,
       per_page: perPageNum,
-      products: result,
+      products: products,
     });
   } catch (error) {
     console.error("Error getting all products: ", error.message);
@@ -331,7 +355,6 @@ export const changeProductById = async (req, res) => {
     res.status(500).json({ message: "Can't change product" });
   }
 };
-
 
 // DELETE
 export const deleteProductById = async (req, res) => {
@@ -543,5 +566,3 @@ export const addDescriptionHistory = async (req, res) => {
     });
   }
 };
-
-

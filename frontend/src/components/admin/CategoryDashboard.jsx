@@ -11,10 +11,15 @@ const CategoryDashboard = () => {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [action, setAction] = useState();
+  const [action, setAction] = useState(0);
 
   const updateAction = () => {
     setAction(action + 1);
+  };
+
+  const deleteAction = () => {
+    setAction(action + 1);
+    setSelectedCategory({});
   };
 
   useEffect(() => {
@@ -46,7 +51,7 @@ const CategoryDashboard = () => {
         <div className="lg:col-span-7 space-y-6 ">
           {loading && (
             <div className="flex justify-center items-center bg-white/80 h-140 backdrop-blur rounded-2xl p-6 shadow-lg">
-              <p className="text-2xl font-bold">Loading</p>
+              <div className="h-20 w-20 animate-spin rounded-full border-6 border-rose-500 border-t-transparent" />
             </div>
           )}
           {error && (
@@ -67,6 +72,7 @@ const CategoryDashboard = () => {
           <CategoryDetail
             category={selectedCategory || {}}
             updateAction={updateAction}
+            deleteAction={deleteAction}
             categories={categories}
           />
           <div className="grid grid-cols-2 gap-4">

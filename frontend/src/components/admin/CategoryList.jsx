@@ -3,9 +3,15 @@ import SubCategoryList from "./SubcategoryList";
 import AddCategory from "./AddCategory";
 
 const CategoryList = ({ setSelected, categories, updateAction }) => {
-  const parentCategory = categories.filter(
-    (c) => c.category_id === null || !c?.category_id
-  );
+  const [parentCategory, setParentCategory] = useState([]);
+
+  useEffect(() => {
+    const filtered = categories.filter(
+      (c) => c.category_id === null || !c?.category_id
+    );
+
+    setParentCategory(filtered);
+  }, [categories]);
   const [add, setAdd] = useState(false);
 
   function generateNiceColors(n) {
@@ -73,7 +79,7 @@ const CategoryList = ({ setSelected, categories, updateAction }) => {
           <div className=" h-120 overflow-y-scroll">
             <table className="w-full border-collapse mt-4 overflow-y-scroll">
               <thead>
-                <tr className="border-b-2 border-gray-800">
+                <tr className="border-b-2 border-gray-800 text-left font-semibold text-gray-600">
                   <th className="text-left p-3 font-semibold">Danh mục cha</th>
                   <th className="text-center p-3 font-semibold">
                     Danh mục con
@@ -84,7 +90,7 @@ const CategoryList = ({ setSelected, categories, updateAction }) => {
                 {parentCategory.map((pc, index) => (
                   <tr
                     key={index}
-                    className="border-b border-gray-200 hover:bg-gray-50"
+                    className="border-b border-gray-300 hover:bg-gray-50"
                   >
                     <td>
                       <button

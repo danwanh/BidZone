@@ -42,6 +42,6 @@ router.put("/:id/cancel", authenticate, cancelUpgradeRequest);
 // DELETE
 // DELETE /api/upgrade/:id
 // Protected: Delete upgrade request (Admin only)
-router.delete("/:id", authenticate, isAdmin, deleteUpgradeRequest);
+router.delete("/:id", authenticate, deleteUpgradeRequest);
 
 export default router;
