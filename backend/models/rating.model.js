@@ -1,33 +1,32 @@
 import mongoose from "mongoose";
 
-const RatingSchema = mongoose.Schema(
-    {
-        product_id: {
-            type: mongoose.Schema.Types.ObjectId,
-            refer: "Product",
-        },
-
-        from_user_id: {
-            type: mongoose.Schema.Types.ObjectId,
-            refer: "User",
-        },
-
-        to_user_id: {
-            type: mongoose.Schema.Types.ObjectId,
-            refer: "User",
-        },
-
-        points: {
-            type: Number,
-        }, 
-
-        comment: {
-            type: String,
-        }
+const RatingSchema = new mongoose.Schema(
+  {
+    product_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Product",
+      required: true,
     },
-    {
-        timestamps: true
-    }
+    from_user_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    to_user_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    points: {
+      type: Number,
+      enum: [1, -1],
+      required: true,
+    },
+    comment: {
+      type: String,
+    },
+  },
+  { timestamps: true }
 );
 
 export default mongoose.model("Rating", RatingSchema);

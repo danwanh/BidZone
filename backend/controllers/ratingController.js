@@ -21,37 +21,62 @@ export const getRatingByID = async (req, res) => {
 };
 
 export const createRating = async (req, res) => {
-    try{
-        const {product_id, from_user_id, to_user_id, comment, points} = req.body;
+  try {
+    const { product_id, from_user_id, to_user_id, comment, points } = req.body;
 
-        //Check for valid request
-        if (!product_id || !from_user_id || !to_user_id || !comment){
-            return res.status(400).json({ message: "Missing required fields" });
-        }else if (points !== 1 && points !== -1){
-            return res.status(400).json({ message: "Points must be either 1 or -1" });
-        }else if (from_user_id === to_user_id){
-            return res.status(400).json({ message: "User can't rate themself "});
-        }
-        
-        //Check for existence
-        const product = await findById(product_id);
-        if (!product) return res.status(404).json({ message: "Product not found" });
-
-        const rater = User.findById(from_user_id);
-        if (!rater) return res.status(404).json({ message: "Rater not found" });
-
-        const rated = User.findById(to_user_id);
-        if (!rated) return res.status(404).json({ message: "Target user for rating not found" });
-
-
-        const rating = new Rating({product_id, from_user_id, to_user_id, comment, points});
-        const save = await rating.save();
-        res.status(201).json(save);
-    }catch(err){
-        console.error("Error creating rating:", err);
-        res.status(500).json({message: err.message});
+    // Validate
+    if (!product_id || !from_user_id || !to_user_id || points === undefined) {
+      return res.status(400).json({ message: "Missing required fields" });
     }
+
+    if (![1, -1].includes(points)) {
+      return res.status(400).json({ message: "Points must be 1 or -1" });
+    }
+
+    if (from_user_id === to_user_id) {
+      return res.status(400).json({ message: "User can't rate themself" });
+    }
+
+    // Check tồn tại
+    const product = await Product.findById(product_id);
+    if (!product) return res.status(404).json({ message: "Product not found" });
+
+    const rater = await User.findById(from_user_id);
+    if (!rater) return res.status(404).json({ message: "Rater not found" });
+
+    const rated = await User.findById(to_user_id);
+    if (!rated) return res.status(404).json({ message: "Rated user not found" });
+
+    // Check đã rate chưa (1 đơn hàng chỉ 1 lần)
+    const existed = await Rating.findOne({
+      product_id,
+      from_user_id,
+      to_user_id,
+    });
+    if (existed) {
+      return res.status(400).json({ message: "You already rated this user" });
+    }
+
+    const rating = await Rating.create({
+      product_id,
+      from_user_id,
+      to_user_id,
+      points,
+      comment,
+    });
+
+    // Update điểm user
+    await User.findByIdAndUpdate(to_user_id, {
+      $inc: points === 1 ? { rating_pos: 1 } : { rating_neg: 1 },
+    });
+
+    res.status(201).json(rating);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: err.message });
+  }
 };
+
 
 export const updateRating = async (req, res) => {
     const {product_id, from_user_id, to_user_id, comment, points} = req.body;
@@ -145,3 +170,15 @@ async function is_valid_req(req){
     const rated = User.findById(to_user_id);
     if (!rated) return res.status(404).json({ message: "Target user for rating not found" });
 }
+
+export const getRatingsByUser = async (req, res) => {
+  try {
+    const ratings = await Rating.find({ to_user_id: req.params.userId })
+      .populate("from_user_id", "name")
+      .sort({ createdAt: -1 });
+
+    res.json(ratings);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};

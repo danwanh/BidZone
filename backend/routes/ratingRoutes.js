@@ -12,7 +12,8 @@ import { authenticate } from "../middleware/authMiddleware.js";
 const router = express.Router();
 
 router.get("", authenticate, getAllRatings);
-router.get("/:id", getRatingByID);
+router.get("/each/:id", getRatingByID);
+router.get("/user/:id", getRatingByID);
 router.post("/", createRating);
 router.patch("/:id", updateRating);
 router.delete("/:id", deleteRating);

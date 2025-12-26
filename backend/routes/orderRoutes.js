@@ -5,7 +5,9 @@ import {
     getOrdersByUser,
     getOrderById,
     updateOrder,
-    deleteOrder
+    deleteOrder, getOrderByProductId,
+    sendMessage,
+    getMessages 
 } from "../controllers/orderController.js";
 import { 
     authenticate, 
@@ -15,11 +17,12 @@ import {
 } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
+router.get("/product/:product_id", getOrderByProductId);
 
 // CREATE
 // POST /api/orders
 // Protected: Any authenticated user can create order
-router.post("/", authenticate, validateOrderData, createOrder);
+router.post("/", createOrder);
 
 // READ
 // GET /api/orders
@@ -33,12 +36,14 @@ router.get("/user/:user_id", authenticate, getOrdersByUser);
 // GET /api/orders/:id
 // Protected: Only order owner (buyer/seller) or admin
 router.get("/:id", authenticate, isOwner("order"), getOrderById);
+router.get("/:id/messages", authenticate, getMessages);
+router.post("/:id/messages", authenticate, sendMessage);
 
 // UPDATE
 // PUT /api/orders/:id
 // Protected: Only order owner or admin can update
-router.put("/:id", authenticate, isOwner("order"), updateOrder);
-
+// router.put("/:id", authenticate, isOwner("order"), updateOrder);
+router.put("/:id", updateOrder);
 // DELETE
 // DELETE /api/orders/:id
 // Protected: Admin only
