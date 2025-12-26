@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { toast } from "react-toastify";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import api from "../../api/axios";
+import api from "../../../api/axios";
 import * as z from "zod";
 
 // Schema Validation

@@ -3,7 +3,7 @@ import CategoryList from "./CategoryList";
 import CategoryDetail from "./CategoryDetail";
 import TotalCategory from "./TotalCategory";
 import TotalSubCategory from "./TotalSubCategory";
-import api from "../../api/axios";
+import api from "../../../api/axios";
 
 const CategoryDashboard = () => {
   const [selectedCategory, setSelectedCategory] = useState({});

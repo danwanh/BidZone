@@ -1,4 +1,4 @@
-import api from "../../api/axios";
+import api from "../../../api/axios";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 

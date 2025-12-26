@@ -4,8 +4,8 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import AddUser from "./AddUser";
 
-import UserRow from "./UserRow";
-import api from "../../api/axios";
+import UserRow from "../upgrade/UserRow";
+import api from "../../../api/axios";
 
 import AdminContextMenu from "./AdminContextMenu";
 import AdminEdit from "./AdminEdit";

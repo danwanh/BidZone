@@ -2,7 +2,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "react-toastify";
-import api from "../../api/axios";
+import api from "../../../api/axios";
 
 const formSchema = z.object({
   name: z.string().min(1, "Category name is required"),

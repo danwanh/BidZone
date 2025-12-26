@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import api from "../../api/axios";
+import api from "../../../api/axios";
 import UpgradeRow from "./UpgradeRow";
 import { ToastContainer, toast } from "react-toastify";
 

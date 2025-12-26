@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "../../api/axios";
+import axios from "../../../api/axios";
 
 const SubCategoryList = ({ id, color, setSelected }) => {
   const [categories, setCategories] = useState([]);

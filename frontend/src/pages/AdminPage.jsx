@@ -1,9 +1,9 @@
 import React from "react";
 import AdminNavBar from "../components/admin/AdminNavBar";
-import CategoryDashboard from "../components/admin/CategoryDashboard";
+import CategoryDashboard from "../components/admin/category/CategoryDashboard";
 import { useSearchParams } from "react-router-dom";
-import UserList from "../components/admin/UserList";
-import UpgradeList from "../components/admin/UpgradeList";
+import UserList from "../components/admin/user/UserList";
+import UpgradeList from "../components/admin/upgrade/UpgradeList";
 import ProductList from "../components/admin/product/ProductList";
 
 export const Admin = () => {
