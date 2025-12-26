@@ -32,9 +32,13 @@ const Navbar = () => {
   }, []);
 
   const handleSearch = () => {
-    if (!searchText.trim()) return;
+    // if (!searchText.trim()) return;
 
-    navigate(`/products/?q=${encodeURIComponent(searchText.trim())}`);
+    const currentUrl = new URL(window.location.href);
+    const searchParams = new URLSearchParams(currentUrl.search);
+
+    searchParams.set("q", searchText.trim());
+    navigate(`/products/?${searchParams.toString()}`);
     setIsOpen(false);
   };
 
@@ -163,7 +167,7 @@ const Navbar = () => {
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
             />
             <button
-              onClick={handleSearch()}
+              onClick={() => handleSearch()}
               className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400"
             >
               <img src={searchIcon} alt="Search" className="w-5 h-5" />

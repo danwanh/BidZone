@@ -4,6 +4,7 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 import Navbar from "../components/home/Navbar";
+import Footer from "../components/home/Footer";
 
 export default function MainLayout() {
   return (
@@ -12,7 +13,7 @@ export default function MainLayout() {
       <div className="bg-[linear-gradient(46deg,#A9B9F8,#667ACA)] px-[6%] py-20 flex gap-[30px] w-full">
         <Outlet />
       </div>
-      <footer>Main Footer</footer>
+      <footer><Footer/></footer>
 
       <ToastContainer
         position="top-right"

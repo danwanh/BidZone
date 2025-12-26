@@ -121,6 +121,22 @@ export const login = async (req, res) => {
   }
 };
 
+export const logout = (req, res) => {
+    try {
+    // Xóa cookie chứa refreshToken
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: false,
+      sameSite: "strict",
+    });
+
+    res.status(200).json({ message: "Logged out successfully" });
+  } catch (err) {
+    console.error("Error logging out:", err);
+    res.status(500).json({ message: "Error logging out" });
+  }
+}
+
 export const refresh = (req, res) => {
   const token = req.cookies.refreshToken;
 
@@ -197,14 +213,14 @@ export const resetPassword = async (req, res) => {
       return res.status(404).json({ message: "Không tìm thấy người dùng" });
     }
 
-    // 1. Tạo mật khẩu mới
+    //Tạo mật khẩu mới
     const newPassword = generateRandomPassword();
 
-    // 2. Hash mật khẩu
+    //Hash mật khẩu
     const salt = await bcrypt.genSalt(10);
     const newPasswordHash = await bcrypt.hash(newPassword, salt);
 
-    // 3. Cập nhật DB
+    //Cập nhật DB
     user.password_hash = newPasswordHash;
     await user.save();
 

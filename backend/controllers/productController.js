@@ -189,7 +189,6 @@ export const getAllProducts = async (req, res) => {
   }
 };
 
-
 // GET /api/product/:id
 export const getProductById = async (req, res) => {
   const product = await Product.findById(req.params.id).populate("seller_id");
@@ -219,7 +218,6 @@ export const getProductById = async (req, res) => {
   await product.save();
 
   res.json(product);
-  
 };
 
 // GET /api/product/user/:id

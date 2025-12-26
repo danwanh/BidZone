@@ -29,7 +29,7 @@ const ProductList = () => {
     const p = new URLSearchParams();
     p.set("page", page);
     p.set("per_page", per_page);
-    if (q) p.set("name", q);
+    p.set("q", q);
     if (categoryId) p.set("categoryId", categoryId);
     if (minPrice) p.set("minPrice", minPrice);
     if (maxPrice) p.set("maxPrice", maxPrice);

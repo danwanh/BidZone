@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import BecomeSeller from "./BecomeSeller";
 import axios from "../../api/axios";
@@ -13,6 +13,8 @@ import { useAuth } from "../../context/AuthContext";
 const SideBar = ({ user, isOwnProfile }) => {
   const [showPopUp, setShowPopUp] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const { logout } = useAuth();
+  const navigate = useNavigate();
 
   console.log(user);
   // UseForm cho form thông tin cá nhân
@@ -79,6 +81,11 @@ const SideBar = ({ user, isOwnProfile }) => {
 
   const handleBecomeSeller = () => {
     toast.info("Chức năng đăng ký trở thành người bán!");
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
   };
 
   return (
@@ -352,6 +359,14 @@ const SideBar = ({ user, isOwnProfile }) => {
               </div>
             </button>
           )}
+
+          <button
+            className="bg-red-600 h-fit w-fit p-3 rounded-xl hover:bg-red-700"
+            type="button"
+            onClick={handleLogout}
+          >
+            <div className="font-bold text-white">Đăng xuất</div>
+          </button>
         </div>
       </form>
     </div>

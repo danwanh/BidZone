@@ -15,21 +15,46 @@ export const sendOTP = async (req, res) => {
       expiredAt: new Date(Date.now() + 5 * 60 * 1000),
     });
 
-    await sendEmail(
-      email,
-      "Mã xác thực OTP BidZone",
-      `Mã OTP của bạn là:\n\n${otp}\n\n Vui lòng không gửi hay chuyển tiếp mã này cho bất kì ai khác.`
-    );
+    const html = `
+      <html>
+        <body style="font-family: Arial, sans-serif; background-color: #f4f4f9; padding: 20px;">
+          <div style="max-width: 600px; margin: 0 auto; background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);">
+            <h1 style="text-align: center; color: #667eea;">Mã Xác Thực OTP - BidZone</h3>
+            
+            <p style="font-size: 16px; color: #333;">
+              Chào bạn,
+            </p>
+
+            <p style="font-size: 16px; color: #333;">
+              Mã OTP của bạn là: 
+              <br>
+              <strong style="font-size: 24px; color: #667eea;">${otp}</strong>
+            </p>
+
+            <p style="font-size: 16px; color: #333;">
+              Vui lòng nhập mã này vào hệ thống để xác thực tài khoản của bạn. Mã OTP này chỉ có hiệu lực trong vòng 5 phút.
+            </p>
+
+            <p style="font-size: 16px; color: #333;">
+              <b>Lưu ý:</b> Vui lòng không chia sẻ mã OTP với bất kỳ ai. Nếu bạn không yêu cầu mã OTP này, xin vui lòng bỏ qua email này.
+            </p>
+
+            <div style="text-align: center; margin-top: 30px;">
+              <p style="font-size: 14px; color: #888;">Cảm ơn bạn đã sử dụng dịch vụ của BidZone.</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
+
+    await sendEmail(email, "Mã xác thực OTP BidZone", html);
 
     res.status(200).json({ message: "OTP sent to email" });
   } catch (err) {
-    res
-      .status(500)
-      .json({
-        message:
-          "Failed to send OTP or failed to save OTP to database: " +
-          err.message,
-      });
+    res.status(500).json({
+      message:
+        "Failed to send OTP or failed to save OTP to database: " + err.message,
+    });
   }
 };
 
