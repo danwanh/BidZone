@@ -1,8 +1,9 @@
 "use client"
 
 import { useState, useEffect } from "react"
-
+import { useAuth } from "../context/AuthContext"
 export default function UploadProductPage() {
+  const { user } = useAuth()
   const [loading, setLoading] = useState(false)
   const [images, setImages] = useState([])
   const [uploadingImages, setUploadingImages] = useState(false)
@@ -118,7 +119,7 @@ export default function UploadProductPage() {
           end_time: formData.end_time,
           is_autobid: formData.is_autobid,
           allow_unrated_bidders: formData.allow_unrated_bidders,
-          seller_id: "69113d2a06251b39d3acfd0d",
+          seller_id: user._id || "",
           current_price: Number.parseFloat(formData.start_price),
           status: "active",
         }),

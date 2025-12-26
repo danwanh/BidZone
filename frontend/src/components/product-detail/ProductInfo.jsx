@@ -68,7 +68,7 @@ export const ProductInfo = ({
         </div>
         <div className="bg-gray-100 p-4 rounded-lg text-center">
           <div className="text-gray-600 text-sm">Số lượt đấu giá</div>
-          <div className="text-black text-2xl font-bold">{totalBids}</div>
+          <div className="text-black text-2xl font-bold">{totalBids || 0}</div>
         </div>
       </div>
 

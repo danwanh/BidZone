@@ -214,9 +214,9 @@ export const getProductById = async (req, res) => {
         status: "pending_payment",
       });
     }
+    product.status = "ended";
   }
 
-  product.status = "ended";
   await product.save();
 
   res.json(product);

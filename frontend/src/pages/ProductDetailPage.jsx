@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useMemo, useCallback } from "react"
 import { useParams } from "react-router-dom"
-import axios from "axios"
 import OrderCompletionModal from "../components/order/OrderCompletionModal"
 import { ProductHeader } from "../components/product-detail/ProductHeader"
 import { ProductImages } from "../components/product-detail/ProductImages"
@@ -13,23 +12,25 @@ import { BidHistory } from "../components/product-detail/BidHistory"
 import { QASection } from "../components/product-detail/QASection"
 import { RelatedProducts } from "../components/product-detail/RelatedProducts"
 import { OrderAlert } from "../components/product-detail/OrderAlert"
+import { useAuth } from "../context/AuthContext"
+import axios from "../api/axios"
+// const apiClient = axios.create({
+//   baseURL: "http://localhost:3000/api",
+//   headers: {
+//     "Content-Type": "application/json",
+//   },
+// })
 
-const apiClient = axios.create({
-  baseURL: "http://localhost:3000/api",
-  headers: {
-    "Content-Type": "application/json",
-  },
-})
-
-apiClient.interceptors.request.use((config) => {
-  const token = localStorage.getItem("accessToken")
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`
-  }
-  return config
-})
+// axios.interceptors.request.use((config) => {
+//   const token = localStorage.getItem("accessToken")
+//   if (token) {
+//     config.headers.Authorization = `Bearer ${token}`
+//   }
+//   return config
+// })
 
 export const ProductDetailPage = () => {
+  const {user} = useAuth()
   const params = useParams()
   const [product, setProduct] = useState(null)
   const [currentBid, setCurrentBid] = useState(12500)
@@ -53,7 +54,7 @@ export const ProductDetailPage = () => {
   const [watchlistLoading, setWatchlistLoading] = useState(false)
   const [descriptionHistory, setDescriptionHistory] = useState([])
   const [userRole, setUserRole] = useState("bidder")
-  const [currentUserId, setCurrentUserId] = useState("69113d2a06251b39d3acfd0d")
+  const [currentUserId, setCurrentUserId] = useState("")
   const [isEditMode, setIsEditMode] = useState(false)
   const [newDescription, setNewDescription] = useState("")
   const [reviewText, setReviewText] = useState("")
@@ -108,7 +109,7 @@ export const ProductDetailPage = () => {
 
   const fetchCurrentUser = useCallback(async () => {
     try {
-      const res = await apiClient.get("/auth/me")
+      const res = await axios.get("/api/auth/me")
       const user = res.data
 
       if (user) {
@@ -125,7 +126,7 @@ export const ProductDetailPage = () => {
   const fetchBids = useCallback(
     async (productId) => {
       try {
-        const res = await apiClient.get(`/bids/product/${productId}`)
+        const res = await axios.get(`/api/bids/product/${productId}`)
         const data = res.data
         const mapped = data
           .map((bid) => ({
@@ -173,14 +174,14 @@ export const ProductDetailPage = () => {
   const fetchAutoBid = useCallback(
     async (productId) => {
       try {
-        const res = await apiClient.get(`/autobids/product/${productId}`)
+        const res = await axios.get(`/api/autobids/product/${productId}`)
         const data = res.data
         const mapped = data
           .map((bid) => ({
             id: bid._id,
             user: maskName(bid.current_holder?.name),
             userId: bid.current_holder?._id,
-            amount: bid.price,
+            amount: bid.max_price,
             time: bid.createdAt,
             status: bid.status !== false,
           }))
@@ -224,7 +225,7 @@ export const ProductDetailPage = () => {
 
   const fetchQuestions = useCallback(async (productId) => {
     try {
-      const res = await apiClient.get(`/questions/product/${productId}`)
+      const res = await axios.get(`/api/questions/${productId}`)
       setQuestions(res.data)
     } catch (error) {
       console.error("Failed to fetch questions:", error)
@@ -234,7 +235,7 @@ export const ProductDetailPage = () => {
   const fetchRelatedProducts = useCallback(
     async (categoryId) => {
       try {
-        const res = await apiClient.get(`/product/category/${categoryId}`)
+        const res = await axios.get(`/api/product/by-category/${categoryId}`)
         const data = res.data
         setRelatedProducts(Array.isArray(data) ? data.filter((p) => p.id !== id) : [])
       } catch (error) {
@@ -249,7 +250,7 @@ export const ProductDetailPage = () => {
     if (product.status !== "ended") return
 
     try {
-      const res = await apiClient.get(`/orders/product/${id}`)
+      const res = await axios.get(`/api/orders/product/${id}`)
       const data = res.data
       setOrder(data)
 
@@ -264,7 +265,7 @@ export const ProductDetailPage = () => {
   const fetchProduct = useCallback(async (productId) => {
     try {
       setLoading(true)
-      const res = await apiClient.get(`/product/${productId}`)
+      const res = await axios.get(`/api/product/${productId}`)
       setProduct(res.data)
     } catch (error) {
       console.error("Failed to fetch product:", error)
@@ -379,8 +380,8 @@ export const ProductDetailPage = () => {
           ? { product_id: id, bidder_id: bidderId, max_price: newBid }
           : { product_id: id, bidder_id: bidderId, price: newBid }
 
-      const endpoint = product.is_autobid === true ? "/autobids/place" : "/bids/place"
-      const response = await apiClient.post(endpoint, body)
+      const endpoint = product.is_autobid === true ? "/api/autobids" : "/api/bids"
+      const response = await axios.post(endpoint, body)
 
       alert("Đặt giá thành công!")
       fetchProduct(id)
@@ -397,8 +398,8 @@ export const ProductDetailPage = () => {
       const body = { product_id: id }
       const method = isWatchlisted ? "delete" : "patch"
       const response = await (method === "delete"
-        ? apiClient.delete(`/watchlist/${currentUserId}`, { data: body })
-        : apiClient.patch(`/watchlist/${currentUserId}`, body))
+        ? axios.delete(`/api/watchlist/${currentUserId}`, { data: body })
+        : axios.patch(`/api/watchlist/${currentUserId}`, body))
       setIsWatchlisted(!isWatchlisted)
     } catch (error) {
       console.error("Watchlist error:", error)
@@ -414,7 +415,7 @@ export const ProductDetailPage = () => {
     }
 
     try {
-      const response = await apiClient.patch(`/product/${id}/description`, {
+      const response = await axios.patch(`/api/product/des-history/${id}`, {
         description: newDescription.trim(),
       })
 
@@ -435,9 +436,9 @@ export const ProductDetailPage = () => {
       }
 
       try {
-        await apiClient.patch(`/bids/${bidId}/reject`)
+        await axios.patch(`/api/bids/${bidId}/reject`)
 
-        await apiClient.patch(`/product/${id}`, { ban_bidder_id: bidderId })
+        await axios.patch(`/api/product/${id}`, { ban_bidder_id: bidderId })
 
         alert("Đã từ chối người đấu giá")
 
@@ -464,14 +465,14 @@ export const ProductDetailPage = () => {
     const sellerId = product.seller_id
 
     try {
-      const response = await apiClient.patch(`/product/${productId}`, {
+      const response = await axios.patch(`/api/product/${productId}`, {
         end_time: new Date(),
         bidder_id: buyerId,
         status: "ended",
       })
 
       if (response.data) {
-        await apiClient.post("/orders", {
+        await axios.post("/api/orders", {
           product_id: productId,
           seller_id: sellerId,
           buyer_id: buyerId,
@@ -494,7 +495,7 @@ export const ProductDetailPage = () => {
     }
 
     try {
-      await apiClient.post("/questions", {
+      await axios.post("/api/questions", {
         product_id: id,
         seller_id: product.seller_id._id,
         bidder_id: currentUserId,
@@ -521,7 +522,7 @@ export const ProductDetailPage = () => {
       }
 
       try {
-        await apiClient.patch(`/questions/${questionId}/answer`, { answer: answer.trim() })
+        await axios.patch(`/api/questions/${questionId}`, { answer: answer.trim() })
 
         alert("Đã trả lời câu hỏi!")
         setAnswerText({ ...answerText, [questionId]: "" })
@@ -618,8 +619,10 @@ export const ProductDetailPage = () => {
         onBuyNow={handleBuyNow}
       />
 
-      <BidHistory bidHistory={bidHistory} userRole={userRole} onRejectBid={handleRejectBid} maskName={maskName} />
-
+      {((product.is_autobid && userRole === "seller") || !product.is_autobid) && (
+        <BidHistory bidHistory={bidHistory} userRole={userRole} onRejectBid={handleRejectBid} maskName={maskName} />
+      )}
+      
       <QASection
         questions={questions}
         userRole={userRole}
