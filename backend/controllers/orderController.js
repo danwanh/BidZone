@@ -191,7 +191,7 @@ export const updateOrder = async (req, res) => {
     const allowedFields = [
       "status",
       "invoice_info",
-      "shipping_info",
+      "delivery_info",
       "address",
       "cancellation_reason",
       "cancelled_by"

@@ -1,92 +1,93 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef, useCallback, useMemo } from "react"
 
 function ChatInterface({ orderId, currentUserId, sellerId, buyerId, seller, buyer }) {
-  const [messages, setMessages] = useState([]);
-  const [newMessage, setNewMessage] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [messages, setMessages] = useState([])
+  const [newMessage, setNewMessage] = useState("")
+  const [loading, setLoading] = useState(false)
+  const messagesEndRef = useRef(null)
+
+  const scrollToBottom = useCallback(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+  }, [])
 
   useEffect(() => {
-    if (!orderId) return;
+    scrollToBottom()
+  }, [messages, scrollToBottom])
 
-    loadMessages();
-    const interval = setInterval(loadMessages, 3000);
-
-    return () => clearInterval(interval);
-  }, [orderId]);
-
-  const loadMessages = async () => {
+  const loadMessages = useCallback(async () => {
     try {
-      const token = localStorage.getItem("accessToken");
-
-      const response = await fetch(
-        `http://localhost:3000/api/orders/${orderId}/messages`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const token = localStorage.getItem("accessToken")
+      const response = await fetch(`http://localhost:3000/api/orders/${orderId}/messages`, {
+        method: "GET",
+        headers: { Authorization: `Bearer ${token}` },
+      })
 
       if (!response.ok) {
-        console.error("Fetch messages failed");
-        return;
+        console.error("Fetch messages failed")
+        return
       }
 
-      const data = await response.json();
-      setMessages(data);
+      const data = await response.json()
+      setMessages(data)
     } catch (err) {
-      console.error(err);
+      console.error(err)
     }
-  };
+  }, [orderId])
 
-  const handleSendMessage = async () => {
-    if (!newMessage.trim()) return;
+  useEffect(() => {
+    if (!orderId) return
+
+    loadMessages()
+    const interval = setInterval(loadMessages, 3000)
+
+    return () => clearInterval(interval)
+  }, [orderId, loadMessages])
+
+  const handleSendMessage = useCallback(async () => {
+    if (!newMessage.trim()) return
 
     try {
-      setLoading(true);
-      const token = localStorage.getItem("accessToken");
+      setLoading(true)
+      const token = localStorage.getItem("accessToken")
 
-      const res = await fetch(
-        `http://localhost:3000/api/orders/${orderId}/messages`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            content: newMessage, // ✅ FIX
-          }),
-        }
-      );
+      const res = await fetch(`http://localhost:3000/api/orders/${orderId}/messages`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ content: newMessage }),
+      })
 
       if (!res.ok) {
-        console.error("Send message failed");
-        return;
+        console.error("Send message failed")
+        return
       }
 
-      const result = await res.json();
-
-      // append message mới (đỡ phải reload)
-      setMessages((prev) => [...prev, result.data]);
-      setNewMessage("");
+      const result = await res.json()
+      setMessages((prev) => [...prev, result.data])
+      setNewMessage("")
     } catch (err) {
-      console.error(err);
+      console.error(err)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }, [newMessage, orderId])
 
   const isSeller = currentUserId === sellerId
   const otherUser = isSeller ? buyer : seller
 
   return (
     <div className="flex flex-col h-[500px]">
-      {/* Chat header */}
-      <div className="flex items-center gap-3 p-4 border-b border-gray-200 bg-gray-50">
+      <button
+        className="flex items-center gap-3 p-4 border-b border-gray-200 bg-gray-50 hover:bg-gray-100 transition text-left"
+        onClick={() => {
+          // This will be handled by parent modal to show user profile and ratings
+          console.log("Show user profile:", otherUser)
+        }}
+      >
         <img
           src={otherUser?.avatar_url || "/placeholder.svg?height=40&width=40"}
           alt={otherUser?.name}
@@ -98,9 +99,8 @@ function ChatInterface({ orderId, currentUserId, sellerId, buyerId, seller, buye
             +{otherUser?.rating_pos || 0} / -{otherUser?.rating_neg || 0} điểm
           </p>
         </div>
-      </div>
+      </button>
 
-      {/* Messages area */}
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
         {messages.length === 0 ? (
           <div className="flex items-center justify-center h-full">
@@ -112,22 +112,18 @@ function ChatInterface({ orderId, currentUserId, sellerId, buyerId, seller, buye
             return (
               <div key={idx} className={`flex ${isOwn ? "justify-end" : "justify-start"}`}>
                 <div
-                  className={`max-w-[70%] px-4 py-2 rounded-lg ${
-                    isOwn ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-900"
-                  }`}
+                  className={`max-w-[70%] px-4 py-2 rounded-lg ${isOwn ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-900"}`}
                 >
                   <p className="text-sm">{msg.content}</p>
                   <p className={`text-xs mt-1 ${isOwn ? "text-blue-100" : "text-gray-500"}`}>
-                    {new Date(msg.createdAt).toLocaleTimeString("vi-VN", {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
+                    {new Date(msg.createdAt).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}
                   </p>
                 </div>
               </div>
             )
           })
         )}
+        <div ref={messagesEndRef} />
       </div>
 
       {/* Input area */}
@@ -154,6 +150,96 @@ function ChatInterface({ orderId, currentUserId, sellerId, buyerId, seller, buye
   )
 }
 
+function UserProfileModal({ isOpen, onClose, user, currentUserId }) {
+  const [ratings, setRatings] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    if (!isOpen || !user) return
+
+    const fetchRatings = async () => {
+      try {
+        setLoading(true)
+        const res = await fetch(`http://localhost:3000/api/ratings/user/${user._id}`)
+        if (res.ok) {
+          const data = await res.json()
+          setRatings(data)
+        }
+      } catch (error) {
+        console.error("Failed to fetch ratings:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchRatings()
+  }, [isOpen, user])
+
+  if (!isOpen) return null
+
+  return (
+    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
+      <div
+        className="bg-white rounded-xl max-w-2xl w-full max-h-[80vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="sticky top-0 bg-white border-b border-gray-200 p-6 flex items-center justify-between">
+          <h3 className="text-2xl font-bold">Thông tin người dùng</h3>
+          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition">
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <div className="p-6">
+          <div className="flex items-center gap-4 mb-6">
+            <img
+              src={user?.avatar_url || "/placeholder.svg"}
+              alt={user?.name}
+              className="w-20 h-20 rounded-full object-cover border-2 border-indigo-200"
+            />
+            <div>
+              <h4 className="font-bold text-xl mb-1">{user?.name}</h4>
+              <div className="flex items-center gap-4">
+                <span className="text-green-600 font-semibold">+{user?.rating_pos || 0} tích cực</span>
+                <span className="text-red-600 font-semibold">-{user?.rating_neg || 0} tiêu cực</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="border-t border-gray-200 pt-4">
+            <h4 className="font-bold text-lg mb-4">Đánh giá ({ratings.length})</h4>
+            {loading ? (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
+              </div>
+            ) : ratings.length > 0 ? (
+              <div className="space-y-3">
+                {ratings.map((rating, idx) => (
+                  <div key={idx} className="bg-gray-50 p-4 rounded-lg">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className={`font-semibold ${rating.points > 0 ? "text-green-600" : "text-red-600"}`}>
+                        {rating.points > 0 ? "+1" : "-1"}
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        {new Date(rating.createdAt).toLocaleDateString("vi-VN")}
+                      </span>
+                    </div>
+                    {rating.comment && <p className="text-sm text-gray-700">{rating.comment}</p>}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-500 text-center py-8">Chưa có đánh giá nào</p>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function OrderCompletionModal({ isOpen, onClose, order, currentUserId, product, seller, buyer }) {
   const [orderData, setOrderData] = useState(order)
   const [paymentInvoice, setPaymentInvoice] = useState("")
@@ -164,163 +250,165 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
   const [ratingComment, setRatingComment] = useState("")
   const [activeTab, setActiveTab] = useState("process")
   const [showCancelDialog, setShowCancelDialog] = useState(false)
+  const [showUserProfile, setShowUserProfile] = useState(false)
+  const [selectedUser, setSelectedUser] = useState(null)
+  const [isMinimized, setIsMinimized] = useState(false)
 
-  const isSeller = currentUserId === orderData?.seller_id._id
-  const isBuyer = currentUserId === orderData?.buyer_id._id
+  const isSeller = useMemo(() => currentUserId === orderData?.seller_id._id, [currentUserId, orderData?.seller_id._id])
+  const isBuyer = useMemo(() => currentUserId === orderData?.buyer_id._id, [currentUserId, orderData?.buyer_id._id])
+
+  const loadOrderData = useCallback(async () => {
+    const token = localStorage.getItem("accessToken")
+    if (!token) return null
+
+    const response = await fetch(`http://localhost:3000/api/orders/${order._id}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    })
+
+    const data = await response.json()
+    setOrderData(data)
+    console.log("Reloaded order data:", data)
+  }, [order._id])
 
   useEffect(() => {
-  if (isOpen && order?._id) {
-    loadOrderData()
-    loadUserRating()
-  }
-}, [isOpen, order?._id])
+    if (isOpen && order?._id) {
+      loadOrderData()
+    }
+  }, [isOpen, order?._id, loadOrderData])
 
-  const loadOrderData = async () => {
-    const token = localStorage.getItem("accessToken");
-      if (!token) return null;
-    const response = await fetch(
-  `http://localhost:3000/api/orders/${order._id}`,
-  {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-  }
-);
-
-    const data = await response.json();
-    setOrderData(data);
-    console.log("Reloaded order data:", data);
-  }
-
-  const loadUserRating = async () => {
-    // TODO: Fetch rating của user hiện tại
-    // const response = await fetch(`/api/ratings/order/${orderData._id}/user/${currentUserId}`);
-    // const data = await response.json();
-    // if (data) {
-    //   setUserRating(data);
-    //   setRatingComment(data.comment || "");
-    // }
-  }
-
-  const handleSubmitPayment = async () => {
+  const handleSubmitPayment = useCallback(async () => {
     if (!paymentInvoice.trim() || !deliveryAddress.trim()) {
       alert("Vui lòng nhập đầy đủ thông tin")
       return
     }
+
     await fetch(`http://localhost:3000/api/orders/${orderData._id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         invoice_info: paymentInvoice,
         address: deliveryAddress,
-        status: "pending_shipping"
-      })
-    });
+        status: "pending_shipping",
+      }),
+    })
+
     alert("Đã gửi thông tin thanh toán!")
     loadOrderData()
-  }
+  }, [paymentInvoice, deliveryAddress, orderData._id, loadOrderData])
 
-  const handleConfirmPayment = async () => {
+  const handleConfirmPayment = useCallback(async () => {
     if (!shippingInvoice.trim()) {
       alert("Vui lòng nhập mã vận đơn")
       return
     }
+
     await fetch(`http://localhost:3000/api/orders/${orderData._id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        shipping_invoice: shippingInvoice,
-        status: "pending_delivery"
-      })
-    });
+        delivery_info: shippingInvoice,
+        status: "pending_delivery",
+      }),
+    })
+
     alert("Đã xác nhận và gửi hàng!")
     loadOrderData()
-  }
+  }, [shippingInvoice, orderData._id, loadOrderData])
 
-  const handleConfirmDelivery = async () => {
+  const handleConfirmDelivery = useCallback(async () => {
     await fetch(`http://localhost:3000/api/orders/${orderData._id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        status: "completed"
-      })
-    });
+      body: JSON.stringify({ status: "completed" }),
+    })
+
     alert("Đã xác nhận nhận hàng!")
     loadOrderData()
-  }
+  }, [orderData._id, loadOrderData])
 
-  const handleCancelOrder = async () => {
+  const handleCancelOrder = useCallback(async () => {
     if (!cancelReason.trim()) {
       alert("Vui lòng nhập lý do hủy")
       return
     }
-    // TODO: Hủy đơn hàng và tự động tạo rating -1
+
     await fetch(`http://localhost:3000/api/orders/${orderData._id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         status: "cancelled",
         cancelled_by: currentUserId,
-        cancellation_reason: cancelReason
-      })
-    });
-    
-    // // Create automatic -1 rating for buyer
-    // await fetch("/api/ratings", {
-    //   method: "POST",
-    //   headers: { "Content-Type": "application/json" },
-    //   body: JSON.stringify({
-    //     order_id: orderData._id,
-    //     product_id: orderData.product_id,
-    //     rater_id: currentUserId,
-    //     rated_id: orderData.buyer_id,
-    //     rating: -1,
-    //     comment: "Giao dịch bị hủy bởi người bán",
-    //     role: "seller"
-    //   })
-    // });
+        cancellation_reason: cancelReason,
+      }),
+    })
+
     alert("Đã hủy giao dịch và đánh giá -1 cho người mua")
+    handleSubmitRating(-1);
     setShowCancelDialog(false)
     loadOrderData()
-  }
+  }, [cancelReason, orderData._id, currentUserId, loadOrderData])
 
-  const handleSubmitRating = async (rating) => {
-    // TODO: Submit hoặc update rating
-    // const method = userRating ? "PATCH" : "POST";
-    // const url = userRating ? `/api/ratings/${userRating._id}` : "/api/ratings";
-    //
-    // await fetch(url, {
-    //   method,
-    //   headers: { "Content-Type": "application/json" },
-    //   body: JSON.stringify({
-    //     order_id: orderData._id,
-    //     product_id: orderData.product_id,
-    //     rater_id: currentUserId,
-    //     rated_id: isSeller ? orderData.buyer_id : orderData.seller_id,
-    //     rating: rating,
-    //     comment: ratingComment,
-    //     role: isSeller ? "seller" : "buyer"
-    //   })
-    // });
-    alert(`Đã đánh giá ${rating > 0 ? "+1" : "-1"}`)
-    loadUserRating()
-  }
+  const handleSubmitRating = async (points) => {
+  try {
+    const token = localStorage.getItem("accessToken");
 
-  const getStatusBadge = () => {
-    const statusMap = {
-      pending_payment: { label: "Chờ thanh toán", color: "bg-yellow-100 text-yellow-700" },
-      pending_shipping: { label: "Chờ vận chuyển", color: "bg-blue-100 text-blue-700" },
-      pending_delivery: { label: "Chờ nhận hàng", color: "bg-purple-100 text-purple-700" },
-      completed: { label: "Hoàn tất", color: "bg-green-100 text-green-700" },
-      cancelled: { label: "Đã hủy", color: "bg-red-100 text-red-700" },
+    const res = await fetch("http://localhost:3000/api/ratings", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        product_id: product._id,
+        from_user_id: currentUserId,
+        to_user_id: isBuyer ? orderData.seller_id._id : orderData.buyer_id._id,
+        points,
+        comment: ratingComment,
+      }),
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      alert(err.message || "Đánh giá thất bại");
+      return;
     }
-    const status = statusMap[orderData?.status] || statusMap.pending_payment
-    return <span className={`px-3 py-1 rounded-full text-sm font-semibold ${status.color}`}>{status.label}</span>
-  }
 
-  const renderStepContent = () => {
+    setUserRating({ rating: points });
+    alert("Đánh giá thành công!");
+  } catch (err) {
+    console.error(err);
+    alert("Lỗi khi gửi đánh giá");
+  }
+};
+
+
+  const getCurrentStep = useCallback(() => {
+    const statusMap = {
+      pending_payment: 1,
+      pending_shipping: 2,
+      pending_delivery: 3,
+      completed: 4,
+      cancelled: 0,
+    }
+    return statusMap[orderData?.status] || 1
+  }, [orderData?.status])
+
+  const getStatusDisplay = useCallback(() => {
+    const statusMap = {
+      pending_payment: { label: "Chờ thanh toán", color: "bg-yellow-100 text-yellow-700", step: 1 },
+      pending_shipping: { label: "Chờ vận chuyển", color: "bg-blue-100 text-blue-700", step: 2 },
+      pending_delivery: { label: "Chờ nhận hàng", color: "bg-purple-100 text-purple-700", step: 3 },
+      completed: { label: "Hoàn tất", color: "bg-green-100 text-green-700", step: 4 },
+      cancelled: { label: "Đã hủy", color: "bg-red-100 text-red-700", step: 0 },
+    }
+    return statusMap[orderData?.status] || statusMap.pending_payment
+  }, [orderData?.status])
+
+  const renderStepContent = useCallback(() => {
     if (orderData?.status === "cancelled") {
       return (
         <div className="bg-red-50 border-2 border-red-200 rounded-lg p-6">
@@ -337,130 +425,216 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
       )
     }
 
-    if (orderData?.status === "pending_payment" && isBuyer) {
-      return (
-        <div className="bg-white rounded-lg p-6 border-2 border-gray-200">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-              <svg className="w-6 h-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+    if (orderData?.status === "pending_payment") {
+      if (isBuyer) {
+        return (
+          <div className="bg-white rounded-lg p-6 border-2 border-gray-200">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                <svg className="w-6 h-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold">Bước 1: Cung cấp thông tin thanh toán</h3>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold mb-2">Hóa đơn thanh toán</label>
+                <input
+                  type="text"
+                  placeholder="Nhập mã giao dịch hoặc link hóa đơn"
+                  value={paymentInvoice}
+                  onChange={(e) => setPaymentInvoice(e.target.value)}
+                  className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
                 />
-              </svg>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold mb-2">Địa chỉ giao hàng</label>
+                <textarea
+                  placeholder="Nhập địa chỉ đầy đủ"
+                  value={deliveryAddress}
+                  onChange={(e) => setDeliveryAddress(e.target.value)}
+                  rows="3"
+                  className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
+                />
+              </div>
+              <button
+                onClick={handleSubmitPayment}
+                className="w-full px-6 py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition"
+              >
+                Xác nhận thanh toán
+              </button>
             </div>
-            <h3 className="text-xl font-bold">Bước 1: Cung cấp thông tin thanh toán</h3>
           </div>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-semibold mb-2">Hóa đơn thanh toán</label>
-              <input
-                type="text"
-                placeholder="Nhập mã giao dịch hoặc link hóa đơn"
-                value={paymentInvoice}
-                onChange={(e) => setPaymentInvoice(e.target.value)}
-                className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
-              />
+        )
+      } else if (isSeller) {
+        return (
+          <div className="bg-yellow-50 border-2 border-yellow-200 rounded-lg p-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
+                <svg
+                  className="w-6 h-6 text-yellow-600 animate-spin"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </div>
+              <div>
+                <h3 className="font-bold text-yellow-700 mb-1">Đợi người mua</h3>
+                <p className="text-sm text-yellow-600">
+                  Đang chờ người mua cung cấp thông tin thanh toán và địa chỉ giao hàng
+                </p>
+              </div>
             </div>
-            <div>
-              <label className="block text-sm font-semibold mb-2">Địa chỉ giao hàng</label>
-              <textarea
-                placeholder="Nhập địa chỉ đầy đủ"
-                value={deliveryAddress}
-                onChange={(e) => setDeliveryAddress(e.target.value)}
-                rows="3"
-                className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
-              />
-            </div>
-            <button
-              onClick={handleSubmitPayment}
-              className="w-full px-6 py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition"
-            >
-              Xác nhận thanh toán
-            </button>
           </div>
-        </div>
-      )
+        )
+      }
     }
 
-    if (orderData?.status === "pending_shipping" && isSeller) {
-      return (
-        <div className="bg-white rounded-lg p-6 border-2 border-gray-200">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-              <svg className="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"
+    if (orderData?.status === "pending_shipping") {
+      if (isSeller) {
+        return (
+          <div className="bg-white rounded-lg p-6 border-2 border-gray-200">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                <svg className="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold">Bước 2: Xác nhận và gửi hàng</h3>
+            </div>
+            <div className="space-y-4">
+              <div className="bg-gray-50 p-3 rounded">
+                <label className="block text-sm font-semibold mb-1">Thông tin thanh toán từ người mua</label>
+                <p className="text-sm text-gray-700">{orderData.payment_invoice}</p>
+              </div>
+              <div className="bg-gray-50 p-3 rounded">
+                <label className="block text-sm font-semibold mb-1">Địa chỉ giao hàng</label>
+                <p className="text-sm text-gray-700">{orderData.delivery_address}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold mb-2">Hóa đơn vận chuyển</label>
+                <input
+                  type="text"
+                  placeholder="Nhập mã vận đơn"
+                  value={shippingInvoice}
+                  onChange={(e) => setShippingInvoice(e.target.value)}
+                  className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none"
                 />
-              </svg>
+              </div>
+              <button
+                onClick={handleConfirmPayment}
+                className="w-full px-6 py-3 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 transition"
+              >
+                Xác nhận đã nhận tiền và gửi hàng
+              </button>
             </div>
-            <h3 className="text-xl font-bold">Bước 2: Xác nhận và gửi hàng</h3>
           </div>
-          <div className="space-y-4">
-            <div className="bg-gray-50 p-3 rounded">
-              <label className="block text-sm font-semibold mb-1">Thông tin thanh toán từ người mua</label>
-              <p className="text-sm text-gray-700">{orderData.payment_invoice}</p>
+        )
+      } else if (isBuyer) {
+        return (
+          <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                <svg
+                  className="w-6 h-6 text-blue-600 animate-spin"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </div>
+              <div>
+                <h3 className="font-bold text-blue-700 mb-1">Đợi người bán</h3>
+                <p className="text-sm text-blue-600">Đang chờ người bán xác nhận thanh toán và gửi hàng</p>
+              </div>
             </div>
-            <div className="bg-gray-50 p-3 rounded">
-              <label className="block text-sm font-semibold mb-1">Địa chỉ giao hàng</label>
-              <p className="text-sm text-gray-700">{orderData.delivery_address}</p>
-            </div>
-            <div>
-              <label className="block text-sm font-semibold mb-2">Hóa đơn vận chuyển</label>
-              <input
-                type="text"
-                placeholder="Nhập mã vận đơn"
-                value={shippingInvoice}
-                onChange={(e) => setShippingInvoice(e.target.value)}
-                className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none"
-              />
-            </div>
-            <button
-              onClick={handleConfirmPayment}
-              className="w-full px-6 py-3 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 transition"
-            >
-              Xác nhận đã nhận tiền và gửi hàng
-            </button>
           </div>
-        </div>
-      )
+        )
+      }
     }
 
-    if (orderData?.status === "pending_delivery" && isBuyer) {
-      return (
-        <div className="bg-white rounded-lg p-6 border-2 border-gray-200">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
-              <svg className="w-6 h-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
-                />
-              </svg>
+    if (orderData?.status === "pending_delivery") {
+      if (isBuyer) {
+        return (
+          <div className="bg-white rounded-lg p-6 border-2 border-gray-200">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                <svg className="w-6 h-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold">Bước 3: Xác nhận đã nhận hàng</h3>
             </div>
-            <h3 className="text-xl font-bold">Bước 3: Xác nhận đã nhận hàng</h3>
-          </div>
-          <div className="space-y-4">
-            <div className="bg-gray-50 p-3 rounded">
-              <label className="block text-sm font-semibold mb-1">Mã vận đơn</label>
-              <p className="text-sm text-gray-700">{orderData.shipping_invoice}</p>
+            <div className="space-y-4">
+              <div className="bg-gray-50 p-3 rounded">
+                <label className="block text-sm font-semibold mb-1">Mã vận đơn</label>
+                <p className="text-sm text-gray-700">{orderData.delivery_info}</p>
+              </div>
+              <button
+                onClick={handleConfirmDelivery}
+                className="w-full px-6 py-3 bg-purple-600 text-white font-bold rounded-lg hover:bg-purple-700 transition"
+              >
+                Xác nhận đã nhận hàng
+              </button>
             </div>
-            <button
-              onClick={handleConfirmDelivery}
-              className="w-full px-6 py-3 bg-purple-600 text-white font-bold rounded-lg hover:bg-purple-700 transition"
-            >
-              Xác nhận đã nhận hàng
-            </button>
           </div>
-        </div>
-      )
+        )
+      } else if (isSeller) {
+        return (
+          <div className="bg-purple-50 border-2 border-purple-200 rounded-lg p-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                <svg
+                  className="w-6 h-6 text-purple-600 animate-spin"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </div>
+              <div>
+                <h3 className="font-bold text-purple-700 mb-1">Đợi người mua</h3>
+                <p className="text-sm text-purple-600">Đang chờ người mua xác nhận đã nhận hàng</p>
+              </div>
+            </div>
+          </div>
+        )
+      }
     }
 
     if (orderData?.status === "completed") {
@@ -525,58 +699,108 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
                 className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
               />
             </div>
-            {userRating && <p className="text-sm text-gray-600 italic">Bạn có thể thay đổi đánh giá bất kỳ lúc nào.</p>}
+            {userRating && (
+              <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4">
+                <p className="text-sm text-green-700">
+                  ✓ Bạn đã đánh giá {userRating.rating > 0 ? "+1" : "-1"} cho giao dịch này
+                </p>
+              </div>
+            )}
           </div>
         </div>
       )
     }
 
+    return null
+  }, [
+    orderData,
+    isBuyer,
+    isSeller,
+    paymentInvoice,
+    deliveryAddress,
+    shippingInvoice,
+    userRating,
+    ratingComment,
+    handleSubmitPayment,
+    handleConfirmPayment,
+    handleConfirmDelivery,
+    handleSubmitRating,
+  ])
+
+  const handleShowUserProfile = useCallback((user) => {
+    setSelectedUser(user)
+    setShowUserProfile(true)
+  }, [])
+
+  if (!isOpen) return null
+
+  if (isMinimized) {
     return (
-      <div className="bg-gray-50 rounded-lg p-8 text-center">
-        <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
-          <svg className="w-8 h-8 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-        </div>
-        <h3 className="text-lg font-bold text-gray-700 mb-2">Đang chờ bên kia thực hiện</h3>
-        <p className="text-sm text-gray-600">
-          {isSeller ? "Đang chờ người mua thực hiện bước tiếp theo." : "Đang chờ người bán thực hiện bước tiếp theo."}
-        </p>
+      <div className="fixed bottom-4 right-4 z-50">
+        <button
+          onClick={() => setIsMinimized(false)}
+          className="bg-blue-600 text-white px-6 py-3 rounded-full shadow-lg hover:bg-blue-700 transition flex items-center gap-2"
+        >
+          <span className="font-semibold">Quy trình đơn hàng</span>
+          <span className="bg-white text-blue-600 w-6 h-6 rounded-full flex items-center justify-center text-sm font-bold">
+            {getCurrentStep()}
+          </span>
+        </button>
       </div>
     )
   }
 
-  if (!isOpen) return null
+  const statusDisplay = getStatusDisplay()
+  const currentStep = getCurrentStep()
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
       <div
-        className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col shadow-2xl"
+        className="bg-white rounded-xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
-        <div className="p-6 border-b border-gray-200">
-          <div className="flex items-start justify-between mb-2">
-            <div>
-              <h2 className="text-2xl font-bold mb-2">Hoàn tất đơn hàng</h2>
-              <p className="text-sm text-gray-600">
-                Sản phẩm: <span className="font-semibold">{product?.name}</span> - Giá thắng:{" "}
-                <span className="font-semibold text-green-600">{product?.current_price?.toLocaleString()} VNĐ</span>
-              </p>
-            </div>
-            <div className="flex items-center gap-3">
-              {getStatusBadge()}
-              <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition">
-                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
+        <div className="border-b border-gray-200 p-6 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <h2 className="text-2xl font-bold">Hoàn tất đơn hàng</h2>
+            {statusDisplay.label}
+          </div>
+
+          <div className="flex items-center gap-4">
+            {orderData?.status !== "cancelled" && (
+              <div className="flex gap-2">
+                {[1, 2, 3, 4].map((step) => (
+                  <button
+                    key={step}
+                    onClick={() => {
+                      // Could scroll to that step or show info
+                      console.log("Step", step)
+                    }}
+                    className={`w-8 h-8 rounded-full font-bold transition ${
+                      step === currentStep
+                        ? "bg-blue-600 text-white"
+                        : step < currentStep
+                          ? "bg-green-500 text-white"
+                          : "bg-gray-200 text-gray-600"
+                    }`}
+                  >
+                    {step < currentStep ? "✓" : step}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <button onClick={() => setIsMinimized(true)} className="p-2 hover:bg-gray-100 rounded-full transition">
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+              </svg>
+            </button>
+
+            {/* Close button */}
+            <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition">
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
           </div>
         </div>
 
@@ -669,6 +893,13 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
           </div>
         </div>
       )}
+
+      <UserProfileModal
+        isOpen={showUserProfile}
+        onClose={() => setShowUserProfile(false)}
+        user={selectedUser}
+        currentUserId={currentUserId}
+      />
     </div>
   )
 }
