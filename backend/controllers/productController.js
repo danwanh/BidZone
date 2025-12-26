@@ -140,7 +140,7 @@ export const getProductById = async (req, res) => {
 
   const auctionEnded = new Date(product.end_time) < new Date();
 
-  if (auctionEnded && product.status !== "ended") {
+  if (auctionEnded && product.status !== "ended" && product.bidder_id) {
     const existedOrder = await Order.findOne({
       product_id: product._id,
     });
@@ -150,7 +150,7 @@ export const getProductById = async (req, res) => {
         product_id: product._id,
         seller_id: product.seller_id,
         buyer_id: product.bidder_id,
-        status: "pending",
+        status: "pending_payment",
       });
     }
   }
