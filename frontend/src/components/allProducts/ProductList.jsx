@@ -4,6 +4,7 @@ import api from "../../api/axios";
 import ProductCard from "../ProductCard";
 import Pagination from "../profile/Pagination";
 import Filter from "./Filter";
+import Sortbar from "./Sorbar";
 
 const ProductList = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -21,8 +22,8 @@ const ProductList = () => {
   // Lấy thêm các params mới từ URL
   const minPrice = searchParams.get("minPrice") || "";
   const maxPrice = searchParams.get("maxPrice") || "";
-  const sortPrice = searchParams.get("sortPrice") || "";
-  const sortTime = searchParams.get("sortTime") || "";
+  const sortBy = searchParams.get("sortBy") || "";
+  const order = searchParams.get("order") || "";
 
   const queryString = useMemo(() => {
     const p = new URLSearchParams();
@@ -32,10 +33,10 @@ const ProductList = () => {
     if (categoryId) p.set("categoryId", categoryId);
     if (minPrice) p.set("minPrice", minPrice);
     if (maxPrice) p.set("maxPrice", maxPrice);
-    if (sortPrice) p.set("sortPrice", sortPrice); // ví dụ: asc/desc
-    if (sortTime) p.set("sortTime", sortTime);    // ví dụ: end_soon/end_late
+    if (sortBy) p.set("sortBy", sortBy); // price/endtime
+    if (order) p.set("order", order);    // asc/desc
     return p.toString();
-  }, [page, q, categoryId, minPrice, maxPrice, sortPrice, sortTime]);
+  }, [page, q, categoryId, minPrice, maxPrice, sortBy, order]);
 
   useEffect(() => {
     const next = new URLSearchParams(searchParams);
@@ -78,6 +79,7 @@ const ProductList = () => {
   return (
     <>
       <Filter />
+      <Sortbar />
       {loading && <div>Loading</div>}
       {error && (
         <div className="text-red-500">

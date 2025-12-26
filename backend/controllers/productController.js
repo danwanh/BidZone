@@ -81,51 +81,85 @@ export const addProduct = async (req, res) => {
 // GET /api/product
 export const getAllProducts = async (req, res) => {
   try {
-    const { page = 1, q = "", per_page = 6 } = req.query;
-    const pageNum = Math.max(1, Number(page) || 1);
-    const perPageNum = Math.max(1, Number(per_page) || 6);
-    const { categoryId } = req.query;
+    const {
+      page = 1,
+      per_page = 6,
+      q,
+      categoryId,
+      minPrice,
+      maxPrice,
+      sortBy,
+      order
+    } = req.query;
 
-    let products = await Product.find();
+    const pageNum = Math.max(1, Number(page));
+    const limit = Math.max(1, Number(per_page));
+    const skip = (pageNum - 1) * limit;
 
+    const filter = { status: "active" };
+    const sort = {};
+
+    // Category 
     if (categoryId) {
       const category = await Category.findById(categoryId);
-
       if (!category)
-        return res.status(400).json({ message: "No category found" });
+        return res.status(400).json({ message: "Category not found" });
 
-      // Tim vategory con
-      if (category.category_id == null) {
-        const sub_category_ids = await Category.find({
+      // Nếu là category CHA → lấy toàn bộ category con
+      if (!category.category_id) {
+        const subCategories = await Category.find({
           category_id: category._id,
         }).select("_id");
 
-        products.filter((p) => sub_category_ids.includes(p.category_id));
+        const subCategoryIds = subCategories.map((c) => c._id);
+
+        filter.category_id = { $in: subCategoryIds };
       } else {
-        products = await Product.find({ category_id: category._id });
+        // Nếu là category CON
+        filter.category_id = category._id;
       }
     }
 
-    if (q) {
-      products.filter((p) => p.name.toLowerCase().includes(q.toLowerCase()));
+    // Price
+    if (minPrice || maxPrice) {
+      filter.current_price = {};
+      if (minPrice) filter.current_price.$gte = Number(minPrice);
+      if (maxPrice) filter.current_price.$lte = Number(maxPrice);
     }
 
-    const result = products.slice(
-      (pageNum - 1) * perPageNum,
-      (pageNum - 1) * perPageNum + perPageNum
-    );
+    // Search
+    if (q) {
+      filter.name = { $regex: q, $options: "i" };
+    }
 
-    const total_page = Math.ceil(products.length / perPageNum);
+    // Sort with order
+    if (sortBy && order) {
+      const dir = order === "asc" ? 1 : -1;
+
+      if (sortBy === "price") sort.current_price = dir;
+      if (sortBy === "endtime") sort.end_time = dir;
+    } else {
+      sort.start_time = 1; // mặc định
+    }
+
+    //Query db
+    const [products, total] = await Promise.all([
+      Product.find(filter)
+        .sort(sort)
+        .skip(skip)
+        .limit(limit),
+      Product.countDocuments(filter),
+    ]);
 
     res.status(200).json({
       message: "Got product list successfully!",
-      total_page: total_page,
       page: pageNum,
-      per_page: perPageNum,
-      products: result,
+      per_page: limit,
+      total_page: Math.ceil(total / limit),
+      products,
     });
   } catch (error) {
-    console.error("Error getting all products: ", error.message);
+    console.error("Error getting all products:", error);
     res.status(500).json({ message: "Can't get all products" });
   }
 };
