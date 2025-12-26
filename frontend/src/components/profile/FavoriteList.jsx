@@ -47,6 +47,7 @@ const FavoriteList = ({ userId }) => {
 
         if (isMounted) {
           setProducts(data);
+          console.log(data);
         }
       } catch (error) {
         const message = error.response?.data?.message;

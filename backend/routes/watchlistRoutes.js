@@ -1,8 +1,15 @@
 import express from "express";
 const router = express.Router();
 
-import { createWatchlist, getWatchlistByUserId, addToWatchlist, removeFromWatchlist, getAllWatchlist, getWatchlistById, removeWatchlist } from "../controllers/watchlistController.js";
-
+import {
+  createWatchlist,
+  getWatchlistByUserId,
+  addToWatchlist,
+  removeFromWatchlist,
+  getAllWatchlist,
+  getWatchlistById,
+  removeWatchlist,
+} from "../controllers/watchlistController.js";
 
 router.post("/", createWatchlist);
 router.get("/", getAllWatchlist);

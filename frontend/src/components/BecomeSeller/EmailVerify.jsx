@@ -23,12 +23,10 @@ const Email = ({ user_email, setStep, sendEmail, isSending }) => {
 
   return (
     <div className="flex flex-col items-center">
-      <h2 className="text-2xl font-bold text-gray-800 mb-4">
-        Email Verification
-      </h2>
+      <h2 className="text-2xl font-bold text-gray-800 mb-4">Xác thực email</h2>
 
       <p className="text-gray-600 text-sm mb-6 text-center">
-        Enter the 6-digit code sent to your email address
+        Vui lòng nhập mã 6 ký tự mà hệ thống mới gửi tến email của bạn
       </p>
 
       <div className="flex justify-center gap-3 mb-6">
@@ -58,11 +56,11 @@ const Email = ({ user_email, setStep, sendEmail, isSending }) => {
         onClick={onVerify}
         className="w-full bg-[#6ADBB9] text-white py-3 rounded-lg font-semibold hover:bg-[#39977b] transition-colors cursor-pointer"
       >
-        Verify
+        Xác thực
       </button>
 
       <p className="text-gray-500 text-sm mt-4">
-        Didn't receive the code?{" "}
+        Không nhận được mã xác thực?{" "}
         <span
           onClick={sendEmail}
           className={`text-[#6ADBB9] hover:text-[#39977b] font-semibold cursor-pointer ${
@@ -74,12 +72,12 @@ const Email = ({ user_email, setStep, sendEmail, isSending }) => {
       </p>
 
       <p className="text-gray-500 text-sm mt-4">
-        Wrong email?{" "}
+        Sai email?
         <span
           onClick={() => setStep(1)}
           className="text-[#6ADBB9] hover:text-[#39977b] font-semibold cursor-pointer"
         >
-          Return to step 1
+          Trở về bước 1
         </span>
       </p>
     </div>

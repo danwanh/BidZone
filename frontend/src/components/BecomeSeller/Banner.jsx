@@ -102,10 +102,10 @@ const Banner = () => {
                 className="text-[60px] mt-4"
                 style={{ textShadow: "2px 2px 8px rgba(0,0,0,0.5)" }}
               >
-                Become a Seller
+                Trở thành người đấu giá
               </p>
-              <p className="-mb-10">Reach millions of buyers.</p>
-              <p>Maximize every sale.</p>
+              <p className="-mb-10">Tiếp cận khách hàng.</p>
+              <p>Tối ưu hóa từng giao dịch.</p>
             </div>
 
             <Carousel />

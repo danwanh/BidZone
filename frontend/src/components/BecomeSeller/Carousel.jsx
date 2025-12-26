@@ -3,14 +3,14 @@ import { useState, useEffect } from "react";
 
 const Carousel = () => {
   const benefits = [
-    "Reach thousands of active buyers searching for items like yours!",
-    "Set your own prices and control your selling terms!",
-    "Zero listing fees - only pay when you make a sale!",
-    "Secure payment processing with buyer protection!",
-    "Easy-to-use seller dashboard to manage all your listings!",
-    "Get real-time notifications when buyers place bids!",
-    "Build your seller reputation with our rating system!",
-    "Interact with bidders on the fly!",
+    "Tiếp cận hàng ngàn khách hàng tiềm năng đang tìm kiếm sản phẩm của bạn!",
+    "Tự do định giá và kiểm soát các điều khoản bán hàng!",
+    "Miễn phí đăng tin - chỉ thanh toán khi bán thành công!",
+    "Hệ thống thanh toán an toàn kèm chính sách bảo vệ người mua!",
+    "Công cụ quản lý trực quan giúp bạn dễ dàng theo dõi mọi tin đăng!",
+    "Nhận thông báo tức thì ngay khi có người tham gia đấu giá!",
+    "Xây dựng uy tín bán hàng thông qua hệ thống đánh giá minh bạch!",
+    "Tương tác trực tiếp và nhanh chóng với người đấu giá!",
   ];
 
   const [currentIndex, setCurrentIndex] = useState(0);

@@ -18,7 +18,7 @@ const NavBar = ({ step }) => {
             step == 1 ? "text-[#6ADBB9]" : "text-gray-500"
           }`}
         >
-          Personal Info
+          Thông tin cá nhân
         </span>
       </div>
       <div className="flex-1 h-0.5 bg-gray-300 -mx-4"></div>
@@ -37,7 +37,7 @@ const NavBar = ({ step }) => {
             step == 2 ? "text-[#6ADBB9]" : "text-gray-500"
           }`}
         >
-          Verification
+          Xác thực
         </span>
       </div>
       <div className="flex-1 h-0.5 bg-gray-300 -mx-4"></div>
@@ -56,7 +56,7 @@ const NavBar = ({ step }) => {
             step == 3 ? "text-[#6ADBB9]" : "text-gray-500"
           }`}
         >
-          Review
+          Xem lại thông tin
         </span>
       </div>
     </div>

@@ -4,14 +4,15 @@ import api from "../../api/axios";
 import ProductCard from "../ProductCard";
 import Pagination from "../profile/Pagination";
 
-const ProductList = ({ title, baseURL }) => {
+const ProductList = ({ title, baseURL, disablePagination = false }) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [totalPage, setTotalPage] = useState(1);
 
-  const page = searchParams.get("page") || 1;
+  const page = disablePagination ? 1 : searchParams.get("page") || 1;
+  // const page = searchParams.get("page") || 1;
   const per_page = 6;
   const q = searchParams.get("q") || "";
 
@@ -27,10 +28,11 @@ const ProductList = ({ title, baseURL }) => {
   }, [page, q, categoryId]);
 
   useEffect(() => {
-    const next = new URLSearchParams(searchParams);
-    if (!page) next.delete("page");
-    else next.set("page", 1);
-    setSearchParams(next);
+    if (!disablePagination) {
+      const next = new URLSearchParams(searchParams);
+      if (!searchParams.get("page")) next.delete("page");
+      // setSearchParams(next);
+    }
   }, []);
 
   useEffect(() => {
@@ -62,14 +64,16 @@ const ProductList = ({ title, baseURL }) => {
     return () => {
       isMounted = false;
     };
-  }, [queryString]);
+  }, [queryString, baseURL]);
 
   return (
     <>
       {title && (
         <h3 className="font-semibold text-orange-600 -mb-1 text-xl">{title}</h3>
       )}
-      {loading && <div>Loading</div>}
+      {loading && (
+        <div className="rounded-full border border-red-400 w-12 h-12 animate-spin border-t-transparent border-5 "></div>
+      )}
       {error && (
         <div className="text-red-500">
           Error loading products:{" "}
@@ -79,8 +83,8 @@ const ProductList = ({ title, baseURL }) => {
       {!loading && !error && (
         <>
           {products?.length > 0 ? (
-            <div className="flex flex-col items-center gap-10">
-              <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-12 mt-5">
+            <div className="flex flex-col items-center gap-10 -ml-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-col-3 xl:grid-cols-5 gap-12 mt-5">
                 {products.map((p) =>
                   p.product_id?._id ? (
                     <ProductCard key={p._id} product={p.product_id} />

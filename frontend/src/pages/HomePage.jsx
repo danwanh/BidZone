@@ -17,11 +17,23 @@ export const HomePage = () => {
   return (
     <>
       <Header />
-        <section className="flex-col flex rounded-md px-10 py-10 bg-white md:col-span-3 space-y-6 mt-[60vh] min-h-[486px]">
-          <ProductList title={titles[0]} baseURL={urls[0]} />
-          <ProductList title={titles[1]} baseURL={urls[1]} />
-          <ProductList title={titles[2]} baseURL={urls[2]} />
-          <ProductList title={"Khám phá"} baseURL={"/api/product"} />
+      <section className="flex-col flex rounded-md px-10 py-10 bg-white md:col-span-3 space-y-6 mt-[60vh] min-h-[486px]">
+        <ProductList
+          title={titles[0]}
+          baseURL={urls[0]}
+          disablePagination={true}
+        />
+        <ProductList
+          title={titles[1]}
+          baseURL={urls[1]}
+          disablePagination={true}
+        />
+        <ProductList
+          title={titles[2]}
+          baseURL={urls[2]}
+          disablePagination={true}
+        />
+        <ProductList title={"Khám phá"} baseURL={"/api/product"} />
       </section>
     </>
   );

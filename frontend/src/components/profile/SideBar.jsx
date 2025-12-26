@@ -16,7 +16,6 @@ const SideBar = ({ user, isOwnProfile }) => {
   const { logout } = useAuth();
   const navigate = useNavigate();
 
-  console.log(user);
   // UseForm cho form thông tin cá nhân
   const {
     register: registerPersonalInfo,
@@ -345,19 +344,6 @@ const SideBar = ({ user, isOwnProfile }) => {
                 </button>
               )}
             </>
-          )}
-
-          {/* Become Seller Button */}
-          {user.role === "bidder" && (
-            <button
-              className="button bg-green-600 hover:bg-green-700"
-              type="button"
-              onClick={handleBecomeSeller}
-            >
-              <div className="font-bold text-white">
-                Muốn trở thành người bán
-              </div>
-            </button>
           )}
 
           <button
