@@ -84,47 +84,62 @@ export const getAllProducts = async (req, res) => {
     const {
       page = 1,
       per_page = 6,
-      q,
+      q = "",
       categoryId,
       minPrice,
       maxPrice,
       sortBy,
-      order
+      order,
+      status = "active",
     } = req.query;
 
     const pageNum = Math.max(1, Number(page));
     const limit = Math.max(1, Number(per_page));
     const skip = (pageNum - 1) * limit;
 
-    const filter = { status: "active" };
+    const filter = {};
     const sort = {};
 
-    // Category 
-    if (categoryId) {
-      const category = await Category.findById(categoryId);
-      if (!category)
-        return res.status(400).json({ message: "Category not found" });
-
-      // Nếu là category CHA → lấy toàn bộ category con
-      if (!category.category_id) {
-        const subCategories = await Category.find({
-          category_id: category._id,
-        }).select("_id");
-
-        const subCategoryIds = subCategories.map((c) => c._id);
-
-        filter.category_id = { $in: subCategoryIds };
-      } else {
-        // Nếu là category CON
-        filter.category_id = category._id;
-      }
+    // Status
+    if (status) {
+      filter.status = status;
     }
 
-    // Price
-    if (minPrice || maxPrice) {
-      filter.current_price = {};
-      if (minPrice) filter.current_price.$gte = Number(minPrice);
-      if (maxPrice) filter.current_price.$lte = Number(maxPrice);
+    //Category (cha hoặc con)
+    if (categoryId) {
+      const ids = categoryId.split(",");
+
+      const selectedCategories = await Category.find({
+        _id: { $in: ids },
+      });
+
+      if (!selectedCategories.length) {
+        return res.status(400).json({ message: "No category found" });
+      }
+
+      const parentCategoryIds = [];
+      let targetCategoryIds = [];
+
+      selectedCategories.forEach((cat) => {
+        if (cat.category_id == null) {
+          // category CHA
+          parentCategoryIds.push(cat._id);
+        } else {
+          // category CON
+          targetCategoryIds.push(cat._id);
+        }
+      });
+
+      if (parentCategoryIds.length > 0) {
+        const subCategories = await Category.find({
+          category_id: { $in: parentCategoryIds },
+        }).select("_id");
+
+        const subIds = subCategories.map((c) => c._id);
+        targetCategoryIds = [...targetCategoryIds, ...subIds];
+      }
+
+      filter.category_id = { $in: targetCategoryIds };
     }
 
     // Search
@@ -132,19 +147,29 @@ export const getAllProducts = async (req, res) => {
       filter.name = { $regex: q, $options: "i" };
     }
 
-    // Sort with order
+    //Filter
+    if (minPrice || maxPrice) {
+      filter.current_price = {};
+      if (minPrice) filter.current_price.$gte = Number(minPrice);
+      if (maxPrice) filter.current_price.$lte = Number(maxPrice);
+    }
+
+    // Sort
     if (sortBy && order) {
       const dir = order === "asc" ? 1 : -1;
 
       if (sortBy === "price") sort.current_price = dir;
       if (sortBy === "endtime") sort.end_time = dir;
     } else {
-      sort.start_time = 1; // mặc định
+      // default
+      sort.start_time = 1;
     }
 
-    //Query db
-    const [products, total] = await Promise.all([
+    // Query db
+    const [products, totalDocs] = await Promise.all([
       Product.find(filter)
+        .populate("category_id", "name")
+        .populate("seller_id", "username email")
         .sort(sort)
         .skip(skip)
         .limit(limit),
@@ -155,7 +180,7 @@ export const getAllProducts = async (req, res) => {
       message: "Got product list successfully!",
       page: pageNum,
       per_page: limit,
-      total_page: Math.ceil(total / limit),
+      total_page: Math.ceil(totalDocs / limit),
       products,
     });
   } catch (error) {
@@ -163,6 +188,7 @@ export const getAllProducts = async (req, res) => {
     res.status(500).json({ message: "Can't get all products" });
   }
 };
+
 
 // GET /api/product/:id
 export const getProductById = async (req, res) => {
@@ -203,6 +229,44 @@ export const getBoughtByUserId = async (req, res) => {
 
     const products = await Product.find({ bidder_id: u_i, status: "ended" });
     const { page = 1, per_page = 6, q = "" } = req.query;
+    const page_number = Math.max(1, Number(page) || 1);
+    const per_page_number = Math.max(1, Number(per_page) || 1);
+    const filtered = products.filter((p) =>
+      p.name.toLowerCase().includes(q.toLowerCase())
+    );
+    const result = filtered.slice(
+      (page_number - 1) * per_page_number,
+      (page_number - 1) * per_page_number + per_page_number
+    );
+
+    const total_page = Math.ceil(filtered.length / per_page_number);
+
+    res.status(200).json({
+      message: "Succesfully got bought list ",
+      products: result,
+      total_page: total_page,
+    });
+  } catch (error) {
+    console.error("Error getting product: ", error);
+    res.status(500).json({ message: "Can't get product" });
+  }
+};
+
+// GET /api/product/category/:id
+export const getBoughtByCategoryId = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const categories = await Category.find({
+      $or: [{ _id: id }, { category_id: id }],
+    }).select(_id);
+
+    categories.map((c) => {});
+    const products = await Product.find({
+      category_id: { $in: categories },
+      status: "ended",
+    });
+    const { page = 1, per_page = 10000, q = "" } = req.query;
     const page_number = Math.max(1, Number(page) || 1);
     const per_page_number = Math.max(1, Number(per_page) || 1);
     const filtered = products.filter((p) =>
@@ -462,6 +526,40 @@ export const getProductsByCategory = async (req, res) => {
 
       products = [...products, ...extraProducts];
     }
+
+    return res.json(products);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+// GET /products/by-category/simple/:id
+export const getProductsByCategoryIdSimple = async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    const categories = await Category.find({
+      $or: [{ _id: id }, { category_id: id }],
+    }).select("_id");
+
+    if (categories.length === 0) {
+      return res.status(404).json({ message: "Category not found" });
+    }
+
+    const { status = "" } = req.query;
+    const STATUS =
+      status !== "" && status !== "active" && status !== "ended" ? "" : status;
+
+    const queryFilter = {
+      category_id: { $in: categories },
+    };
+
+    if (STATUS !== "") {
+      queryFilter.status = STATUS;
+    }
+
+    let products = await Product.find(queryFilter).lean();
 
     return res.json(products);
   } catch (err) {

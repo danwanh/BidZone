@@ -3,15 +3,13 @@ import { useParams, useSearchParams } from "react-router-dom";
 import axios from "../../api/axios";
 import ProductCard from "../ProductCard";
 import Pagination from "./Pagination";
-import { useAuth } from "../../context/AuthContext";
 
-const BiddingList = () => {
+const BiddingList = ({ userId }) => {
   const [searchParams, setSearchParams] = useSearchParams("");
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [totalPage, setTotalPage] = useState(1);
-  const { user } = useAuth();
 
   const page = searchParams.get("page") || 1;
   const per_page = 6;
@@ -40,7 +38,7 @@ const BiddingList = () => {
         setLoading(true);
         setError(null);
         const res = await axios.get(
-          `/api/bids/user/bidding/69348172d3120fa2aa0fa1bf?${queryString}`
+          `/api/bids/user/bidding/${userId}?${queryString}`
         );
 
         setTotalPage(res.data.total_page);

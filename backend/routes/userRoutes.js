@@ -10,6 +10,7 @@ import {
   rateUp,
   rateDown,
   changePassword,
+  createUser,
 } from "../controllers/userController.js";
 import { authenticate, isAdmin } from "../middleware/authMiddleware.js";
 
@@ -48,4 +49,6 @@ router.delete("/:id", authenticate, isAdmin, deleteUser);
 // POST
 // POST /api/users/change-password
 router.post("/change-password", authenticate, changePassword);
+
+router.post("/", createUser);
 export default router;

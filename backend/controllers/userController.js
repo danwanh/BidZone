@@ -6,11 +6,17 @@ import mongoose from "mongoose";
 // READ - Get all users (Admin only)
 export const getAllUsers = async (req, res) => {
   try {
-    const { role } = req.query; // Filter by role if provided
+    const { role, q = "" } = req.query; // Filter by role if provided
 
     let query = {};
-    if (role) {
-      query.role = role;
+    if (role) query.role = role;
+
+    if (q) {
+      query.$or = [
+        { username: { $regex: q, $options: "i" } },
+        { name: { $regex: q, $options: "i" } },
+        { email: { $regex: q, $options: "i" } },
+      ];
     }
 
     const users = await User.find(query).select(
@@ -68,7 +74,7 @@ export const updateUser = async (req, res) => {
   try {
     const { id } = req.params;
     const {
-      fullname: name = "",
+      name = "",
       email = "",
       phonenumber = "",
       address = "",
@@ -100,7 +106,7 @@ export const updateUser = async (req, res) => {
       if (emailExists) {
         return res.status(400).json({ message: "Email already in use" });
       }
-      
+
       user.email = email;
     }
     if (phonenumber) user.phone = phonenumber;
@@ -115,7 +121,7 @@ export const updateUser = async (req, res) => {
       user.password_hash = await bcrypt.hash(password, salt);
     }
 
-    console.log(name);
+    // console.log(name);
     console.log(user);
 
     await user.save();
@@ -148,6 +154,18 @@ export const updateUserRole = async (req, res) => {
     const user = await User.findById(id);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
+    }
+
+    // Set hạn 7 ngày
+    if (role === "seller") {
+      // Nếu chuyển thành Seller -> Set hạn 7 ngày
+      const sevenDaysLater = new Date();
+      sevenDaysLater.setDate(sevenDaysLater.getDate() + 7);
+      user.seller_expires = sevenDaysLater;
+      console.log(user.seller_expires);
+    } else {
+      // Nếu chuyển thành Bidder hoặc Admin -> Xóa hạn sử dụng
+      user.seller_expires = null;
     }
 
     user.role = role;
@@ -272,5 +290,45 @@ export const changePassword = async (req, res) => {
   } catch (err) {
     console.error("Reset password error:", err);
     res.status(500).json({ message: err.message });
+  }
+};
+
+export const createUser = async (req, res) => {
+  try {
+    const {
+      username = "",
+      name = "",
+      address = "",
+      dob,
+      email = "",
+      password = "",
+      gender = "Khác",
+    } = req.body;
+
+    const salt = await bcrypt.genSalt(10);
+    const newPasswordHash = await bcrypt.hash(password, salt);
+
+    const user = new User({
+      username: username,
+      name: name,
+      address: address,
+      dob: dob,
+      email: email,
+      gender: gender,
+      password_hash: newPasswordHash,
+      seller_expires: null,
+      social_is: "",
+      is_verified: true,
+      reset_password_expires: true,
+      reset_password_token: "",
+      otp_expires: true,
+      rating_pos: 0,
+      rating_neg: 0,
+    });
+    user.save();
+    return res.status(201).json(user);
+  } catch (err) {
+    console.log(err.message);
+    res.status(400).json({ message: "Can't add user" });
   }
 };

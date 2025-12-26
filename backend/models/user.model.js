@@ -75,6 +75,10 @@ const UserSchema = mongoose.Schema(
       type: String,
     },
 
+    seller_expires: {
+      type: Date,
+    },
+
     oauth: {
       google: {
         id: String,

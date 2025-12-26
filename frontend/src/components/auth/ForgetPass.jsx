@@ -1,6 +1,7 @@
 import { useForm } from "react-hook-form";
 import api from "../../api/axios";
 import { toast } from "react-toastify";
+import { Link } from "react-router-dom";
 
 const ForgetPass = ({ toOTP }) => {
   const {
@@ -11,11 +12,10 @@ const ForgetPass = ({ toOTP }) => {
 
   const onSubmit = async (data) => {
     try {
-        await api.post("/api/otp/send", {
-          email: data.email,
-        });
-        toOTP(data, "FORGETPASS");
-
+      await api.post("/api/otp/send", {
+        email: data.email,
+      });
+      toOTP(data, "FORGETPASS");
     } catch (error) {
       toast.error("Không thể đặt lại mật khẩu");
       console.error(error.response.data?.message || error.message);
@@ -53,13 +53,23 @@ const ForgetPass = ({ toOTP }) => {
                 <p className="text-red-500 text-sm">{errors.email.message}</p>
               )}
             </div>
-            <button
-              type="submit"
-              className="bg-(--button-fill) text-white w-full rounded-full 
+            <div className="flex flex-col gap-5 items-center">
+              <button
+                type="submit"
+                className="bg-(--button-fill) text-white w-full rounded-full 
                           p-3 px-5 font-semibold text-xl cursor-pointer"
-            >
-              Xác nhận
-            </button>
+              >
+                Xác nhận
+              </button>
+              <Link
+                to="/auth"
+                state={{ page: "LOGIN" }}
+                className="text-(--button-fill) w-fit rounded-full 
+                          p-3 px-5 font-semibold text-xl cursor-pointer hover:brightness-50"
+              >
+                Trờ về đăng nhập
+              </Link>
+            </div>
           </form>
         </div>
       </div>

@@ -22,11 +22,11 @@ const ProductList = ({ user }) => {
   return (
     <div className="w-full bg-white p-10 rounded-[15px] shadow-lg flex flex-col gap-4">
       <NavBar labels={labels} />
-      {tab == "Đang đấu giá" && <BiddingList />}
-      {tab == "Yêu thích" && <FavoriteList />}
-      {tab == "Đã mua" && <BoughtList />}
-      {tab == "Đang bán" && <SellingList status="active" />}
-      {tab == "Đã bán" && <SellingList status="ended" />}
+      {tab == "Đang đấu giá" && <BiddingList userId={user._id} />}
+      {tab == "Yêu thích" && <FavoriteList userId={user._id} />}
+      {tab == "Đã mua" && <BoughtList userId={user._id} />}
+      {tab == "Đang bán" && <SellingList status="active" userId={user._id} />}
+      {tab == "Đã bán" && <SellingList status="ended" userId={user._id} />}
     </div>
   );
 };

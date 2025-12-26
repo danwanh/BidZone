@@ -4,15 +4,13 @@ import axios from "../../api/axios";
 import ProductCard from "../ProductCard";
 import { useLiked } from "../../context/LikedContext";
 import Pagination from "./Pagination";
-import { useAuth } from "../../context/AuthContext";
 
-const FavoriteList = () => {
+const FavoriteList = ({ userId }) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [totalPage, setTotalPage] = useState(1);
-  const { user } = useAuth();
 
   const { likedList } = useLiked();
   const page = searchParams.get("page") || 1;
@@ -42,7 +40,7 @@ const FavoriteList = () => {
         setError(null);
 
         const res = await axios.get(
-          `/api/watchlist/user/${user._id}?${queryString}`
+          `/api/watchlist/user/${userId}?${queryString}`
         );
         setTotalPage(res.data?.total_page || 1);
         const data = res.data?.filtered;
@@ -54,7 +52,7 @@ const FavoriteList = () => {
         const message = error.response?.data?.message;
         if (message === "No watchlist") {
           const body = {
-            user_id: user._id,
+            user_id: userId,
             product_id: [],
           };
           try {

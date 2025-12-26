@@ -77,18 +77,24 @@ export const createUpgradeRequest = async (req, res) => {
 // READ - Get all upgrade requests (Admin only)
 export const getAllUpgradeRequests = async (req, res) => {
   try {
-    const { status } = req.query; // Filter by status if provided
-
+    const { status, q = "" } = req.query; // Filter by status if provided
     let query = {};
     if (status) {
       query.status = status;
     }
+    if (q) {
+      console.log(q);
+      query.$or = [
+        { first_name: { $regex: q, $options: "i" } },
+        { last_name: { $regex: q, $options: "i" } },
+        { email: { $regex: q, $options: "i" } },
+      ];
+    }
 
     const requests = await UpgradeRequest.find(query)
-      .populate("user_id", "name email rating_pos rating_neg")
+      .populate("user_id", "username name email rating_pos rating_neg")
       .populate("admin_id", "name email")
       .sort({ createdAt: -1 }); // Newest first
-
     res.json(requests);
   } catch (err) {
     console.error("Error getting upgrade requests:", err);
@@ -216,6 +222,7 @@ export const reviewUpgradeRequest = async (req, res) => {
 export const cancelUpgradeRequest = async (req, res) => {
   try {
     const { id } = req.params;
+    console.log(id);
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "Invalid request ID" });

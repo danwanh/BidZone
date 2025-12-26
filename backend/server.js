@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import jwt from "jsonwebtoken";
 import errorHandler from "./middleware/errorHandler.js";
+import cron from "node-cron";
 
 import User from "./models/user.model.js";
 // Import routes
@@ -59,6 +60,35 @@ app.use("/api/users", userRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/upgrade", upgradeRoutes);
+
+// Chuyển seller thành user
+cron.schedule("0 * * * *", async () => {
+  console.log("Đang quét các Seller hết hạn...");
+
+  try {
+    const now = new Date();
+    const result = await User.updateMany(
+      {
+        role: "seller",
+        seller_expiration: { $lt: now },
+      },
+      {
+        $set: {
+          role: "bidder",
+          seller_expiration: null,
+        },
+      }
+    );
+
+    if (result.modifiedCount > 0) {
+      console.log(
+        `✅ Đã hạ cấp ${result.modifiedCount} người dùng từ Seller xuống Bidder.`
+      );
+    }
+  } catch (err) {
+    console.error("Lỗi Cron Job:", err);
+  }
+});
 
 //authentication
 app.use("/api/auth", authRoutes);

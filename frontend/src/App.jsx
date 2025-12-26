@@ -16,6 +16,7 @@ import { ProductDetailPage } from "./pages/ProductDetailPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { BecomeSellerPage } from "./pages/BecomeSeller.jsx";
 import ProductList from "./components/home/ProductList.jsx";
+import { Admin } from "./pages/AdminPage.jsx";
 import UploadProductPage from "./pages/UploadProductPage.jsx";
 import { AllProducts } from "./pages/AllProducts.jsx";
 
@@ -31,8 +32,9 @@ const router = createBrowserRouter([
       { path: "auth", element: <AuthPage /> },
       { path: "products", element: <AllProducts/>},
       { path: "products/:id", element: <ProductDetailPage /> },
-      { path: "/products/new", element: <UploadProductPage/>},
+      { path: "/products/new", element: <UploadProductPage /> },
       { path: "*", element: <NotFoundPage /> },
+      { path: "/admin", element: <Admin /> },
     ],
   },
   {
