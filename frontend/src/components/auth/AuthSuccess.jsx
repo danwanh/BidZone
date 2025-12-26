@@ -1,19 +1,21 @@
-import { useEffect } from "react";
+import { use, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 
 export const AuthSuccess = () => {
   const navigate = useNavigate();
+  const {setAccessToken} = useAuth();
 
   useEffect(() => {
     const url = new URL(window.location.href);
     const token = url.searchParams.get("token");
     console.log("triggered");
     if (token) {
-      localStorage.setItem("accessToken", token);
+      setAccessToken(token);
       setTimeout(() => {
         navigate("/", { replace: true }); // Redirect to homepage
         console.log("Home");
-      }, 3000);
+      }, 2000);
     } else {
       navigate("/auth"); // Redirect to register if no token is found
       console.log("not homw");

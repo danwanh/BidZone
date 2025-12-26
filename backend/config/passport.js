@@ -12,38 +12,6 @@ const {
   BASE_URL,
 } = process.env;
 
-// A small helper
-// async function findOrCreateOAuth(profile, provider) {
-//   const email = profile.emails?.[0]?.value;
-
-//   let user = await User.findOne({
-//     $or: [{ email }, { [`oauth.${provider}.id`]: profile.id }],
-//   });
-
-//   if (!user) {
-//     user = new User({
-//       name: profile.displayName,
-//       username: profile.displayName,
-//       email,
-//       password_hash: "",
-//       phone: "",
-//       address: "",
-//       dob: null,
-//       oauth: { [provider]: { id: profile.id, raw: profile } },
-//       is_verified: false,
-//       role: "bidder",
-//       rating_pos: 0,
-//       rating_neg: 0,
-//     });
-//   } else {
-//     if (!user.oauth[provider]) {
-//       user.oauth[provider] = { id: profile.id, raw: profile };
-//     }
-//   }
-
-//   await user.save();
-//   return user;
-// }
 async function findOrCreateOAuth(profile, provider) {
   const email =
     profile.emails?.find((e) => e.verified)?.value ||

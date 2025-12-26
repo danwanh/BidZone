@@ -20,3 +20,13 @@ export const generateTokens = (user) => {
     throw err;
   }
 };
+
+export const generateRandomPassword = (length = 10) => {
+  const chars =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&**()_+[]{}<>?";
+  return Array.from(
+    { length },
+    () => chars[Math.floor(Math.random() * chars.length)]
+  ).join("");
+};
+

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import api from "../../api/axios";
 import searchIcon from "../../assets/icons/search.svg";
 import sellIcon from "../../assets/icons/gavel-solid-full.svg";
@@ -12,6 +12,9 @@ const Navbar = () => {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [hoveredCategory, setHoveredCategory] = useState(null);
   const { user } = useAuth();
+
+  const [searchText, setSearchText] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -26,20 +29,14 @@ const Navbar = () => {
     };
 
     fetchCategories();
-
-    // Kiểm tra user đăng nhập
-    // const fetchUser = async () => {
-    //   try {
-    //     const res = await api.get("/api/users/me"); // API trả user nếu có token hợp lệ
-    //     setUser(res.data.user);
-    //     console.log(user);
-    //   } catch (error) {
-    //     setUser(null); // chưa đăng nhập hoặc token hết hạn
-    //   }
-    // };
-
-    // fetchUser();
   }, []);
+
+  const handleSearch = () => {
+    if (!searchText.trim()) return;
+
+    navigate(`/products/?q=${encodeURIComponent(searchText.trim())}`);
+    setIsOpen(false);
+  };
 
   const activeCategory = hoveredCategory || selectedCategory;
   const activeSubcategories = activeCategory
@@ -123,7 +120,7 @@ const Navbar = () => {
                             }`}
                             onMouseEnter={() => setHoveredCategory(category)}
                             onClick={() => setSelectedCategory(category)}
-                            to={`?categoryId=${category._id}`}
+                            to={`/products/?categoryId=${category._id}`}
                           >
                             {category.name}
                           </Link>
@@ -134,14 +131,15 @@ const Navbar = () => {
 
                 {/* Subcategories */}
                 {activeSubcategories.length > 0 && (
-                  <div className="bg-white rounded-r-lg shadow-lg border border-l-0 border-gray-200 py-2 min-w-[200px]">
+                  <div className="flex flex-col bg-white rounded-r-lg shadow-lg border border-l-0 border-gray-200 py-2 min-w-[200px]">
                     {activeSubcategories.map((subcategory) => (
-                      <button
+                      <Link
                         key={subcategory.name}
                         className="w-full text-left px-6 py-3 hover:bg-gray-100 transition-colors text-gray-700"
+                        to={`/products/?categoryId=${subcategory._id}`}
                       >
                         {subcategory.name}
-                      </button>
+                      </Link>
                     ))}
                   </div>
                 )}
@@ -155,9 +153,19 @@ const Navbar = () => {
             <input
               type="text"
               placeholder="Search..."
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  handleSearch();
+                }
+              }}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
             />
-            <button className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400">
+            <button
+              onClick={handleSearch()}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400"
+            >
               <img src={searchIcon} alt="Search" className="w-5 h-5" />
             </button>
           </div>

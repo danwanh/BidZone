@@ -13,7 +13,7 @@ export const sendEmail = async (to, subject, text) => {
     from: process.env.MAIL_USER,
     to,
     subject,
-    text,
+    html,
   });
 };
 
