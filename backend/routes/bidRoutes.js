@@ -7,7 +7,7 @@ import {
   getBidByUser,
   getBiddingByUser,
   getBidById,
-  updateBidStatus
+  updateBidStatus, rejectBid
 } from "../controllers/bidController.js";
 
 const router = express.Router();
@@ -20,5 +20,6 @@ router.get("/user/bidding/:id", getBiddingByUser);
 router.get("/", getAllBids);
 router.patch("/:id", updateBidStatus);
 router.delete("/:id", deleteBid);
+router.patch("/:id/reject", rejectBid);
 
 export default router;

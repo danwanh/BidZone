@@ -3,7 +3,7 @@ import api from "../../api/axios";
 import { toast } from "react-toastify";
 import { Link } from "react-router-dom";
 
-const ForgetPass = () => {
+const ForgetPass = ({ toOTP }) => {
   const {
     register,
     handleSubmit,
@@ -11,16 +11,13 @@ const ForgetPass = () => {
   } = useForm();
 
   const onSubmit = async (data) => {
-    const email = data.email;
-    console.log(data);
     try {
-      const res = await api.post("/api/auth/reset-password", { email });
-      if (res) toast.success("Mật khẩu mới đã được gửi đến email của bạn!");
-      await delay(2000);
-      navigate("/auth", { state: { page: "LOGIN" } });
+      await api.post("/api/otp/send", {
+        email: data.email,
+      });
+      toOTP(data, "FORGETPASS");
     } catch (error) {
       toast.error("Không thể đặt lại mật khẩu");
-      console.log(error);
       console.error(error.response.data?.message || error.message);
     }
   };
