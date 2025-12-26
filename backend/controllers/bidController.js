@@ -1,18 +1,20 @@
 import Bid from "../models/bid.model.js";
 import Product from "../models/product.model.js";
+import appEvent from "../utils/eventEmiiter.js";
+
 export const getBidById = async (req, res) => {
-    try {
-      const { id: bid_id } = req.params;
-  
-      const bid = await Product.findById(bid_id);
-  
-      if (!bid) return res.status(400).json({ message: "No bid found" });
-      else return res.status(200).json(bid);
-    } catch (error) {
-      console.error("Error getting bid: ", error);
-      res.status(500).json({ message: "Can't get bid" });
-    }
-}
+  try {
+    const { id: bid_id } = req.params;
+
+    const bid = await Product.findById(bid_id);
+
+    if (!bid) return res.status(400).json({ message: "No bid found" });
+    else return res.status(200).json(bid);
+  } catch (error) {
+    console.error("Error getting bid: ", error);
+    res.status(500).json({ message: "Can't get bid" });
+  }
+};
 export const createBid = async (req, res) => {
   const { product_id, bidder_id, price } = req.body;
 
@@ -25,6 +27,13 @@ export const createBid = async (req, res) => {
 
   const bid = new Bid({ product_id, bidder_id, price });
   await bid.save();
+
+  appEvent.emit("BID_SUCCESS", {
+    product,
+    bidder,
+    seller,
+    prevBidder,
+  });
 
   // update product
   product.current_price = price;

@@ -1,2 +1,3 @@
 import EventEmitter from "events";
-export default appEvent = new EventEmitter();
+const appEvent = new EventEmitter();
+export default appEvent;
