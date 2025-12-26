@@ -144,3 +144,40 @@ export const deleteBid = async (req, res) => {
   if (!bid) return res.status(404).json({ message: "Bid not found" });
   res.json({ message: "Bid deleted" });
 };
+
+export const rejectBid = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const bid = await Bid.findByIdAndUpdate(
+      id,
+      { status: false },
+      { new: true }
+    );
+
+    if (!bid) {
+      return res.status(404).json({ message: "Bid không tồn tại" });
+    }
+
+    const highestValidBid = await Bid.findOne({
+      product_id: bid.product_id,
+      status: true,
+    }).sort({ price: -1 });
+
+    const newPrice = highestValidBid
+      ? highestValidBid.price
+      : 0; 
+
+    await Product.findByIdAndUpdate(bid.product_id, {
+      current_price: newPrice,
+    });
+
+    res.json({
+      message: "Đã từ chối bid & cập nhật giá",
+      current_price: newPrice,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Lỗi server" });
+  }
+};
