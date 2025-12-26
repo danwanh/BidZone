@@ -34,7 +34,7 @@ const ProductList = () => {
     if (minPrice) p.set("minPrice", minPrice);
     if (maxPrice) p.set("maxPrice", maxPrice);
     if (sortBy) p.set("sortBy", sortBy); // price/endtime
-    if (order) p.set("order", order);    // asc/desc
+    if (order) p.set("order", order); // asc/desc
     return p.toString();
   }, [page, q, categoryId, minPrice, maxPrice, sortBy, order]);
 
@@ -78,8 +78,10 @@ const ProductList = () => {
 
   return (
     <>
-      <Filter />
-      <Sortbar />
+      <div className="flex gap-7">
+        <Filter />
+        <Sortbar />
+      </div>
       {loading && <div>Loading</div>}
       {error && (
         <div className="text-red-500">

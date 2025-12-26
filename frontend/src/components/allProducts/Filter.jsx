@@ -47,12 +47,14 @@ const Filter = () => {
             <div className="flex gap-2">
               <input
                 type="number"
+                min="0"
                 placeholder="Giá thấp nhất"
                 className="w-full border p-1 rounded"
                 {...register("minPrice")}
               />
               <input
                 type="number"
+                min="1"
                 placeholder="Giá cao nhất"
                 className="w-full border p-1 rounded"
                 {...register("maxPrice")}
