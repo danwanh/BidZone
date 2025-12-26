@@ -1,8 +1,9 @@
 import { useContext, createContext, useState, useEffect } from "react";
-import http from "../api/axios";
+import api from "../api/axios";
 import { useAuth } from "./AuthContext";
 
 const LikedContext = createContext();
+
 export const useLiked = () => useContext(LikedContext);
 
 export function LikedProvider({ children }) {
@@ -12,28 +13,40 @@ export function LikedProvider({ children }) {
   const { user } = useAuth();
 
   const getLikedList = async () => {
+    if (!user || !user._id) return;
+
     try {
-      const response = await http.get(`/api/watchlist/user/${user._id}`);
-      const list = response.data.watchlist.product_id;
+      console.log(user.data);
+      const response = await api.get(`/api/watchlist/user/${user._id}`);
+
+      const list = response.data.watchlist?.product_id || [];
+
       setLikedList(list);
       setLikedIds(new Set(list.map((item) => item._id)));
     } catch (err) {
       console.log(err.response?.data?.message || err.message);
-      throw err;
     }
   };
 
   useEffect(() => {
-    getLikedList();
-  }, [change]);
+    if (user && user._id) {
+      getLikedList();
+    } else {
+      setLikedList([]);
+      setLikedIds(new Set());
+    }
+  }, [change, user]);
 
-  const addToLikedList = async (product_id) => {
+  const addToLikedList = async (id) => {
+    if (!user) {
+      alert("Please login first");
+      return;
+    }
     try {
-      console.log("add " + product_id);
-      const res = await http.patch(`/api/watchlist/${user._id}`, {
-        product_id: product_id,
-      });
-      setChange(!change);
+      const body = { product_id: id };
+      console.log("abc" + body);
+      const res = await api.patch(`/api/watchlist/${user._id}`, body);
+      setChange((prev) => !prev); // Best practice: use callback for toggle
     } catch (err) {
       console.log(err.response?.data?.message || err.message);
       throw err;
@@ -41,10 +54,11 @@ export function LikedProvider({ children }) {
   };
 
   const removeFromLikedList = async (product_id) => {
+    if (!user) return;
     try {
-      console.log("remove " + product_id);
-      const res = await http.delete(`/api/watchlist/${user._id}/${product_id}`);
-      setChange(!change);
+      console;
+      await api.delete(`/api/watchlist/${user._id}/${product_id}`);
+      setChange((prev) => !prev);
     } catch (err) {
       console.log(err.response?.data?.message || err.message);
       throw err;

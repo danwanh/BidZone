@@ -93,7 +93,9 @@ export const getAllProducts = async (req, res) => {
     if (categoryId) {
       const ids = categoryId.split(",");
 
-      const selectedCategories = await Category.find({ _id: { $in: ids } });
+      const selectedCategories = await Category.find({
+        _id: { $in: ids },
+      }).populate("bidder_id");
 
       if (!selectedCategories.length) {
         return res.status(400).json({ message: "No category found" });
@@ -158,7 +160,9 @@ export const getAllProducts = async (req, res) => {
 
 // GET /api/product/:id
 export const getProductById = async (req, res) => {
-  const product = await Product.findById(req.params.id).populate("seller_id");
+  const product = await Product.findById(req.params.id)
+    .populate("seller_id")
+    .populate("bidder_id", "username name");
 
   if (!product) {
     return res.status(404).json({ message: "Không tìm thấy sản phẩm" });
@@ -185,7 +189,6 @@ export const getProductById = async (req, res) => {
   await product.save();
 
   res.json(product);
-  
 };
 
 // GET /api/product/user/:id
@@ -448,6 +451,8 @@ export const getProductsByCategory = async (req, res) => {
   try {
     const categoryId = req.params.id;
     const LIMIT = 5;
+
+    console.log("ASDLJKASD " + typeof categoryId);
 
     const currentCategory = await Category.findById(categoryId);
 

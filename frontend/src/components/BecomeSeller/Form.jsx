@@ -113,7 +113,7 @@ const Form = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 gap-x-15 mb-4">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                First Name <span className="text-red-500">*</span>
+                Tên đầu <span className="text-red-500">*</span>
               </label>
               <input
                 {...register("firstName")}
@@ -130,7 +130,7 @@ const Form = () => {
 
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Last Name <span className="text-red-500">*</span>
+                Tên gia đình <span className="text-red-500">*</span>
               </label>
               <input
                 {...register("lastName")}
@@ -150,7 +150,7 @@ const Form = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 gap-x-15 mb-4">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Phone Number <span className="text-red-500">*</span>
+                Số điện thoại <span className="text-red-500">*</span>
               </label>
               <input
                 {...register("phoneNumber")}
@@ -169,7 +169,7 @@ const Form = () => {
           {/* Address, City, State, Zip, Country */}
           <div className="mb-4">
             <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Address <span className="text-red-500">*</span>
+              Địa chỉ <span className="text-red-500">*</span>
             </label>
             <input
               {...register("address")}
@@ -187,7 +187,7 @@ const Form = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 gap-x-15 mb-6">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                City <span className="text-red-500">*</span>
+                Thành phố <span className="text-red-500">*</span>
               </label>
               <input
                 {...register("city")}
@@ -204,7 +204,7 @@ const Form = () => {
 
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                State/Province <span className="text-red-500">*</span>
+                Vịnh / Xã <span className="text-red-500">*</span>
               </label>
               <input
                 {...register("stateProvince")}
@@ -223,7 +223,7 @@ const Form = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 gap-x-15 mb-6">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Zip/Postal Code <span className="text-red-500">*</span>
+                Mã bưu điện <span className="text-red-500">*</span>
               </label>
               <input
                 {...register("zipPostalCode")}
@@ -240,7 +240,7 @@ const Form = () => {
 
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Country <span className="text-red-500">*</span>
+                Đất nước <span className="text-red-500">*</span>
               </label>
               <select
                 {...register("country")}
@@ -270,7 +270,7 @@ const Form = () => {
             type="submit"
             className="w-full bg-gradient-to-r from-[#6B7FFF] to-[#6ADBB9] text-white py-3 rounded-lg font-semibold text-lg hover:brightness-85 cursor-pointer transition-all flex items-center justify-center gap-2"
           >
-            Next Step →
+            Bước kế tiếp →
           </button>
         </form>
       )}
