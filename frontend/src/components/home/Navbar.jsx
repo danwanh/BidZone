@@ -33,7 +33,7 @@ const Navbar = () => {
 
   const handleSearch = () => {
     if (!searchText.trim()) return;
-
+    console.log(searchText);
     navigate(`/products/?q=${encodeURIComponent(searchText.trim())}`);
     setIsOpen(false);
   };
