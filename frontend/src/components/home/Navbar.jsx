@@ -5,13 +5,14 @@ import searchIcon from "../../assets/icons/search.svg";
 import sellIcon from "../../assets/icons/gavel-solid-full.svg";
 import adminIcon from "../../assets/icons/admin.svg";
 import { useAuth } from "../../context/AuthContext";
+import { ClipLoader } from "react-spinners";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [hoveredCategory, setHoveredCategory] = useState(null);
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
 
   const [searchText, setSearchText] = useState("");
   const navigate = useNavigate();
@@ -46,6 +47,12 @@ const Navbar = () => {
   const activeSubcategories = activeCategory
     ? categories.filter((cat) => cat.category_id === activeCategory._id) || []
     : [];
+
+  if (loading) return (
+    <div className="w-full h-[60px] flex justify-center items-center">
+      <ClipLoader loading={loading} size={50} />
+    </div>
+  );
 
   return (
     <nav className="bg-white shadow-sm relative Space text-md">

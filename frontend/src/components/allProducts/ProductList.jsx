@@ -43,7 +43,7 @@ const ProductList = () => {
     if (!page) next.delete("page");
     else next.set("page", 1);
     setSearchParams(next);
-  }, []);
+  }, [q, categoryId, minPrice, maxPrice, sortBy, order]);
 
   useEffect(() => {
     let isMounted = true;
@@ -55,6 +55,7 @@ const ProductList = () => {
         const res = await api.get(`/api/product/?${queryString}`);
 
         setTotalPage(res.data.total_page);
+        console.log(res.data);
 
         if (isMounted) {
           setProducts(res.data.products);

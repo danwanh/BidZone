@@ -142,7 +142,7 @@ export const rejectAutoBid = async (req, res) => {
 }).sort({ price: -1 });
 
 
-    // 3️⃣ Update currentPrice
+    //Update currentPrice
     const newPrice = highestValidBid
       ? highestValidBid.price
       : 0; // hoặc product.start_price

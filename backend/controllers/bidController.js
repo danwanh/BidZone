@@ -28,6 +28,8 @@ export const createBid = async (req, res) => {
   const bid = new Bid({ product_id, bidder_id, price });
   await bid.save();
 
+  console.log("Bidded");
+
   appEvent.emit("BID_SUCCESS", {
     product,
     bidder,

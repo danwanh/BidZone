@@ -124,6 +124,7 @@ export const getAllProducts = async (req, res) => {
         if (cat.category_id == null) {
           // category CHA
           parentCategoryIds.push(cat._id);
+          targetCategoryIds.push(cat._id);
         } else {
           // category CON
           targetCategoryIds.push(cat._id);
@@ -140,11 +141,6 @@ export const getAllProducts = async (req, res) => {
       }
 
       filter.category_id = { $in: targetCategoryIds };
-    }
-
-    // Search
-    if (q) {
-      filter.name = { $regex: q, $options: "i" };
     }
 
     //Filter
@@ -165,16 +161,98 @@ export const getAllProducts = async (req, res) => {
       sort.start_time = 1;
     }
 
-    // Query db
-    const [products, totalDocs] = await Promise.all([
-      Product.find(filter)
-        .populate("category_id", "name")
-        .populate("seller_id", "username email")
-        .sort(sort)
-        .skip(skip)
-        .limit(limit),
-      Product.countDocuments(filter),
-    ]);
+    let products = {};
+    let totalDocs = 0;
+
+    if (q) {
+      const pipeline = [
+        {
+          $search: {
+            index: "product_search",
+            text: {
+              query: q,
+              path: ["name", "description_history.description"],
+              fuzzy: {
+                maxEdits: 1,
+              },
+            },
+          },
+        },
+        {
+          $match: filter,
+        },
+        {
+          $facet: {
+            data: [
+              { $sort: Object.keys(sort).length ? sort : { score: -1 } },
+              { $skip: skip },
+              { $limit: limit },
+
+              // Category lookup
+              {
+                $lookup: {
+                  from: "categories",
+                  localField: "category_id",
+                  foreignField: "_id",
+                  as: "category",
+                },
+              },
+              {
+                $unwind: {
+                  path: "$category",
+                  preserveNullAndEmptyArrays: true,
+                },
+              },
+
+              // Seller lookup
+              {
+                $lookup: {
+                  from: "users",
+                  localField: "seller_id",
+                  foreignField: "_id",
+                  as: "seller",
+                },
+              },
+              { $unwind: "$seller" },
+
+              {
+                $addFields: {
+                  // category fields
+                  category: {
+                    _id: "$category._id",
+                    name: "$category.name",
+                  },
+                  // seller fields
+                  seller: {
+                    _id: "$seller._id",
+                    username: "$seller.username",
+                    email: "$seller.email",
+                  },
+
+                  score: { $meta: "searchScore" },
+                },
+              },
+            ],
+            total: [{ $count: "count" }],
+          },
+        },
+      ];
+
+      const result = await Product.aggregate(pipeline);
+
+      products = result[0].data;
+      totalDocs = result[0].total[0]?.count || 0;
+    } else {
+      [products, totalDocs] = await Promise.all([
+        Product.find(filter)
+          .populate("category_id", "name")
+          .populate("seller_id", "username email")
+          .sort(sort)
+          .skip(skip)
+          .limit(limit),
+        Product.countDocuments(filter),
+      ]);
+    }
 
     res.status(200).json({
       message: "Got product list successfully!",

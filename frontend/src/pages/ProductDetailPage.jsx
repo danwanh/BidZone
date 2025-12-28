@@ -371,6 +371,7 @@ export const ProductDetailPage = () => {
       })
 
       const data = await response.json()
+      console.log(data);
       if (!response.ok) {
         setBidError(data.message || data.error || "Không thể đặt giá")
         return

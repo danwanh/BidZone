@@ -26,9 +26,7 @@ export const sendOTP = async (req, res) => {
             </p>
 
             <p style="font-size: 16px; color: #333;">
-              Mã OTP của bạn là: 
-              <br>
-              <strong style="font-size: 24px; color: #667eea;">${otp}</strong>
+              Mã OTP của bạn là:<br><strong style="font-size: 24px; color: #667eea;">${otp}</strong>
             </p>
 
             <p style="font-size: 16px; color: #333;">
