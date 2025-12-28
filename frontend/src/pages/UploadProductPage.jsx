@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-
+import { useAuth } from "../context/AuthContext";
 export default function UploadProductPage() {
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [images, setImages] = useState([]);
   const [uploadingImages, setUploadingImages] = useState(false);
@@ -123,7 +124,7 @@ export default function UploadProductPage() {
           end_time: formData.end_time,
           is_autobid: formData.is_autobid,
           allow_unrated_bidders: formData.allow_unrated_bidders,
-          seller_id: "69113d2a06251b39d3acfd0d",
+          seller_id: user._id || "",
           current_price: Number.parseFloat(formData.start_price),
           status: "active",
         }),
@@ -144,14 +145,7 @@ export default function UploadProductPage() {
   };
 
   return (
-    <div className="max-w-4xl min-w-7xl mx-auto">
-      <button
-        onClick={() => window.history.back()}
-        className="mb-6 px-4 py-2 border border-gray-500 rounded-lg hover:bg-gray-100 transition"
-      >
-        ← Quay lại
-      </button>
-
+    <div className="w-full min-w-7xl mx-auto">
       <div className="bg-white rounded-xl shadow-2xl overflow-hidden">
         <div className="border-b border-gray-200 p-6">
           <h1 className="text-3xl font-bold text-gray-900">
@@ -166,10 +160,7 @@ export default function UploadProductPage() {
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Product Name */}
             <div className="space-y-2">
-              <label
-                htmlFor="name"
-                className="block text-sm font-medium text-gray-700"
-              >
+              <label htmlFor="name" className="block font-bold text-gray-700">
                 Tên sản phẩm <span className="text-red-500">*</span>
               </label>
               <input
@@ -187,10 +178,7 @@ export default function UploadProductPage() {
 
             {/* Images Upload - Cloudinary */}
             <div className="space-y-2">
-              <label
-                htmlFor="images"
-                className="block text-sm font-medium text-gray-700"
-              >
+              <label htmlFor="images" className="block font-bold text-gray-700">
                 Hình ảnh sản phẩm (tối thiểu 3 ảnh){" "}
                 <span className="text-red-500">*</span>
               </label>
@@ -244,7 +232,7 @@ export default function UploadProductPage() {
               <div className="space-y-2">
                 <label
                   htmlFor="start_price"
-                  className="block text-sm font-medium text-gray-700"
+                  className="block font-bold text-gray-700"
                 >
                   Giá khởi điểm (VNĐ) <span className="text-red-500">*</span>
                 </label>
@@ -266,7 +254,7 @@ export default function UploadProductPage() {
               <div className="space-y-2">
                 <label
                   htmlFor="bid_step"
-                  className="block text-sm font-medium text-gray-700"
+                  className="block font-bold text-gray-700"
                 >
                   Bước giá (VNĐ) <span className="text-red-500">*</span>
                 </label>
@@ -289,7 +277,7 @@ export default function UploadProductPage() {
             <div className="space-y-2">
               <label
                 htmlFor="buy_now_price"
-                className="block text-sm font-medium text-gray-700"
+                className="block font-bold text-gray-700"
               >
                 Giá mua ngay (VNĐ){" "}
                 <span className="text-gray-500">(tùy chọn)</span>
@@ -311,7 +299,7 @@ export default function UploadProductPage() {
             <div className="space-y-2">
               <label
                 htmlFor="category"
-                className="block text-sm font-medium text-gray-700"
+                className="block font-bold text-gray-700"
               >
                 Danh mục <span className="text-red-500">*</span>
               </label>
@@ -335,7 +323,7 @@ export default function UploadProductPage() {
             </div>
             <div className="grid md:grid-cols-2 gap-4">
               {/* <div className="space-y-2">
-                  <label htmlFor="start_time" className="block text-sm font-medium text-gray-700">
+                  <label htmlFor="start_time" className="block font-bold text-gray-700">
                     Thời gian bắt đầu <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -351,7 +339,7 @@ export default function UploadProductPage() {
               <div className="space-y-2">
                 <label
                   htmlFor="end_time"
-                  className="block text-sm font-medium text-gray-700"
+                  className="block font-bold text-gray-700"
                 >
                   Thời gian kết thúc <span className="text-red-500">*</span>
                 </label>
@@ -423,7 +411,7 @@ export default function UploadProductPage() {
             <div className="space-y-2">
               <label
                 htmlFor="description"
-                className="block text-sm font-medium text-gray-700"
+                className="block font-bold text-gray-700"
               >
                 Mô tả sản phẩm <span className="text-red-500">*</span>
               </label>

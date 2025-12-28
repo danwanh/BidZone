@@ -79,6 +79,10 @@ const UserSchema = mongoose.Schema(
       type: Date,
     },
 
+    is_private: {
+      type: Boolean,
+    },
+
     oauth: {
       google: {
         id: String,

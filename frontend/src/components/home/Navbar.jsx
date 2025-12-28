@@ -196,7 +196,7 @@ const Navbar = () => {
             <div className="text-[18px] flex gap-2">
               {/* Yêu thích */}
               <Link
-                to="/profile?tab=Yêu+thích&page=1"
+                to={`/profile?tab=Yêu+thích&page=1&id=${user._id}`}
                 className="flex items-center text-[#1e0c4d] font-semibold rounded-xl px-4 hover:shadow"
                 title="Yêu thích"
               >
@@ -205,7 +205,7 @@ const Navbar = () => {
 
               {/* Đã mua */}
               <Link
-                to="/profile?tab=Đã+mua&page=1"
+                to={`/profile?tab=Đã+mua&page=1&id=${user._id}`}
                 className="flex items-center text-[#1e0c4d] font-semibold rounded-xl px-4 hover:shadow"
                 title="Đã mua"
               >
@@ -260,7 +260,7 @@ const Navbar = () => {
 
               {/* Profile */}
               <Link
-                to="/profile"
+                to={`/profile?tab=Đang+đấu+giá&page=1&id=${user._id}`}
                 className="flex items-center bg-[#f4955e] px-4 p-1 rounded-xl gap-1 hover:bg-orange-600"
                 title="Trang cá nhân"
               >

@@ -11,6 +11,8 @@ import {
   rateDown,
   changePassword,
   createUser,
+  setPrivate,
+  setPublic,
 } from "../controllers/userController.js";
 import { authenticate, isAdmin } from "../middleware/authMiddleware.js";
 
@@ -41,6 +43,10 @@ router.put("/:id/role", authenticate, isAdmin, updateUserRole);
 
 // PUT /api/users/:id/ban - Ban/Unban user (Admin only)
 router.put("/:id/ban", authenticate, isAdmin, toggleUserBan);
+
+router.patch("/private", authenticate, setPrivate);
+
+router.patch("/public", authenticate, setPublic);
 
 // DELETE
 // DELETE /api/users/:id - Delete user (Admin only)

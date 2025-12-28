@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import ProductTimer from "./ProductTimer";
@@ -11,12 +11,15 @@ const ProductCard = ({ product }) => {
   const [showPopup, setShowPopup] = useState(false);
   const { addToLikedList, removeFromLikedList, likedIds } = useLiked();
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const [isLiked, setIsLiked] = useState(likedIds.has(product._id));
 
   const location = useLocation();
   const is_profile = location.pathname.endsWith("/profile");
   const is_bought = product.status === "ended";
+  const has_user_name =
+    product?.bidder_id?.username || product?.bidder_id?.name;
 
   const { register, handleSubmit, watch, setValue } = useForm({
     defaultValues: {
@@ -73,6 +76,14 @@ const ProductCard = ({ product }) => {
         console.error("Failed to remove from watchlist:", error.message);
       }
     }
+  };
+
+  const toUserProfile = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log("123456");
+    console.log(product);
+    navigate(`/profile?tab=Đang+đấu+giá&page=1&id=${product.bidder_id._id}`);
   };
 
   return (
@@ -155,7 +166,7 @@ const ProductCard = ({ product }) => {
       )}
       <Link
         to={`/products/${product._id}`}
-        className={`w-[225px] h-fit flex flex-col bg-[#ffffff] rounded-[0.6rem] gap-[5px] overflow-hidden shadow-lg relative hover:-translate-y-2 transition-transform duration-150 ease-in-out hover:cursor-pointer`}
+        className={`w-[225px] h-fit flex flex-col bg-[#ffffff] rounded-[0.6rem] gap-[2px] overflow-hidden shadow-lg relative hover:-translate-y-2 transition-transform duration-150 ease-in-out hover:cursor-pointer`}
       >
         {is_bought && (
           <div className="absolute bg-[#011876] text-[14px] font-bold text-white -rotate-45 pt-10 px-10 pb-3 -left-13 -top-5">
@@ -172,25 +183,27 @@ const ProductCard = ({ product }) => {
           alt="Product"
         />
 
-        <div className="flex justify-between text-black-500 px-[10px] text-[14px] z-10">
-          <p>{new Date(product.start_time).toLocaleDateString("en-GB")}</p>
+        <div className="flex justify-between text-black-500 px-[10px] text-sm z-5 items-center">
+          <p className="mt-[2px] -mb-[1px]">
+            {new Date(product.start_time).toLocaleDateString("en-GB")}
+          </p>
           <svg
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
               handleLike(isLiked ? false : true);
             }}
-            width="22"
-            height="20"
+            width="19"
+            height="17"
             viewBox="0 0 22 20"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
           >
             <path
               d="M20.75 6.56387C20.75 13.1279 11.483 18.441 11.0884 18.6605C10.9844 18.7192 10.8681 18.75 10.75 18.75C10.6319 18.75 10.5156 18.7192 10.4116 18.6605C10.017 18.441 0.75 13.1279 0.75 6.56387C0.751654 5.02247 1.33541 3.5447 2.3732 2.45476C3.41099 1.36483 4.81806 0.751737 6.28571 0.75C8.12946 0.75 9.74375 2.64152 10.75 4.04904C11.7563 2.64152 13.3705 0.75 15.2143 0.75C16.6819 0.751737 18.089 1.36483 19.1268 2.45476C20.1646 3.5447 20.7483 5.02247 20.75 6.56387Z"
-              stroke="#171B22"
+              stroke="#E91C1E"
               strokeWidth="1.5"
-              fill={isLiked ? "#171b22" : "none"}
+              fill={isLiked ? "#E91C1E" : "none"}
             />
           </svg>
         </div>
@@ -208,14 +221,14 @@ const ProductCard = ({ product }) => {
             <div className="px-[10px] flex justify-between">
               {/* Left */}
               <div className="flex flex-col leading-[24px]">
-                <p className="text-[16px] text-[#666666]">Giá cao nhất</p>
+                <p className="text-sm text-[#666666]">Giá cao nhất</p>
                 <p className="text-[22px] font-bold text-orange-600">
                   ${product.current_price ? product.current_price : 0}
                 </p>
               </div>
               {/* right */}
               <div className="flex flex-col text-right leading-[24px]">
-                <p className="text-[16px] text-[#666666] whitespace-nowrap">
+                <p className="text-sm text-[#666666] whitespace-nowrap">
                   Lần ra giá
                 </p>
                 <p className="text-[22px] font-bold text-orange-600">
@@ -223,10 +236,13 @@ const ProductCard = ({ product }) => {
                 </p>
               </div>
             </div>
-            <div className="pl-3">
-              {(product?.bidder_id?.username || product?.bidder_id?.name) && (
+            <div className={`pl-3`}>
+              {has_user_name && (
                 <div className="flex gap-2">
-                  <p className=" whitespace-nowrap max-w-40 truncate overflow-hidden">
+                  <p
+                    onClick={toUserProfile}
+                    className=" whitespace-nowrap max-w-40 truncate overflow-hidden underline cursor-pointer hover:text-blue-600"
+                  >
                     {product?.bidder_id?.username
                       ? product?.bidder_id?.username
                       : product?.bidder_id?.name}
@@ -252,8 +268,7 @@ const ProductCard = ({ product }) => {
                 </div>
               )}
 
-              {!(product?.bidder_id?.username || product?.bidder_id?.name) &&
-                "Không có bidder"}
+              {!has_user_name && "Không có bidder"}
             </div>
             <ProductTimer end_time={product.end_time} />
           </>
