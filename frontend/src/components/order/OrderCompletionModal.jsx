@@ -78,13 +78,13 @@ function ChatInterface({ orderId, currentUserId, sellerId, buyerId, seller, buye
 
   const isSeller = currentUserId === sellerId
   const otherUser = isSeller ? buyer : seller
+  const currentUserName = isSeller ? seller?.name : buyer?.name
 
   return (
     <div className="flex flex-col h-[500px]">
       <button
         className="flex items-center gap-3 p-4 border-b border-gray-200 bg-gray-50 hover:bg-gray-100 transition text-left"
         onClick={() => {
-          // This will be handled by parent modal to show user profile and ratings
           console.log("Show user profile:", otherUser)
         }}
       >
@@ -101,23 +101,38 @@ function ChatInterface({ orderId, currentUserId, sellerId, buyerId, seller, buye
         </div>
       </button>
 
-      <div className="flex-1 overflow-y-auto p-4 space-y-3">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.length === 0 ? (
           <div className="flex items-center justify-center h-full">
             <p className="text-gray-500 text-sm">Chưa có tin nhắn nào</p>
           </div>
         ) : (
           messages.map((msg, idx) => {
-            const isOwn = msg.sender_id === currentUserId
+            const senderId = typeof msg.sender === "string" ? msg.sender : msg.sender?._id
+
+            const isOwn = senderId === currentUserId
+
             return (
               <div key={idx} className={`flex ${isOwn ? "justify-end" : "justify-start"}`}>
-                <div
-                  className={`max-w-[70%] px-4 py-2 rounded-lg ${isOwn ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-900"}`}
-                >
-                  <p className="text-sm">{msg.content}</p>
-                  <p className={`text-xs mt-1 ${isOwn ? "text-blue-100" : "text-gray-500"}`}>
-                    {new Date(msg.createdAt).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}
+                <div className="max-w-[70%]">
+                  <p
+                    className={`text-xs font-semibold mb-1 ${
+                      isOwn ? "text-right text-blue-600" : "text-left text-gray-600"
+                    }`}
+                  >
+                    {isOwn ? "Bạn" : otherUser?.name || "Người dùng"}
                   </p>
+                  <div
+                    className={`px-4 py-2 rounded-lg ${isOwn ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-900"}`}
+                  >
+                    <p className="text-sm">{msg.content}</p>
+                    <p className={`text-xs mt-1 ${isOwn ? "text-blue-100" : "text-gray-500"}`}>
+                      {new Date(msg.createdAt).toLocaleTimeString("vi-VN", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </p>
+                  </div>
                 </div>
               </div>
             )
@@ -246,6 +261,7 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
   const [deliveryAddress, setDeliveryAddress] = useState("")
   const [shippingInvoice, setShippingInvoice] = useState("")
   const [cancelReason, setCancelReason] = useState("")
+  const [pendingRating, setPendingRating] = useState(null)
   const [userRating, setUserRating] = useState(null)
   const [ratingComment, setRatingComment] = useState("")
   const [activeTab, setActiveTab] = useState("process")
@@ -347,44 +363,139 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
     })
 
     alert("Đã hủy giao dịch và đánh giá -1 cho người mua")
-    handleSubmitRating(-1);
+    handleSubmitRating(-1)
     setShowCancelDialog(false)
     loadOrderData()
   }, [cancelReason, orderData._id, currentUserId, loadOrderData])
 
-  const handleSubmitRating = async (points) => {
-  try {
-    const token = localStorage.getItem("accessToken");
+  const handleSubmitRating = useCallback(
+    async (points) => {
+      try {
+        const token = localStorage.getItem("accessToken")
+        // if (userRating) {
+        //   await fetch(`http://localhost:3000/api/ratings/${userRating._id}`, {
+        //     method: "DELETE",
+        //     headers: { Authorization: `Bearer ${token}` },
+        //   })
+        // }
+        const res = await fetch("http://localhost:3000/api/ratings", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            product_id: product._id,
+            from_user_id: currentUserId,
+            to_user_id: isBuyer ? orderData.seller_id._id : orderData.buyer_id._id,
+            points,
+            comment: ratingComment,
+          }),
+        })
 
-    const res = await fetch("http://localhost:3000/api/ratings", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        product_id: product._id,
-        from_user_id: currentUserId,
-        to_user_id: isBuyer ? orderData.seller_id._id : orderData.buyer_id._id,
-        points,
-        comment: ratingComment,
-      }),
-    });
+        if (!res.ok) {
+          const err = await res.json()
+          alert(err.message || "Đánh giá thất bại")
+          return
+        }
 
-    if (!res.ok) {
-      const err = await res.json();
-      alert(err.message || "Đánh giá thất bại");
-      return;
+        const ratingData = await res.json()
+        setUserRating(ratingData.data)
+        setPendingRating(null)
+        setRatingComment("") // reset comment after successful submission
+        await fetch(`http://localhost:3000/api/orders/${orderData._id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: "completed" }),
+        })
+        alert("Đánh giá thành công!")
+        loadOrderData()
+      } catch (err) {
+        console.error(err)
+        alert("Lỗi khi gửi đánh giá")
+      }
+    },
+    [userRating, ratingComment, isBuyer, orderData, product._id, currentUserId, loadOrderData],
+  )
+  const handleUpdateRating = useCallback(
+  async (points) => {
+    if (!userRating?._id) {
+      alert("Không tìm thấy đánh giá để cập nhật")
+      return
     }
 
-    setUserRating({ rating: points });
-    alert("Đánh giá thành công!");
-  } catch (err) {
-    console.error(err);
-    alert("Lỗi khi gửi đánh giá");
-  }
-};
+    try {
+      const token = localStorage.getItem("accessToken")
 
+      const res = await fetch(`http://localhost:3000/api/ratings/${userRating._id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          product_id: product._id,
+          from_user_id: currentUserId,
+          to_user_id: isBuyer ? orderData.seller_id._id : orderData.buyer_id._id,
+          points,
+          comment: ratingComment,
+        }),
+      })
+
+      if (!res.ok) {
+        const err = await res.json()
+        alert(err.message || "Cập nhật đánh giá thất bại")
+        return
+      }
+
+      const updatedRating = await res.json()
+
+      setUserRating(updatedRating)
+      setPendingRating(null)
+      setRatingComment("")
+      alert("Cập nhật đánh giá thành công!")
+      loadOrderData()
+    } catch (err) {
+      console.error(err)
+      alert("Lỗi khi cập nhật đánh giá")
+    }
+  },
+  [userRating, ratingComment, isBuyer, orderData, product._id, currentUserId, loadOrderData],
+)
+
+
+  const loadUserRating = useCallback(async () => {
+    try {
+      const token = localStorage.getItem("accessToken")
+      if (!token || !product?._id) return
+
+      const toUserId = isBuyer ? orderData?.seller_id?._id : orderData?.buyer_id?._id
+      if (!toUserId) return
+
+      const res = await fetch(
+        `http://localhost:3000/api/ratings?product_id=${product._id}&from_user_id=${currentUserId}&to_user_id=${toUserId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      )
+
+      if (res.ok) {
+        const data = await res.json()
+        if (data && data.length > 0) {
+          setUserRating(data[0])
+          setRatingComment(data[0].comment || "")
+        }
+      }
+    } catch (err) {
+      console.error("Failed to load user rating:", err)
+    }
+  }, [product._id, currentUserId, orderData, isBuyer])
+
+  useEffect(() => {
+    if (orderData?.status === "completed") {
+      loadUserRating()
+    }
+  }, [orderData?.status, loadUserRating])
 
   const getCurrentStep = useCallback(() => {
     const statusMap = {
@@ -399,10 +510,26 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
 
   const getStatusDisplay = useCallback(() => {
     const statusMap = {
-      pending_payment: { label: "Chờ thanh toán", color: "bg-yellow-100 text-yellow-700", step: 1 },
-      pending_shipping: { label: "Chờ vận chuyển", color: "bg-blue-100 text-blue-700", step: 2 },
-      pending_delivery: { label: "Chờ nhận hàng", color: "bg-purple-100 text-purple-700", step: 3 },
-      completed: { label: "Hoàn tất", color: "bg-green-100 text-green-700", step: 4 },
+      pending_payment: {
+        label: "Chờ thanh toán",
+        color: "bg-yellow-100 text-yellow-700",
+        step: 1,
+      },
+      pending_shipping: {
+        label: "Chờ vận chuyển",
+        color: "bg-blue-100 text-blue-700",
+        step: 2,
+      },
+      pending_delivery: {
+        label: "Chờ nhận hàng",
+        color: "bg-purple-100 text-purple-700",
+        step: 3,
+      },
+      completed: {
+        label: "Hoàn tất",
+        color: "bg-green-100 text-green-700",
+        step: 4,
+      },
       cancelled: { label: "Đã hủy", color: "bg-red-100 text-red-700", step: 0 },
     }
     return statusMap[orderData?.status] || statusMap.pending_payment
@@ -638,9 +765,126 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
     }
 
     if (orderData?.status === "completed") {
+      if (userRating) {
+        return (
+          <div className="bg-white rounded-lg p-6 border-2 border-gray-200">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                <svg className="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold">Bước 4: Đánh giá giao dịch</h3>
+            </div>
+
+            <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4 mb-6">
+              <div className="flex items-center justify-between mb-3">
+                <p className="font-semibold text-green-700">Đánh giá của bạn:</p>
+                <span
+                  className={`px-3 py-1 rounded-full font-bold text-white ${
+                    userRating.points > 0 ? "bg-green-600" : "bg-red-600"
+                  }`}
+                >
+                  {userRating.points > 0 ? "+1 Tích cực" : "-1 Tiêu cực"}
+                </span>
+              </div>
+              {userRating.comment && <p className="text-sm text-green-700 mb-3">Nhận xét: {userRating.comment}</p>}
+              {!userRating.comment && <p className="text-sm text-gray-600 mb-3 italic">Không có nhận xét</p>}
+              <p className="text-xs text-green-600">
+                Gửi vào: {new Date(userRating.createdAt).toLocaleDateString("vi-VN")}
+              </p>
+            </div>
+
+            <button
+              onClick={() => setPendingRating(userRating.points)}
+              className="w-full px-6 py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition"
+            >
+              Chỉnh sửa đánh giá
+            </button>
+
+            {pendingRating !== null && (
+              <div className="mt-6 p-4 bg-blue-50 border-2 border-blue-200 rounded-lg">
+                <h4 className="font-semibold text-blue-700 mb-4">Chỉnh sửa đánh giá</h4>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-semibold mb-3">Điểm đánh giá</label>
+                    <div className="flex gap-4">
+                      <button
+                        onClick={() => setPendingRating(1)}
+                        className={`flex-1 px-6 py-4 rounded-lg font-bold border-2 transition ${
+                          pendingRating === 1
+                            ? "bg-green-500 text-white border-green-500"
+                            : "bg-white text-green-600 border-green-300 hover:bg-green-50 hover:border-green-500"
+                        }`}
+                      >
+                        <div className="flex items-center justify-center gap-2">
+                          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z" />
+                          </svg>
+                          Tích cực (+1)
+                        </div>
+                      </button>
+                      <button
+                        onClick={() => setPendingRating(-1)}
+                        className={`flex-1 px-6 py-4 rounded-lg font-bold border-2 transition ${
+                          pendingRating === -1
+                            ? "bg-red-500 text-white border-red-500"
+                            : "bg-white text-red-600 border-red-300 hover:bg-red-50 hover:border-red-500"
+                        }`}
+                      >
+                        <div className="flex items-center justify-center gap-2">
+                          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M18 9.5a1.5 1.5 0 11-3 0v-6a1.5 1.5 0 013 0v6zM14 9.667v-5.43a2 2 0 00-1.106-1.79l-.05-.025A4 4 0 0011.055 2H5.64a2 2 0 00-1.962 1.608l-1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4l1.4-1.866a4 4 0 00.8-2.4z" />
+                          </svg>
+                          Tiêu cực (-1)
+                        </div>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold mb-2">Nhận xét (tùy chọn)</label>
+                    <textarea
+                      placeholder="Chia sẻ trải nghiệm của bạn..."
+                      value={ratingComment}
+                      onChange={(e) => setRatingComment(e.target.value)}
+                      rows="4"
+                      className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
+                    />
+                  </div>
+
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => {
+                        setPendingRating(null)
+                        setRatingComment(userRating.comment || "")
+                      }}
+                      className="flex-1 px-6 py-2 bg-gray-300 text-gray-800 font-bold rounded-lg hover:bg-gray-400 transition"
+                    >
+                      Hủy
+                    </button>
+                    <button
+                      onClick={() => handleUpdateRating(pendingRating)}
+                      className="flex-1 px-6 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition"
+                    >
+                      Cập nhật
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )
+      }
+
       return (
         <div className="bg-white rounded-lg p-6 border-2 border-gray-200">
-          <div className="flex items-center gap-3 mb-4">
+          <div className="flex items-center gap-3 mb-6">
             <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
               <svg className="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
@@ -653,16 +897,17 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
             </div>
             <h3 className="text-xl font-bold">Bước 4: Đánh giá giao dịch</h3>
           </div>
+
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-semibold mb-3">Đánh giá của bạn</label>
+              <label className="block text-sm font-semibold mb-3">Chọn đánh giá của bạn</label>
               <div className="flex gap-4">
                 <button
-                  onClick={() => handleSubmitRating(1)}
+                  onClick={() => setPendingRating(1)}
                   className={`flex-1 px-6 py-4 rounded-lg font-bold border-2 transition ${
-                    userRating?.rating === 1
+                    pendingRating === 1
                       ? "bg-green-500 text-white border-green-500"
-                      : "bg-white text-green-600 border-green-500 hover:bg-green-50"
+                      : "bg-white text-green-600 border-green-300 hover:bg-green-50 hover:border-green-500"
                   }`}
                 >
                   <div className="flex items-center justify-center gap-2">
@@ -673,22 +918,23 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
                   </div>
                 </button>
                 <button
-                  onClick={() => handleSubmitRating(-1)}
+                  onClick={() => setPendingRating(-1)}
                   className={`flex-1 px-6 py-4 rounded-lg font-bold border-2 transition ${
-                    userRating?.rating === -1
+                    pendingRating === -1
                       ? "bg-red-500 text-white border-red-500"
-                      : "bg-white text-red-600 border-red-500 hover:bg-red-50"
+                      : "bg-white text-red-600 border-red-300 hover:bg-red-50 hover:border-red-500"
                   }`}
                 >
                   <div className="flex items-center justify-center gap-2">
                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M18 9.5a1.5 1.5 0 11-3 0v-6a1.5 1.5 0 013 0v6zM14 9.667v-5.43a2 2 0 00-1.105-1.79l-.05-.025A4 4 0 0011.055 2H5.64a2 2 0 00-1.962 1.608l-1.2 6A2 2 0 004.44 12H8v4a2 2 0 002 2 1 1 0 001-1v-.667a4 4 0 01.8-2.4l1.4-1.866a4 4 0 00.8-2.4z" />
+                      <path d="M18 9.5a1.5 1.5 0 11-3 0v-6a1.5 1.5 0 013 0v6zM14 9.667v-5.43a2 2 0 00-1.106-1.79l-.05-.025A4 4 0 0011.055 2H5.64a2 2 0 00-1.962 1.608l-1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4l1.4-1.866a4 4 0 00.8-2.4z" />
                     </svg>
                     Tiêu cực (-1)
                   </div>
                 </button>
               </div>
             </div>
+
             <div>
               <label className="block text-sm font-semibold mb-2">Nhận xét (tùy chọn)</label>
               <textarea
@@ -699,12 +945,14 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
                 className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
               />
             </div>
-            {userRating && (
-              <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4">
-                <p className="text-sm text-green-700">
-                  ✓ Bạn đã đánh giá {userRating.rating > 0 ? "+1" : "-1"} cho giao dịch này
-                </p>
-              </div>
+
+            {pendingRating !== null && (
+              <button
+                onClick={() => handleSubmitRating(pendingRating)}
+                className="w-full px-6 py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition"
+              >
+                Gửi đánh giá
+              </button>
             )}
           </div>
         </div>
@@ -721,10 +969,12 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
     shippingInvoice,
     userRating,
     ratingComment,
+    pendingRating,
     handleSubmitPayment,
     handleConfirmPayment,
     handleConfirmDelivery,
     handleSubmitRating,
+    loadUserRating, // Added loadUserRating here
   ])
 
   const handleShowUserProfile = useCallback((user) => {
@@ -762,32 +1012,35 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
         <div className="border-b border-gray-200 p-6 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <h2 className="text-2xl font-bold">Hoàn tất đơn hàng</h2>
-            {statusDisplay.label}
+            <span className={`px-3 py-1 rounded-full font-bold text-xs ${statusDisplay.color}`}>
+              {statusDisplay.label}
+            </span>
           </div>
 
           <div className="flex items-center gap-4">
-            {orderData?.status !== "cancelled" && (
-              <div className="flex gap-2">
-                {[1, 2, 3, 4].map((step) => (
-                  <button
-                    key={step}
-                    onClick={() => {
-                      // Could scroll to that step or show info
-                      console.log("Step", step)
-                    }}
-                    className={`w-8 h-8 rounded-full font-bold transition ${
-                      step === currentStep
-                        ? "bg-blue-600 text-white"
-                        : step < currentStep
-                          ? "bg-green-500 text-white"
-                          : "bg-gray-200 text-gray-600"
-                    }`}
-                  >
-                    {step < currentStep ? "✓" : step}
-                  </button>
-                ))}
-              </div>
-            )}
+            {orderData?.status !== "cancelled" &&
+              orderData?.status !== "completed" && ( // Only show steps if not cancelled or completed
+                <div className="flex gap-2">
+                  {[1, 2, 3, 4].map((step) => (
+                    <button
+                      key={step}
+                      onClick={() => {
+                        // Could scroll to that step or show info
+                        console.log("Step", step)
+                      }}
+                      className={`w-8 h-8 rounded-full font-bold transition ${
+                        step === currentStep
+                          ? "bg-blue-600 text-white"
+                          : step < currentStep
+                            ? "bg-green-500 text-white"
+                            : "bg-gray-200 text-gray-600"
+                      }`}
+                    >
+                      {step < currentStep ? "✓" : step}
+                    </button>
+                  ))}
+                </div>
+              )}
 
             <button onClick={() => setIsMinimized(true)} className="p-2 hover:bg-gray-100 rounded-full transition">
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">

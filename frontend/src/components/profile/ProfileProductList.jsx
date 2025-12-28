@@ -1,11 +1,10 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
-import axios from "../../api/axios";
+import api from "../../api/axios";
 import ProductCard from "../ProductCard";
-import { useLiked } from "../../context/LikedContext";
-import Pagination from "./Pagination";
+import Pagination from "../profile/Pagination";
 
-const SellingList = ({ status, userId }) => {
+const ProfileProductList = ({ baseURL, xtra }) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -16,21 +15,17 @@ const SellingList = ({ status, userId }) => {
   const per_page = 6;
   const q = searchParams.get("q") || "";
 
+  const categoryId = searchParams.get("categoryId") || "";
+
   const queryString = useMemo(() => {
     const p = new URLSearchParams();
     p.set("page", page);
     p.set("per_page", per_page);
     if (q) p.set("name", q);
-    p.set("status", status);
-
+    if (categoryId) p.set("categoryId", categoryId);
+    if (xtra) return p.toString() + "&" + xtra;
     return p.toString();
-  }, [page, q]);
-
-  useEffect(() => {
-    const p = new URLSearchParams(searchParams);
-    p.set("page", 1);
-    setSearchParams(p);
-  }, []);
+  }, [page, q, categoryId]);
 
   useEffect(() => {
     let isMounted = true;
@@ -39,21 +34,19 @@ const SellingList = ({ status, userId }) => {
         setLoading(true);
         setError(null);
 
-        const json = await axios.get(
-          `/api/product/seller/${userId}?${queryString}`
-        );
-        setTotalPage(json.data.total_page);
-        const data = json.data.products;
+        const res = await api.get(`${baseURL}?${queryString}`);
+
+        setTotalPage(res.data.total_page);
 
         if (isMounted) {
-          setProducts(data);
+          setProducts(res.data.products || res.data.filtered);
         }
-      } catch (err) {
+      } catch (error) {
         console.error(
-          err?.response?.data?.message || "Error loading products",
-          err
+          "Error loading products",
+          error.response?.data?.message || error.message
         );
-        if (isMounted) setError(err.message || "Unable to load products");
+        if (isMounted) setError(error.message || "Unable to load products");
       } finally {
         if (isMounted) setLoading(false);
       }
@@ -63,11 +56,15 @@ const SellingList = ({ status, userId }) => {
     return () => {
       isMounted = false;
     };
-  }, [queryString]);
+  }, [queryString, baseURL]);
 
   return (
     <section className="md:col-span-3 space-y-6">
-      {loading && <div>Loading</div>}
+      {loading && (
+        <div className="flex w-full justify-center">
+          <div className="w-10 h-10 border border-[#5f27ce] border-3 border-b-transparent animate-spin rounded-full"></div>
+        </div>
+      )}
       {error && (
         <div className="text-red-500">
           Error loading products: {error.message}{" "}
@@ -78,9 +75,13 @@ const SellingList = ({ status, userId }) => {
           {products.length > 0 ? (
             <div className="flex flex-col items-center gap-10">
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-12 mt-5">
-                {products.map((p) => (
-                  <ProductCard key={p._id} product={p} />
-                ))}
+                {products.map((p) =>
+                  p.product_id?._id ? (
+                    <ProductCard key={p._id} product={p.product_id} />
+                  ) : (
+                    <ProductCard key={p._id} product={p} />
+                  )
+                )}
               </div>
               <Pagination totalPage={totalPage} />
             </div>
@@ -95,4 +96,4 @@ const SellingList = ({ status, userId }) => {
   );
 };
 
-export default SellingList;
+export default ProfileProductList;

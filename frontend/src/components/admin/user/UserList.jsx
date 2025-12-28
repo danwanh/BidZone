@@ -162,7 +162,11 @@ const UserList = () => {
 
   const handleOnView = () => {
     if (menu.user) {
-      navigate(`/profile?id=${menu.user._id || menu.user.id}`);
+      navigate(
+        `/profile?/profile?tab=Đang+đấu+giá&page=1&id=${
+          menu.user._id || menu.user.id
+        }`
+      );
 
       setMenu({ ...menu, visible: false });
     }

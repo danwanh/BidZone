@@ -3,6 +3,7 @@ import { useParams, useSearchParams } from "react-router-dom";
 import api from "../../api/axios";
 import ProductCard from "../ProductCard";
 import Pagination from "../profile/Pagination";
+import "../../style/productList.css";
 
 const ProductList = ({ title, baseURL, disablePagination = false }) => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -68,11 +69,16 @@ const ProductList = ({ title, baseURL, disablePagination = false }) => {
 
   return (
     <>
-      {title && (
-        <h3 className="font-semibold text-orange-600 -mb-1 text-xl">{title}</h3>
+      {title === "Khám phá" && (
+        <div className="w-full text-center">
+          <h3 className="title !text-4xl">{title}</h3>
+        </div>
       )}
+      {title !== "Khám phá" && <h3 className="title">{title}</h3>}
       {loading && (
-        <div className="rounded-full border border-red-400 w-12 h-12 animate-spin border-t-transparent border-5 "></div>
+        <div className="flex justify-center mt-5">
+          <div className="rounded-full border border-[#5f27ce] w-12 h-12 animate-spin border-t-transparent border-4 "></div>
+        </div>
       )}
       {error && (
         <div className="text-red-500">

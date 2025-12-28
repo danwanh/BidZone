@@ -79,7 +79,7 @@ export const createAutoBid = async (req, res) => {
 export const getAutoBidsByProduct = async (req, res) => {
   try {
     const { product_id } = req.params;
-    const bids = await AutoBid.find({ product_id }).populate("bidder_id current_holder", "name email");
+    const bids = await AutoBid.find({ product_id }).populate("bidder_id current_holder", "name");
     res.json(bids);
   } catch (err) {
     console.error("Error fetching bids:", err);
@@ -141,11 +141,9 @@ export const rejectAutoBid = async (req, res) => {
   status: true,
 }).sort({ price: -1 });
 
-
-    //Update currentPrice
     const newPrice = highestValidBid
       ? highestValidBid.price
-      : 0; // hoặc product.start_price
+      : 0; 
 
     await Product.findByIdAndUpdate(bid.product_id, {
       currentPrice: newPrice,
