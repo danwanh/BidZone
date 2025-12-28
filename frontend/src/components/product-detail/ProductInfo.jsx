@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 export const ProductInfo = ({
   product,
@@ -22,14 +22,18 @@ export const ProductInfo = ({
         <div>
           <span
             className={`text-sm inline-block px-4 py-1 rounded-full font-semibold ${
-              productStatus === "closed" ? "bg-red-100 text-red-700" : "bg-indigo-100 text-indigo-700"
+              productStatus === "closed"
+                ? "bg-red-100 text-red-700"
+                : "bg-indigo-100 text-indigo-700"
             }`}
           >
             {productStatus === "closed" ? "✓ Đã đóng" : "✓ Đang đấu giá"}
           </span>
           <span
             className={`text-sm inline-block px-4 py-1 rounded-full font-semibold ml-2 ${
-              product.is_autobid ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700"
+              product.is_autobid
+                ? "bg-green-100 text-green-700"
+                : "bg-blue-100 text-blue-700"
             }`}
           >
             {product.is_autobid ? "✓ Đấu giá tự động" : "✓ Đấu giá thủ công"}
@@ -47,16 +51,34 @@ export const ProductInfo = ({
       </div>
 
       <h1 className="text-3xl font-bold mb-2">{product.name}</h1>
-      <div className="text-indigo-500 font-semibold mb-4">{product.category_id?.name}</div>
+      <div className="text-indigo-500 font-semibold mb-4">
+        {product.category_id?.name}
+      </div>
 
-      <div className={`p-4 rounded-lg text-center mb-4 ${productStatus === "closed" ? "bg-red-100" : "bg-yellow-100"}`}>
-        <div className={`text-sm font-bold mb-1 ${productStatus === "closed" ? "text-red-700" : "text-yellow-700"}`}>
+      <div
+        className={`p-4 rounded-lg text-center mb-4 ${
+          productStatus === "closed" ? "bg-red-100" : "bg-yellow-100"
+        }`}
+      >
+        <div
+          className={`text-sm font-bold mb-1 ${
+            productStatus === "closed" ? "text-red-700" : "text-yellow-700"
+          }`}
+        >
           {productStatus === "closed" ? "ĐÃ KẾT THÚC" : "THỜI GIAN CÒN LẠI"}
         </div>
-        <div className={`text-2xl font-bold mb-1 ${productStatus === "closed" ? "text-red-700" : "text-yellow-700"}`}>
+        <div
+          className={`text-2xl font-bold mb-1 ${
+            productStatus === "closed" ? "text-red-700" : "text-yellow-700"
+          }`}
+        >
           {countdown}
         </div>
-        <div className={`text-sm ${productStatus === "closed" ? "text-red-600" : "text-yellow-600"}`}>
+        <div
+          className={`text-sm ${
+            productStatus === "closed" ? "text-red-600" : "text-yellow-600"
+          }`}
+        >
           {relativeTime}
         </div>
       </div>
@@ -64,7 +86,9 @@ export const ProductInfo = ({
       <div className="grid grid-cols-2 gap-4 mb-4">
         <div className="bg-gray-100 p-4 rounded-lg text-center">
           <div className="text-gray-600 text-sm">Giá hiện tại</div>
-          <div className="text-black text-2xl font-bold">{currentBid?.toLocaleString()} VNĐ</div>
+          <div className="text-black text-2xl font-bold">
+            {currentBid?.toLocaleString()} VNĐ
+          </div>
         </div>
         <div className="bg-gray-100 p-4 rounded-lg text-center">
           <div className="text-gray-600 text-sm">Số lượt đấu giá</div>
@@ -74,8 +98,12 @@ export const ProductInfo = ({
 
       {product.buy_now_price && (
         <div className="bg-green-100 p-4 rounded-lg text-center mb-4">
-          <div className="text-green-600 text-sm font-semibold mb-1">Giá Mua Ngay</div>
-          <div className="text-green-700 text-2xl font-bold">{product.buy_now_price?.toLocaleString()} VNĐ</div>
+          <div className="text-green-600 text-sm font-semibold mb-1">
+            Giá Mua Ngay
+          </div>
+          <div className="text-green-700 text-2xl font-bold">
+            {product.buy_now_price?.toLocaleString()} VNĐ
+          </div>
         </div>
       )}
 
@@ -90,16 +118,25 @@ export const ProductInfo = ({
           {[...descriptionHistory]
             .sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at))
             .map((item, index) => (
-              <div key={index} className="bg-white p-3 rounded-md border border-gray-200">
-                <div className="text-xs text-gray-500 mb-1">{new Date(item.updated_at).toLocaleString("vi-VN")}</div>
-                <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">{item.description}</p>
+              <div
+                key={index}
+                className="bg-white p-3 rounded-md border border-gray-200"
+              >
+                <div className="text-xs text-gray-500 mb-1">
+                  {new Date(item.updated_at).toLocaleString("vi-VN")}
+                </div>
+                <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">
+                  {item.description}
+                </p>
               </div>
             ))}
         </div>
 
         {isEditMode && (
           <div className="mt-6 pt-4 border-t border-gray-300">
-            <div className="text-sm font-semibold mb-2 text-blue-600">Bổ sung mô tả cho sản phẩm</div>
+            <div className="text-sm font-semibold mb-2 text-blue-600">
+              Bổ sung mô tả cho sản phẩm
+            </div>
             <textarea
               value={newDescription}
               onChange={(e) => setNewDescription(e.target.value)}
@@ -117,5 +154,5 @@ export const ProductInfo = ({
         )}
       </div>
     </div>
-  )
-}
+  );
+};

@@ -15,6 +15,7 @@ export const sendOTP = async (req, res) => {
       expiredAt: new Date(Date.now() + 5 * 60 * 1000),
     });
 
+    console.log(otp);
     await sendEmail(
       email,
       "Mã xác thực OTP BidZone",
@@ -23,13 +24,11 @@ export const sendOTP = async (req, res) => {
 
     res.status(200).json({ message: "OTP sent to email" });
   } catch (err) {
-    res
-      .status(500)
-      .json({
-        message:
-          "Failed to send OTP or failed to save OTP to database: " +
-          err.message,
-      });
+    console.log(err);
+    res.status(500).json({
+      message:
+        "Failed to send OTP or failed to save OTP to database: " + err.message,
+    });
   }
 };
 

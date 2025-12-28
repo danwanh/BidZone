@@ -1,5 +1,6 @@
 import axios from "../../api/axios";
 import { useEffect, useState } from "react";
+import { toast } from "react-toastify";
 
 const Email = ({ user_email, setStep, sendEmail, isSending }) => {
   const [code, setCode] = useState("");
@@ -11,13 +12,14 @@ const Email = ({ user_email, setStep, sendEmail, isSending }) => {
       });
 
       if (res.data.message === "OTP verified") {
+        toast.success("V");
         setStep(3);
         window.scrollTo(0, 600);
       } else {
-        alert("Wrong OTP");
+        toast.error("Sai mã OTP.");
       }
     } catch (error) {
-      alert("Wrong or expired OTP");
+      toast.error("Lỗi");
     }
   };
 
@@ -72,7 +74,7 @@ const Email = ({ user_email, setStep, sendEmail, isSending }) => {
       </p>
 
       <p className="text-gray-500 text-sm mt-4">
-        Sai email?
+        Xem lại thông tin?
         <span
           onClick={() => setStep(1)}
           className="text-[#6ADBB9] hover:text-[#39977b] font-semibold cursor-pointer"

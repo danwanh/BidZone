@@ -5,6 +5,7 @@ import {
   createRating,
   updateRating,
   deleteRating,
+  getRatingsByUser,
 } from "../controllers/ratingController.js";
 
 import { authenticate } from "../middleware/authMiddleware.js";
@@ -13,7 +14,7 @@ const router = express.Router();
 
 router.get("", authenticate, getAllRatings);
 router.get("/each/:id", getRatingByID);
-router.get("/user/:id", getRatingByID);
+router.get("/user/:userId", authenticate, getRatingsByUser);
 router.post("/", createRating);
 router.patch("/:id", updateRating);
 router.delete("/:id", deleteRating);

@@ -17,7 +17,11 @@ const ProductCard = ({ product }) => {
 
   const location = useLocation();
   const is_profile = location.pathname.endsWith("/profile");
-  const is_bought = product.status === "ended";
+  const is_bought =
+    product.status === "ended" && product.bidder_id._id == user._id;
+
+  const is_new = new Date() - new Date(product.createdAt) <= 90 * 60 * 1000;
+
   const has_user_name =
     product?.bidder_id?.username || product?.bidder_id?.name;
 
@@ -31,16 +35,27 @@ const ProductCard = ({ product }) => {
   const vote = watch("vote");
 
   const onSubmit = async (data) => {
+    const body = {
+      product_id: product._id,
+      from_user_id: user._id,
+      to_user_id: product?.seller_id?._id || product.seller_id,
+      comment: data.review,
+      points: vote === "up" ? 1 : -1,
+    };
+
     try {
+      const response = await axios.post(`/api/ratings/`, body);
+
       if (data?.vote == "up") {
-        const body = { id: product.seller_id };
         setShowPopup(false);
-        const response = await axios.patch(`/api/users/rateup`, body);
-        console.log(response.data?.message || response);
+        const up = await axios.patch(`/api/users/rateup`, {
+          id: product.seller_id,
+        });
       } else if (data?.vote == "down") {
-        const body = { id: product.seller_id };
         setShowPopup(false);
-        const response = await axios.patch(`/api/users/ratedown`, body);
+        const down = await axios.patch(`/api/users/ratedown`, {
+          id: product.seller_id,
+        });
       }
       setShowPopup(false);
     } catch (err) {
@@ -48,7 +63,9 @@ const ProductCard = ({ product }) => {
     }
   };
 
-  const handleClick = () => {
+  const handleClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
     setShowPopup(true);
   };
 
@@ -173,6 +190,13 @@ const ProductCard = ({ product }) => {
             ĐÃ MUA
           </div>
         )}
+
+        {is_new && (
+          <div className="absolute bg-linear-to-b from-[#ff7b00] via-[#ff7b00] to-[#ffb71c9a] text-[14px] font-bold text-white -rotate-45 pt-10 px-10 pb-3 -left-13 -top-5">
+            MỚI MỞ
+          </div>
+        )}
+
         <img
           className="w-full h-[180px] object-cover object-center"
           src={
@@ -276,12 +300,12 @@ const ProductCard = ({ product }) => {
 
         {is_bought && (
           <div className="h-fit w-full flex justify-center items-center">
-            <p
-              onClick={() => handleClick()}
+            <button
+              onClick={handleClick}
               className="hover:shadow-lg cursor-pointer border hover:border-[#180154] text-white text-[16px] font-bold bg-[#667EEA] px-5 py-1 rounded-[100px] mb-4"
             >
               Đánh giá
-            </p>
+            </button>
           </div>
         )}
       </Link>

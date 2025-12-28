@@ -240,7 +240,7 @@ const Form = () => {
 
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Đất nước <span className="text-red-500">*</span>
+                Quốc gia <span className="text-red-500">*</span>
               </label>
               <select
                 {...register("country")}
@@ -295,47 +295,47 @@ const Form = () => {
           <NavBar step={step} />
 
           <h2 className="text-2xl font-bold text-gray-800 mb-6 mt-4">
-            Review Your Information
+            Xem lại thông tin của bạn
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 gap-x-15">
             <div>
-              <p className="text-gray-500 font-semibold">First Name</p>
+              <p className="text-gray-500 font-semibold">Tên đầu:</p>
               <p className="text-gray-800">{getValues("firstName")}</p>
             </div>
 
             <div>
-              <p className="text-gray-500 font-semibold">Last Name</p>
+              <p className="text-gray-500 font-semibold">Tên cuối:</p>
               <p className="text-gray-800">{getValues("lastName")}</p>
             </div>
 
             <div>
-              <p className="text-gray-500 font-semibold">Phone Number</p>
+              <p className="text-gray-500 font-semibold">Số điện thoại:</p>
               <p className="text-gray-800">{getValues("phoneNumber")}</p>
             </div>
 
             <div>
-              <p className="text-gray-500 font-semibold">Address</p>
+              <p className="text-gray-500 font-semibold">Địa chỉ:</p>
               <p className="text-gray-800">{getValues("address")}</p>
             </div>
 
             <div>
-              <p className="text-gray-500 font-semibold">City</p>
+              <p className="text-gray-500 font-semibold">Thành phố:</p>
               <p className="text-gray-800">{getValues("city")}</p>
             </div>
 
             <div>
-              <p className="text-gray-500 font-semibold">State/Province</p>
+              <p className="text-gray-500 font-semibold">Xã / Phường:</p>
               <p className="text-gray-800">{getValues("stateProvince")}</p>
             </div>
 
             <div>
-              <p className="text-gray-500 font-semibold">Zip/Postal Code</p>
+              <p className="text-gray-500 font-semibold">Mã bưu điện</p>
               <p className="text-gray-800">{getValues("zipPostalCode")}</p>
             </div>
 
             <div>
-              <p className="text-gray-500 font-semibold">Country</p>
+              <p className="text-gray-500 font-semibold">Quốc gia:</p>
               <p className="text-gray-800">{getValues("country")}</p>
             </div>
           </div>
@@ -345,7 +345,7 @@ const Form = () => {
             to="/profile"
             className="flex justify-center mt-6 w-full bg-[#6ADBB9] text-white py-3 rounded-lg font-semibold hover:bg-[#39977b] cursor-pointer transition-colors"
           >
-            Confirm & Submit
+            Xác nhận & gửi đơn
           </Link>
 
           <button
@@ -353,7 +353,7 @@ const Form = () => {
             type="button"
             className="mt-6 w-full border border-[#6ADBB9] text-black py-3 rounded-lg font-semibold hover:border-[#39977b] border-3 cursor-pointer transition-colors"
           >
-            Return to step 1
+            Trở về bước 1
           </button>
         </div>
       )}
