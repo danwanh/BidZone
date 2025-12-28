@@ -1,5 +1,3 @@
-"use client";
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -151,8 +149,6 @@ const SideBar = ({ user, isOwnProfile }) => {
         className="info"
         onSubmit={handleSubmitPersonalInfo(onSubmitPersonalInfo)}
       >
-        {isOwnProfile && user.role === "bidder" && <BecomeSeller />}
-
         <div className="flex items-center gap-2">
           <svg
             width="18"

@@ -5,12 +5,14 @@ import "react-toastify/dist/ReactToastify.css";
 
 import Navbar from "../components/home/Navbar";
 import Footer from "../components/home/Footer";
+import Back from "../components/Back";
 
 export default function MainLayout() {
   return (
     <div>
       <Navbar />
-      <div className="bg-[linear-gradient(46deg,#A9B9F8,#667ACA)] px-[6%] py-20 flex gap-[30px] w-full">
+      <div className="bg-[linear-gradient(46deg,#A9B9F8,#667ACA)] px-[6%] py-10 flex flex-col gap-[10px] w-full">
+        <Back />
         <Outlet />
       </div>
       <footer><Footer/></footer>

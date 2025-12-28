@@ -326,11 +326,50 @@ export const createUser = async (req, res) => {
       otp_expires: true,
       rating_pos: 0,
       rating_neg: 0,
+      is_private: false,
     });
     user.save();
     return res.status(201).json(user);
   } catch (err) {
     console.log(err.message);
     res.status(400).json({ message: "Can't add user" });
+  }
+};
+
+export const setPrivate = async () => {
+  try {
+    const id = req.body?.id || "";
+    if (id !== req.user._id) {
+      return res.status(400).json({ message: "Not your account" });
+    }
+    const user = await User.findById(id);
+
+    if (!user) {
+      return res.status(400).json({ message: "No user found" });
+    }
+    user.is_private = true;
+    await user.save();
+  } catch (err) {
+    console.log(err);
+    res.status(400).json({ message: "Server error" });
+  }
+};
+
+export const setPublic = async () => {
+  try {
+    const id = req.body?.id || "";
+    if (id !== req.user._id) {
+      return res.status(400).json({ message: "Not your account" });
+    }
+    const user = await User.findById(id);
+
+    if (!user) {
+      return res.status(400).json({ message: "No user found" });
+    }
+    user.is_private = false;
+    await user.save();
+  } catch (err) {
+    console.log(err);
+    res.status(400).json({ message: "Server error" });
   }
 };

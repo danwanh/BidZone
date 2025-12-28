@@ -1,11 +1,10 @@
 import { useState, useEffect } from "react";
 
 const ProductTimer = ({ end_time }) => {
-  const [remain, setRemain] = useState(0);
+  const end_date = end_time ? new Date(end_time).getTime() : Date.now();
+  const [remain, setRemain] = useState(end_date - Date.now());
 
   useEffect(() => {
-    const end_date = end_time ? new Date(end_time).getTime() : Date.now();
-
     const interval = setInterval(() => {
       const now = Date.now();
       const diff = end_date - now;
@@ -39,11 +38,7 @@ const ProductTimer = ({ end_time }) => {
           fill={remain > 1000 * 10 ? "#856404" : "#850404"}
         />
       </svg>
-      {remain === 0 && (
-        <p className="text-[#850404] font-bold text-[18px] py-1.5">
-          AUCTION ENDED
-        </p>
-      )}
+
       {remain > 0 && (
         <p
           className={`${
@@ -51,6 +46,12 @@ const ProductTimer = ({ end_time }) => {
           } text-[15px] font-bold py-2`}
         >
           {`${days}:${hours}:${minutes}:${seconds}`}
+        </p>
+      )}
+
+      {remain <= 0 && (
+        <p className="text-[#850404] font-bold text-[18px] py-1.5">
+          AUCTION ENDED
         </p>
       )}
     </div>

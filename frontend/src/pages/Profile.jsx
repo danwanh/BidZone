@@ -5,6 +5,7 @@ import ProductList from "../components/profile/ProductList";
 import axios from "../api/axios";
 import { useAuth } from "../context/AuthContext";
 import { useSearchParams } from "react-router-dom";
+import BecomeSeller from "../components/profile/BecomeSeller";
 
 export const ProfilePage = () => {
   const { user: currentUser, loading: authLoading } = useAuth();
@@ -40,13 +41,16 @@ export const ProfilePage = () => {
   }, [userIdFromUrl, currentUser, authLoading]);
 
   if (authLoading || loadingProfile || !displayedUser)
-    return <div>Loading Profile...</div>;
+    return (
+      <div className="w-10 h-10 border border-[#5f27ce] border-3 border-b-transparent animate-spin rounded-full"></div>
+    );
 
   // Xác định xem đây có phải profile của chính mình không để cho phép sửa đổi
   const isOwnProfile =
     !userIdFromUrl || (currentUser && userIdFromUrl === currentUser._id);
   return (
-    <>
+    <div className="flex gap-[30px]">
+      {isOwnProfile && displayedUser.role === "bidder" && <BecomeSeller />}
       <div className="w-1/3">
         <SideBar user={displayedUser} isOwnProfile={isOwnProfile} />
       </div>
@@ -54,6 +58,6 @@ export const ProfilePage = () => {
       <div className="flex-1">
         <ProductList user={displayedUser} />
       </div>
-    </>
+    </div>
   );
 };

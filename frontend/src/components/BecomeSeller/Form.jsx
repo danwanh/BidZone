@@ -282,7 +282,7 @@ const Form = () => {
         >
           <NavBar step={step} />
           <Email
-            user_email={"giaobao2kk5@gmail.com"}
+            user_email={user.email}
             setStep={setStep}
             sendEmail={sendEmail}
             isSending={isSending}

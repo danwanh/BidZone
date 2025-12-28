@@ -28,12 +28,12 @@ export const createBid = async (req, res) => {
   const bid = new Bid({ product_id, bidder_id, price });
   await bid.save();
 
-  appEvent.emit("BID_SUCCESS", {
-    product,
-    bidder,
-    seller,
-    prevBidder,
-  });
+  // appEvent.emit("BID_SUCCESS", {
+  //   product,
+  //   bidder,
+  //   seller,
+  //   prevBidder,
+  // });
 
   // update product
   product.current_price = price;
