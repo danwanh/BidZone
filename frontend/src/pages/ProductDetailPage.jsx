@@ -72,7 +72,12 @@ export const ProductDetailPage = () => {
   const [loading, setLoading] = useState(true);
 
   const { addToLikedList, removeFromLikedList, likedIds } = useLiked();
-  const [isLiked, setIsLiked] = useState(likedIds.has(product._id));
+  const [isLiked, setIsLiked] = useState(likedIds.has(product?._id) || false);
+  useEffect(() => {
+    if (product?._id) {
+      setIsLiked(likedIds.has(product._id));
+    }
+  }, [product, likedIds]);
 
   const id = params?.id;
 
@@ -415,22 +420,23 @@ export const ProductDetailPage = () => {
     }
   }, [bidInput, currentBid, bidStep, currentUserId, product, id, fetchProduct]);
 
-  const handleToggleWatchlist = useCallback(async () => {
-    try {
-      setWatchlistLoading(true);
-      const body = { product_id: id };
-      const method = isWatchlisted ? "delete" : "patch";
-      console.log(currentUserId);
-      const response = await (method === "delete"
-        ? axios.delete(`/api/watchlist/${currentUserId}/${id}`)
-        : axios.patch(`/api/watchlist/${currentUserId}`, body));
-      setIsWatchlisted(!isWatchlisted);
-    } catch (error) {
-      console.error("Watchlist error:", error);
-    } finally {
-      setWatchlistLoading(false);
+  const handleLike = async () => {
+    if (!isLiked) {
+      try {
+        setIsLiked(true);
+        addToLikedList(product._id);
+      } catch (error) {
+        console.error("Failed to add to watchlist:", error.message);
+      }
+    } else if (isLiked) {
+      try {
+        setIsLiked(false);
+        removeFromLikedList(product._id);
+      } catch (error) {
+        console.error("Failed to remove from watchlist:", error.message);
+      }
     }
-  }, [currentUserId, isWatchlisted, id]);
+  };
 
   const handleAppendDescription = useCallback(async () => {
     if (!newDescription.trim()) {
@@ -612,9 +618,9 @@ export const ProductDetailPage = () => {
           setMainImage={setMainImage}
           thumbnails={thumbnails}
           product={product}
-          isWatchlisted={isWatchlisted}
+          isLiked={isLiked}
           watchlistLoading={watchlistLoading}
-          onToggleWatchlist={handleToggleWatchlist}
+          onToggleWatchlist={handleLike}
           userRole={userRole}
         />
 

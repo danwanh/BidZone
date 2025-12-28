@@ -56,7 +56,6 @@ export function LikedProvider({ children }) {
   const removeFromLikedList = async (product_id) => {
     if (!user) return;
     try {
-      console;
       await api.delete(`/api/watchlist/${user._id}/${product_id}`);
       setChange((prev) => !prev);
     } catch (err) {
