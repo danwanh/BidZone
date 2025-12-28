@@ -97,4 +97,20 @@ const ProductSchema = mongoose.Schema(
   }
 );
 
+ProductSchema.index(
+  {
+    name: "text",
+    "description_history.description": "text",
+  },
+  {
+    weights: {
+      name: 10,
+      "description_history.description": 3,
+    },
+    name: "ProductTextIndex",
+  }
+);
+
+
+
 export default mongoose.model("Product", ProductSchema);

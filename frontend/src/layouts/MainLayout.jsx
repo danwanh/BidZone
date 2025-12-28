@@ -4,6 +4,7 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 import Navbar from "../components/home/Navbar";
+import Footer from "../components/home/Footer";
 import Back from "../components/Back";
 
 export default function MainLayout() {
@@ -14,7 +15,7 @@ export default function MainLayout() {
         <Back />
         <Outlet />
       </div>
-      <footer>Main Footer</footer>
+      <footer><Footer/></footer>
 
       <ToastContainer
         position="top-right"

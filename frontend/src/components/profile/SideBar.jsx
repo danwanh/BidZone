@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import BecomeSeller from "./BecomeSeller";
 import "../../style/profile.css";
@@ -10,6 +10,8 @@ import { useAuth } from "../../context/AuthContext";
 const SideBar = ({ user, isOwnProfile }) => {
   const [showPopUp, setShowPopUp] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const { logout } = useAuth();
+  const navigate = useNavigate();
 
   const [comments, setComments] = useState([]);
   const [isComment, setIsComment] = useState(false);
@@ -105,6 +107,15 @@ const SideBar = ({ user, isOwnProfile }) => {
         console.error(error);
       }
     }
+  };
+
+  const handleBecomeSeller = () => {
+    toast.info("Chức năng đăng ký trở thành người bán!");
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
   };
 
   const formatDate = (dateString) => {
@@ -501,6 +512,14 @@ const SideBar = ({ user, isOwnProfile }) => {
                 )}
               </>
             )}
+
+            <button
+              className="bg-red-600 h-fit w-fit p-3 rounded-xl hover:bg-red-700"
+              type="button"
+              onClick={handleLogout}
+            >
+              <div className="font-bold text-white">Đăng xuất</div>
+            </button>
           </div>
         </form>
       </div>

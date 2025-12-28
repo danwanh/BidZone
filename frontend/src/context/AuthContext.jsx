@@ -101,7 +101,7 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     setUser(null);
     setAccessToken(null);
-    await api.post("/api/auth/logout"); // nếu backend cần xóa cookie
+    await api.post("/api/auth/logout"); //xóa cookie từ backend tới frontend
   };
 
   return (

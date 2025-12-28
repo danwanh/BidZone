@@ -2,6 +2,7 @@ import express from "express";
 import {
   register,
   login,
+  logout,
   refresh,
   checkEmail,
   oauthSuccess,
@@ -19,6 +20,7 @@ router.get("/me", authenticate, (req, res) => {
 });
 router.post("/register", verifyRecaptcha, register);
 router.post("/login", verifyRecaptcha, login);
+router.post("/logout", logout);
 router.get("/refresh", refresh);
 router.post("/check-email", checkEmail);
 

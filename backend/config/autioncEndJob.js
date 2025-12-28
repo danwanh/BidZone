@@ -30,17 +30,7 @@ cron.schedule("* * * * *", async () => {
       .populate("bidder_id");
 
     const winner = winningBid?.bidder_id || null;
-
-    // Get ALL bidders (distinct)
-    const bids = await Bid.find({ product_id: product._id })
-      .populate("bidder_id");
-
-    const bidders = [
-      ...new Map(
-        bids.map(b => [b.bidder_id._id.toString(), b.bidder_id])
-      ).values(),
-    ];
-
+    
     // Emit event
     appEvent.emit("AUCTION_ENDED", {
       product,

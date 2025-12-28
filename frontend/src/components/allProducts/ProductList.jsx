@@ -29,7 +29,7 @@ const ProductList = () => {
     const p = new URLSearchParams();
     p.set("page", page);
     p.set("per_page", per_page);
-    if (q) p.set("name", q);
+    p.set("q", q);
     if (categoryId) p.set("categoryId", categoryId);
     if (minPrice) p.set("minPrice", minPrice);
     if (maxPrice) p.set("maxPrice", maxPrice);
@@ -43,7 +43,7 @@ const ProductList = () => {
     if (!page) next.delete("page");
     else next.set("page", 1);
     setSearchParams(next);
-  }, []);
+  }, [q, categoryId, minPrice, maxPrice, sortBy, order]);
 
   useEffect(() => {
     let isMounted = true;
@@ -55,6 +55,7 @@ const ProductList = () => {
         const res = await api.get(`/api/product/?${queryString}`);
 
         setTotalPage(res.data.total_page);
+        console.log(res.data);
 
         if (isMounted) {
           setProducts(res.data.products);

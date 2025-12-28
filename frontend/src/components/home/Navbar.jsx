@@ -5,13 +5,14 @@ import searchIcon from "../../assets/icons/search.svg";
 import sellIcon from "../../assets/icons/gavel-solid-full.svg";
 import adminIcon from "../../assets/icons/admin.svg";
 import { useAuth } from "../../context/AuthContext";
+import { ClipLoader } from "react-spinners";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [hoveredCategory, setHoveredCategory] = useState(null);
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
 
   const [searchText, setSearchText] = useState("");
   const navigate = useNavigate();
@@ -32,9 +33,13 @@ const Navbar = () => {
   }, []);
 
   const handleSearch = () => {
-    if (!searchText.trim()) return;
-    console.log(searchText);
-    navigate(`/products/?q=${encodeURIComponent(searchText.trim())}`);
+    // if (!searchText.trim()) return;
+
+    const currentUrl = new URL(window.location.href);
+    const searchParams = new URLSearchParams(currentUrl.search);
+
+    searchParams.set("q", searchText.trim());
+    navigate(`/products/?${searchParams.toString()}`);
     setIsOpen(false);
   };
 
@@ -42,6 +47,12 @@ const Navbar = () => {
   const activeSubcategories = activeCategory
     ? categories.filter((cat) => cat.category_id === activeCategory._id) || []
     : [];
+
+  if (loading) return (
+    <div className="w-full h-[60px] flex justify-center items-center">
+      <ClipLoader loading={loading} size={50} />
+    </div>
+  );
 
   return (
     <nav className="bg-white shadow-sm relative Space text-md">
@@ -163,7 +174,7 @@ const Navbar = () => {
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
             />
             <button
-              onClick={handleSearch()}
+              onClick={() => handleSearch()}
               className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400"
             >
               <img src={searchIcon} alt="Search" className="w-5 h-5" />
