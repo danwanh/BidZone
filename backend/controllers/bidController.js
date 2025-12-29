@@ -20,7 +20,7 @@ export const createBid = async (req, res) => {
 
   const product = await Product.findById(product_id);
   if (!product) return res.status(404).json({ message: "Product not found" });
-  //if (product.status !== "active") return res.status(400).json({ error: "Phiên đấu giá không còn hiệu lực" });
+  if (product.status !== "active") return res.status(400).json({ error: "Phiên đấu giá không còn hiệu lực" });
 
   if (price < product.current_price + (product.bid_step || 0))
     return res.status(400).json({ message: "Bid too low" });
