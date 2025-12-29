@@ -15,20 +15,6 @@ import { OrderAlert } from "../components/product-detail/OrderAlert";
 import { useAuth } from "../context/AuthContext";
 import axios from "../api/axios";
 import { useLiked } from "../context/LikedContext";
-// const apiClient = axios.create({
-//   baseURL: "http://localhost:3000/api",
-//   headers: {
-//     "Content-Type": "application/json",
-//   },
-// })
-
-// axios.interceptors.request.use((config) => {
-//   const token = localStorage.getItem("accessToken")
-//   if (token) {
-//     config.headers.Authorization = `Bearer ${token}`
-//   }
-//   return config
-// })
 
 export const ProductDetailPage = () => {
   const { user } = useAuth();
@@ -58,9 +44,6 @@ export const ProductDetailPage = () => {
   const [currentUserId, setCurrentUserId] = useState("");
   const [isEditMode, setIsEditMode] = useState(false);
   const [newDescription, setNewDescription] = useState("");
-  const [reviewText, setReviewText] = useState("");
-  const [reviewRating, setReviewRating] = useState(5);
-  const [showReviewForm, setShowReviewForm] = useState(false);
   const [answerText, setAnswerText] = useState({});
   const [showAnswerForm, setShowAnswerForm] = useState({});
   const [questionText, setQuestionText] = useState("");
@@ -126,7 +109,7 @@ export const ProductDetailPage = () => {
 
         setUserRole(user._id === product?.seller_id?._id ? "seller" : "bidder");
         setCurrentUserId(user._id);
-        console.log(user._id);
+        // console.log(user._id);
       }
     } catch (err) {
       console.error("Fetch user error:", err);

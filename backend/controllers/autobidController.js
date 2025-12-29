@@ -8,8 +8,8 @@ export const createAutoBid = async (req, res) => {
 
     const product = await Product.findById(product_id);
     if (!product) return res.status(404).json({ error: "Product not found" });
-    //if (product.status !== "active") return res.status(400).json({ error: "AutoBid out of date" });
-    //if (product.is_autobid !== true) return res.status(400).json({ error: "Product is not auto-bidded" });
+    if (product.status !== "active") return res.status(400).json({ error: "Autobid out of date" });
+    if (product.is_autobid !== true) return res.status(400).json({ error: "Product is not auto-bidded" });
 
     const bidStep = product.bid_step || 0;
     // Kiểm tra xem bidder này đã từng đặt chưa

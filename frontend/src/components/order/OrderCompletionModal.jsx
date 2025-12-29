@@ -1,8 +1,10 @@
 "use client"
 
 import { useState, useEffect, useRef, useCallback, useMemo } from "react"
-
+import { useAuth } from "../../context/AuthContext"
+import axios from "../../api/axios";
 function ChatInterface({ orderId, currentUserId, sellerId, buyerId, seller, buyer }) {
+  const {user} = useAuth();
   const [messages, setMessages] = useState([])
   const [newMessage, setNewMessage] = useState("")
   const [loading, setLoading] = useState(false)
@@ -18,12 +20,8 @@ function ChatInterface({ orderId, currentUserId, sellerId, buyerId, seller, buye
 
   const loadMessages = useCallback(async () => {
     try {
-      const token = localStorage.getItem("accessToken")
-      const response = await fetch(`http://localhost:3000/api/orders/${orderId}/messages`, {
-        method: "GET",
-        headers: { Authorization: `Bearer ${token}` },
-      })
-
+      const response = await axios.get(`api/orders/${orderId}/messages`)
+      
       if (!response.ok) {
         console.error("Fetch messages failed")
         return
@@ -52,14 +50,17 @@ function ChatInterface({ orderId, currentUserId, sellerId, buyerId, seller, buye
       setLoading(true)
       const token = localStorage.getItem("accessToken")
 
-      const res = await fetch(`http://localhost:3000/api/orders/${orderId}/messages`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ content: newMessage }),
-      })
+      // const res = await fetch(`http://localhost:3000/api/orders/${orderId}/messages`, {
+      //   method: "POST",
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //     Authorization: `Bearer ${token}`,
+      //   },
+      //   body: JSON.stringify({ content: newMessage }),
+      // })
+      const res = await axios.post(`api/orders/${orderId}/messages`, {
+        content: newMessage
+        })
 
       if (!res.ok) {
         console.error("Send message failed")
@@ -175,7 +176,7 @@ function UserProfileModal({ isOpen, onClose, user, currentUserId }) {
     const fetchRatings = async () => {
       try {
         setLoading(true)
-        const res = await fetch(`http://localhost:3000/api/ratings/user/${user._id}`)
+        const res = await axios.get(`api/ratings?to_user_id=${user._id}`);
         if (res.ok) {
           const data = await res.json()
           setRatings(data)
@@ -276,15 +277,7 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
   const loadOrderData = useCallback(async () => {
     const token = localStorage.getItem("accessToken")
     if (!token) return null
-
-    const response = await fetch(`http://localhost:3000/api/orders/${order._id}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    })
-
+    const response = await axios.get(`api/orders/${order._id}`);
     const data = await response.json()
     setOrderData(data)
     console.log("Reloaded order data:", data)
@@ -302,15 +295,20 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
       return
     }
 
-    await fetch(`http://localhost:3000/api/orders/${orderData._id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        invoice_info: paymentInvoice,
-        address: deliveryAddress,
-        status: "pending_shipping",
-      }),
-    })
+    // await fetch(`http://localhost:3000/api/orders/${orderData._id}`, {
+    //   method: "PUT",
+    //   headers: { "Content-Type": "application/json" },
+    //   body: JSON.stringify({
+    //     invoice_info: paymentInvoice,
+    //     address: deliveryAddress,
+    //     status: "pending_shipping",
+    //   }),
+    // })
+    await axios.put(`api/orders/${orderData._id}`, {
+      invoice_info: paymentInvoice,
+      address: deliveryAddress,
+      status: "pending_shipping",
+     })
 
     alert("Đã gửi thông tin thanh toán!")
     loadOrderData()
@@ -322,25 +320,32 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
       return
     }
 
-    await fetch(`http://localhost:3000/api/orders/${orderData._id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        delivery_info: shippingInvoice,
-        status: "pending_delivery",
-      }),
-    })
+    // await fetch(`http://localhost:3000/api/orders/${orderData._id}`, {
+    //   method: "PUT",
+    //   headers: { "Content-Type": "application/json" },
+    //   body: JSON.stringify({
+    //     delivery_info: shippingInvoice,
+    //     status: "pending_delivery",
+    //   }),
+    // })
+    await axios.put(`api/orders/${orderData._id}`, {
+      delivery_info: shippingInvoice,
+      status: "pending_delivery",
+      })
 
     alert("Đã xác nhận và gửi hàng!")
     loadOrderData()
   }, [shippingInvoice, orderData._id, loadOrderData])
 
   const handleConfirmDelivery = useCallback(async () => {
-    await fetch(`http://localhost:3000/api/orders/${orderData._id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status: "completed" }),
-    })
+    // await fetch(`http://localhost:3000/api/orders/${orderData._id}`, {
+    //   method: "PUT",
+    //   headers: { "Content-Type": "application/json" },
+    //   body: JSON.stringify({ status: "completed" }),
+    // })
+    await axios.put(`api/orders/${orderData._id}`, {
+      status: "completed"
+      })
 
     alert("Đã xác nhận nhận hàng!")
     loadOrderData()
@@ -352,16 +357,20 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
       return
     }
 
-    await fetch(`http://localhost:3000/api/orders/${orderData._id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        status: "cancelled",
-        cancelled_by: currentUserId,
-        cancellation_reason: cancelReason,
-      }),
-    })
-
+    // await fetch(`http://localhost:3000/api/orders/${orderData._id}`, {
+    //   method: "PUT",
+    //   headers: { "Content-Type": "application/json" },
+    //   body: JSON.stringify({
+    //     status: "cancelled",
+    //     cancelled_by: currentUserId,
+    //     cancellation_reason: cancelReason,
+    //   }),
+    // })
+    await axios.put(`api/orders/${orderData._id}`, {
+      status: "cancelled",
+      cancelled_by: currentUserId,
+      cancellation_reason: cancelReason,
+      })
     alert("Đã hủy giao dịch và đánh giá -1 cho người mua")
     handleSubmitRating(-1)
     setShowCancelDialog(false)
@@ -371,26 +380,34 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
   const handleSubmitRating = useCallback(
     async (points) => {
       try {
-        const token = localStorage.getItem("accessToken")
+        // const token = localStorage.getItem("accessToken")
         // if (userRating) {
         //   await fetch(`http://localhost:3000/api/ratings/${userRating._id}`, {
         //     method: "DELETE",
         //     headers: { Authorization: `Bearer ${token}` },
         //   })
         // }
-        const res = await fetch("http://localhost:3000/api/ratings", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            product_id: product._id,
-            from_user_id: currentUserId,
-            to_user_id: isBuyer ? orderData.seller_id._id : orderData.buyer_id._id,
-            points,
-            comment: ratingComment,
-          }),
+        // const res = await fetch("http://localhost:3000/api/ratings", {
+        //   method: "POST",
+        //   headers: {
+        //     "Content-Type": "application/json",
+        //     Authorization: `Bearer ${token}`,
+        //   },
+        //   body: JSON.stringify({
+        //     product_id: product._id,
+        //     from_user_id: currentUserId,
+        //     to_user_id: isBuyer ? orderData.seller_id._id : orderData.buyer_id._id,
+        //     points,
+        //     comment: ratingComment,
+        //   }),
+        // })
+
+        const res = await axios.post("api/ratings", {
+          product_id: product._id,
+          from_user_id: currentUserId,
+          to_user_id: isBuyer ? orderData.seller_id._id : orderData.buyer_id._id,
+          points,
+          comment: ratingComment,
         })
 
         if (!res.ok) {
@@ -403,11 +420,14 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
         setUserRating(ratingData.data)
         setPendingRating(null)
         setRatingComment("") // reset comment after successful submission
-        await fetch(`http://localhost:3000/api/orders/${orderData._id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ status: "completed" }),
-        })
+        // await fetch(`http://localhost:3000/api/orders/${orderData._id}`, {
+        //   method: "PUT",
+        //   headers: { "Content-Type": "application/json" },
+        //   body: JSON.stringify({ status: "completed" }),
+        // })
+        await axios.put(`api/orders/${orderData._id}`, {
+          status: "completed"
+          })
         alert("Đánh giá thành công!")
         loadOrderData()
       } catch (err) {
@@ -427,19 +447,27 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
     try {
       const token = localStorage.getItem("accessToken")
 
-      const res = await fetch(`http://localhost:3000/api/ratings/${userRating._id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          product_id: product._id,
-          from_user_id: currentUserId,
-          to_user_id: isBuyer ? orderData.seller_id._id : orderData.buyer_id._id,
-          points,
-          comment: ratingComment,
-        }),
+      // const res = await fetch(`http://localhost:3000/api/ratings/${userRating._id}`, {
+      //   method: "PATCH",
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //     Authorization: `Bearer ${token}`,
+      //   },
+      //   body: JSON.stringify({
+      //     product_id: product._id,
+      //     from_user_id: currentUserId,
+      //     to_user_id: isBuyer ? orderData.seller_id._id : orderData.buyer_id._id,
+      //     points,
+      //     comment: ratingComment,
+      //   }),
+      // })
+
+      const res = await axios.patch(`api/ratings/${userRating._id}`, {
+        product_id: product._id,
+        from_user_id: currentUserId,
+        to_user_id: isBuyer ? orderData.seller_id._id : orderData.buyer_id._id,
+        points,
+        comment: ratingComment,
       })
 
       if (!res.ok) {
@@ -472,12 +500,13 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
       const toUserId = isBuyer ? orderData?.seller_id?._id : orderData?.buyer_id?._id
       if (!toUserId) return
 
-      const res = await fetch(
-        `http://localhost:3000/api/ratings?product_id=${product._id}&from_user_id=${currentUserId}&to_user_id=${toUserId}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        },
-      )
+      // const res = await fetch(
+      //   `http://localhost:3000/api/ratings?product_id=${product._id}&from_user_id=${currentUserId}&to_user_id=${toUserId}`,
+      //   {
+      //     headers: { Authorization: `Bearer ${token}` },
+      //   },
+      // )
+      const res = await axios.get(`api/ratings?product_id=${product._id}&from_user_id=${currentUserId}&to_user_id=${toUserId}`);
 
       if (res.ok) {
         const data = await res.json()
