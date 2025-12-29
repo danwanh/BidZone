@@ -282,8 +282,7 @@ export const ProductDetailPage = () => {
     if (id) {
       fetchProduct(id);
     }
-    console.log(user);
-    console.log(user._id);
+
   }, [id, fetchProduct]);
 
   useEffect(() => {
@@ -320,7 +319,7 @@ export const ProductDetailPage = () => {
     if (user) {
       fetchCurrentUser();
     } else {
-      setUserRole("bidder");
+      setUserRole("guest");
       setCurrentUser(null);
     }
 
@@ -637,8 +636,15 @@ export const ProductDetailPage = () => {
         highestBidder={highestBidder}
         currentBid={currentBid}
       />
-
-      <BidSection
+      {(userRole === "guest" && !currentUser) ? (
+        <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
+          <p className="text-yellow-700">Bạn cần đăng nhập để đấu giá.</p>
+          <button className="mt-2 px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700 transition">
+            <a href="/auth">Đăng nhập</a>
+          </button>
+        </div>
+      ) : (
+        <BidSection
         productStatus={productStatus}
         userRole={userRole}
         currentBid={currentBid}
@@ -650,6 +656,11 @@ export const ProductDetailPage = () => {
         product={product}
         onBuyNow={handleBuyNow}
       />
+
+      )}
+
+      
+
 
       {((product.is_autobid && userRole === "seller") ||
         !product.is_autobid) && (
