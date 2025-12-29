@@ -121,9 +121,6 @@ export const updateUser = async (req, res) => {
       user.password_hash = await bcrypt.hash(password, salt);
     }
 
-    // console.log(name);
-    console.log(user);
-
     await user.save();
 
     const updatedUser = await User.findById(id).select(

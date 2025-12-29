@@ -21,7 +21,7 @@ export const ProfilePage = () => {
         setLoadingProfile(true);
         try {
           const res = await axios.get(`/api/users/${userIdFromUrl}`);
-          setDisplayedUser(res.data.user);
+          setDisplayedUser(res.data?.user || res.data);
         } catch (error) {
           console.error("Failed to fetch user profile", error);
         } finally {
