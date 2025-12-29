@@ -2,6 +2,8 @@ import Question from "../models/question.model.js";
 import User from "../models/user.model.js";
 import Product from "../models/product.model.js";
 import mongoose from "mongoose";
+import appEvent from "../utils/eventEmiiter.js";
+
 export const getAllQuestions = async (req, res) => {
   try {
     const questions = await Question.find();
@@ -74,6 +76,16 @@ export const createQuestion = async (req, res) => {
       answer,
     });
     const save = await newQuestion.save();
+
+    const seller = await User.findById(seller_id);
+    const product = await Product.findById(product_id);
+
+    appEvent.emit("QUESTION_ASKED", {
+      seller,
+      question: newQuestion,
+      product
+    })
+
     res.status(201).json(save);
   } catch (err) {
     console.error("Error creating question:", err);
@@ -102,6 +114,15 @@ export const updateQuestion = async (req, res) => {
       res.question,
       { new: true }
     );
+
+    if (answer){
+      appEvent.emit("QUESTION_ANSWERED", {
+        buyer: await User.findById(bidder_id),
+        question: updated,
+        product: await Product.findById(product_id)
+      })
+    }
+
     res.json(updated);
   } catch (err) {
     console.error("Error updating question:", err);

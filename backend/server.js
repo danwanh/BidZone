@@ -4,7 +4,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import jwt from "jsonwebtoken";
-import errorHandler from "./middleware/errorHandler.js";
+import {errorHandler, notFoundHandler} from "./middleware/errorMiddleware.js";
 import cron from "node-cron";
 
 import User from "./models/user.model.js";
@@ -82,7 +82,7 @@ cron.schedule("0 * * * *", async () => {
 
     if (result.modifiedCount > 0) {
       console.log(
-        `✅ Đã hạ cấp ${result.modifiedCount} người dùng từ Seller xuống Bidder.`
+        ` Đã hạ cấp ${result.modifiedCount} người dùng từ Seller xuống Bidder.`
       );
     }
   } catch (err) {
@@ -94,6 +94,7 @@ cron.schedule("0 * * * *", async () => {
 app.use("/api/auth", authRoutes);
 app.use("/api/otp", otpRoutes);
 
+app.use(notFoundHandler);
 app.use(errorHandler);
 
 app.listen(process.env.PORT, () =>

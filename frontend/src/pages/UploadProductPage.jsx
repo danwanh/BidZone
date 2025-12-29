@@ -179,7 +179,7 @@ export default function UploadProductPage() {
             {/* Images Upload - Cloudinary */}
             <div className="space-y-2">
               <label htmlFor="images" className="block font-bold text-gray-700">
-                Hình ảnh sản phẩm (tối thiểu 3 ảnh){" "}
+                Hình ảnh sản phẩm (tối thiểu 3 ảnh)
                 <span className="text-red-500">*</span>
               </label>
               <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition">

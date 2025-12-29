@@ -6,13 +6,14 @@ import {
     deleteQuestion,
     getQuestionsByProductId
 } from "../controllers/questionController.js";
+import { authenticate } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
 router.get("", getAllQuestions);
 router.get("/:product_id", getQuestionsByProductId);
-router.post("/", createQuestion);
-router.patch("/:id", updateQuestion);
-router.delete("/:id", deleteQuestion);
+router.post("/", authenticate, createQuestion);
+router.patch("/:id", authenticate, updateQuestion);
+router.delete("/:id", authenticate, deleteQuestion);
 
 export default router;

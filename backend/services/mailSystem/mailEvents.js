@@ -59,21 +59,21 @@ appEvent.on("AUCTION_ENDED", async ({ product, seller, winner }) => {
   ]);
 });
 
-appEvent.on("QUESTION_ASKED", async ({ seller, question }) => {
+appEvent.on("QUESTION_ASKED", async ({ seller, question, product }) => {
   await sendMail({
     to: seller.email,
     subject: "Có câu hỏi mới cho sản phẩm",
-    html: questionTemplate(question),
+    html: questionTemplate(question, product),
   });
 });
 
-appEvent.on("QUESTION_ANSWERED", async ({ buyers, answer }) => {
+appEvent.on("QUESTION_ANSWERED", async ({ buyer, question, product }) => {
   await Promise.all(
     buyers.map((buyer) =>
       sendMail({
         to: buyer.email,
         subject: "Câu hỏi đã được trả lời",
-        html: answerTemplate(answer),
+        html: answerTemplate(question, product),
       })
     )
   );

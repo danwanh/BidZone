@@ -187,12 +187,14 @@ export const auctionEndedTemplate = {
   <div style="max-width:600px; margin:auto; background:#fff; padding:24px; border-radius:8px">
 
     <h2 style="text-align:center; color:#38a169">
-      🎉 Bạn đã thắng đấu giá
+      Bạn đã thắng đấu giá
     </h2>
 
     <p>Chúc mừng! Bạn là người chiến thắng cho sản phẩm sau:</p>
 
-    <img src="${product.image_url?.[0]}" style="width:100%; border-radius:6px" />
+    <img src="${
+      product.image_url?.[0]
+    }" style="width:100%; border-radius:6px" />
 
     <table style="width:100%; margin-top:12px">
       <tr><td>Tên sản phẩm:</td><td><strong>${product.name}</strong></td></tr>
@@ -210,7 +212,7 @@ export const auctionEndedTemplate = {
 `,
 };
 
-export const questionTemplate = (question) => `
+export const questionTemplate = (question, product) => `
 <div style="font-family:Arial; background:#f4f6f8; padding:20px">
   <div style="max-width:600px; margin:auto; background:#fff; padding:24px; border-radius:8px">
 
@@ -218,8 +220,30 @@ export const questionTemplate = (question) => `
       Có câu hỏi mới cho sản phẩm
     </h2>
 
-    <p><strong>Người hỏi:</strong> ${question.bidder_id?.name}</p>
+    <!-- Thông tin sản phẩm -->
+    <div style="margin:16px 0">
+      <img 
+        src="${product.image_url?.[0] || ""}" 
+        style="width:100%; border-radius:6px"
+      />
 
+      <table style="width:100%; margin-top:12px">
+        <tr>
+          <td style="color:#4a5568">Tên sản phẩm:</td>
+          <td><strong>${product.name}</strong></td>
+        </tr>
+        <tr>
+          <td style="color:#4a5568">Giá hiện tại:</td>
+          <td style="color:#e53e3e;font-weight:bold">
+            ${product.current_price.toLocaleString("vi-VN")} ₫
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <hr style="margin:20px 0" />
+
+    <!-- Thông tin câu hỏi -->
     <div style="
       background:#edf2f7;
       padding:12px;
@@ -229,15 +253,11 @@ export const questionTemplate = (question) => `
       ${question.question}
     </div>
 
-    <p style="font-size:14px; color:#718096">
-      Vui lòng phản hồi sớm để tăng khả năng bán hàng.
-    </p>
-
   </div>
 </div>
 `;
 
-export const answerTemplate = (question) => `
+export const answerTemplate = (question, product) => `
 <div style="font-family:Arial; background:#f4f6f8; padding:20px">
   <div style="max-width:600px; margin:auto; background:#fff; padding:24px; border-radius:8px">
 
@@ -245,11 +265,36 @@ export const answerTemplate = (question) => `
       Câu hỏi của bạn đã được trả lời
     </h2>
 
+    <!-- Thông tin sản phẩm -->
+    <div style="margin:16px 0">
+      <img 
+        src="${product.image_url?.[0] || ""}" 
+        style="width:100%; border-radius:6px"
+      />
+
+      <table style="width:100%; margin-top:12px">
+        <tr>
+          <td style="color:#4a5568">Tên sản phẩm:</td>
+          <td><strong>${product.name}</strong></td>
+        </tr>
+        <tr>
+          <td style="color:#4a5568">Giá hiện tại:</td>
+          <td style="color:#e53e3e;font-weight:bold">
+            ${product.current_price.toLocaleString("vi-VN")} ₫
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <hr style="margin:20px 0" />
+
+    <!-- Câu hỏi -->
     <p><strong>Câu hỏi của bạn:</strong></p>
     <div style="background:#edf2f7; padding:12px; border-radius:6px">
       ${question.question}
     </div>
 
+    <!-- Câu trả lời -->
     <p style="margin-top:16px"><strong>Trả lời từ người bán:</strong></p>
     <div style="
       background:#f0fff4;

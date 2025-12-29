@@ -9,10 +9,11 @@ import {
   getBidById,
   updateBidStatus, rejectBid
 } from "../controllers/bidController.js";
+import { authenticate } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-router.post("/", createBid);
+router.post("/", authenticate, createBid);
 router.get("/:id", getBidById);
 router.get("/product/:product_id", getBidsByProduct);
 router.get("/user/:id", getBidByUser);
