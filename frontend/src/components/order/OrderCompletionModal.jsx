@@ -1,13 +1,15 @@
 "use client"
 
 import { useState, useEffect, useRef, useCallback, useMemo } from "react"
+import axios from "../../api/axios"
 import { useAuth } from "../../context/AuthContext"
-import axios from "../../api/axios";
-function ChatInterface({ orderId, currentUserId, sellerId, buyerId, seller, buyer }) {
-  const {user} = useAuth();
+function ChatInterface({ orderId, sellerId, buyerId, seller, buyer }) {
+  const { user, loading: authLoading } = useAuth()
+
   const [messages, setMessages] = useState([])
   const [newMessage, setNewMessage] = useState("")
-  const [loading, setLoading] = useState(false)
+  const [sending, setSending] = useState(false)
+
   const messagesEndRef = useRef(null)
 
   const scrollToBottom = useCallback(() => {
@@ -19,75 +21,92 @@ function ChatInterface({ orderId, currentUserId, sellerId, buyerId, seller, buye
   }, [messages, scrollToBottom])
 
   const loadMessages = useCallback(async () => {
-    try {
-      const response = await axios.get(`api/orders/${orderId}/messages`)
-      
-      if (!response.ok) {
-        console.error("Fetch messages failed")
-        return
-      }
+    if (!orderId) return
 
-      const data = await response.json()
-      setMessages(data)
+    try {
+      const res = await axios.get(`/api/orders/${orderId}/messages`)
+      setMessages(res.data || [])
     } catch (err) {
-      console.error(err)
+      console.error("Load messages failed:", err)
     }
   }, [orderId])
 
   useEffect(() => {
-    if (!orderId) return
+    if (!orderId || authLoading || !user?._id) return
 
     loadMessages()
     const interval = setInterval(loadMessages, 3000)
 
     return () => clearInterval(interval)
-  }, [orderId, loadMessages])
+  }, [orderId, user?._id, authLoading, loadMessages])
 
   const handleSendMessage = useCallback(async () => {
-    if (!newMessage.trim()) return
+  if (!newMessage.trim() || !orderId || sending) return;
 
-    try {
-      setLoading(true)
-      const token = localStorage.getItem("accessToken")
+  const messageContent = newMessage.trim();
+  const tempId = `temp-${Date.now()}`;
+  setSending(true);
 
-      // const res = await fetch(`http://localhost:3000/api/orders/${orderId}/messages`, {
-      //   method: "POST",
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //     Authorization: `Bearer ${token}`,
-      //   },
-      //   body: JSON.stringify({ content: newMessage }),
-      // })
-      const res = await axios.post(`api/orders/${orderId}/messages`, {
-        content: newMessage
-        })
+  // optimistic UI
+  const optimisticMessage = {
+    _id: tempId,
+    sender: {
+      _id: user?._id,
+      name: user?.name,
+    },
+    content: messageContent,
+    createdAt: new Date().toISOString(),
+    optimistic: true,
+  };
 
-      if (!res.ok) {
-        console.error("Send message failed")
-        return
-      }
+  setMessages((prev) => [...prev, optimisticMessage]);
+  setNewMessage("");
 
-      const result = await res.json()
-      setMessages((prev) => [...prev, result.data])
-      setNewMessage("")
-    } catch (err) {
-      console.error(err)
-    } finally {
-      setLoading(false)
+  try {
+    const res = await axios.post(
+      `/api/orders/${orderId}/messages`,
+      { content: messageContent }
+    );
+
+    const serverMessage = res.data?.data; // 👈 LẤY ĐÚNG data
+
+    if (serverMessage) {
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg._id === tempId ? serverMessage : msg
+        )
+      );
     }
-  }, [newMessage, orderId])
+  } catch (err) {
+    console.error("Send message failed:", err);
 
+    // rollback optimistic message
+    setMessages((prev) =>
+      prev.filter((msg) => msg._id !== tempId)
+    );
+
+    alert(
+      "Gửi tin nhắn thất bại: " +
+        (err.response?.data?.message || err.message)
+    );
+  } finally {
+    setSending(false);
+  }
+}, [newMessage, orderId, user?._id, user?.name, sending]);
+
+
+  if (authLoading) return null
+
+  const currentUserId = user?._id
   const isSeller = currentUserId === sellerId
   const otherUser = isSeller ? buyer : seller
-  const currentUserName = isSeller ? seller?.name : buyer?.name
 
   return (
     <div className="flex flex-col h-[500px]">
+      {/* Header */}
       <button
         className="flex items-center gap-3 p-4 border-b border-gray-200 bg-gray-50 hover:bg-gray-100 transition text-left"
-        onClick={() => {
-          console.log("Show user profile:", otherUser)
-        }}
+        onClick={() => console.log("Show user profile:", otherUser)}
       >
         <img
           src={otherUser?.avatar_url || "/placeholder.svg?height=40&width=40"}
@@ -102,19 +121,19 @@ function ChatInterface({ orderId, currentUserId, sellerId, buyerId, seller, buye
         </div>
       </button>
 
+      {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.length === 0 ? (
           <div className="flex items-center justify-center h-full">
             <p className="text-gray-500 text-sm">Chưa có tin nhắn nào</p>
           </div>
         ) : (
-          messages.map((msg, idx) => {
+          messages.map((msg) => {
             const senderId = typeof msg.sender === "string" ? msg.sender : msg.sender?._id
-
             const isOwn = senderId === currentUserId
 
             return (
-              <div key={idx} className={`flex ${isOwn ? "justify-end" : "justify-start"}`}>
+              <div key={msg._id} className={`flex ${isOwn ? "justify-end" : "justify-start"}`}>
                 <div className="max-w-[70%]">
                   <p
                     className={`text-xs font-semibold mb-1 ${
@@ -123,6 +142,7 @@ function ChatInterface({ orderId, currentUserId, sellerId, buyerId, seller, buye
                   >
                     {isOwn ? "Bạn" : otherUser?.name || "Người dùng"}
                   </p>
+
                   <div
                     className={`px-4 py-2 rounded-lg ${isOwn ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-900"}`}
                   >
@@ -142,23 +162,23 @@ function ChatInterface({ orderId, currentUserId, sellerId, buyerId, seller, buye
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input area */}
+      {/* Input */}
       <div className="p-4 border-t border-gray-200">
         <div className="flex gap-2">
           <input
             type="text"
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
-            onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
+            onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
             placeholder="Nhập tin nhắn..."
             className="flex-1 px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
           />
           <button
             onClick={handleSendMessage}
-            disabled={loading || !newMessage.trim()}
-            className="px-6 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={sending || !newMessage.trim()}
+            className="px-6 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
           >
-            {loading ? "Đang gửi..." : "Gửi"}
+            {sending ? "Đang gửi..." : "Gửi"}
           </button>
         </div>
       </div>
@@ -166,30 +186,28 @@ function ChatInterface({ orderId, currentUserId, sellerId, buyerId, seller, buye
   )
 }
 
-function UserProfileModal({ isOpen, onClose, user, currentUserId }) {
+function UserProfileModal({ isOpen, onClose, user }) {
   const [ratings, setRatings] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    if (!isOpen || !user) return
+    if (!isOpen || !user?._id) return
 
     const fetchRatings = async () => {
       try {
         setLoading(true)
-        const res = await axios.get(`api/ratings?to_user_id=${user._id}`);
-        if (res.ok) {
-          const data = await res.json()
-          setRatings(data)
-        }
+        const res = await axios.get(`/api/ratings?to_user_id=${user._id}`)
+        setRatings(res.data || [])
       } catch (error) {
         console.error("Failed to fetch ratings:", error)
+        setRatings([])
       } finally {
         setLoading(false)
       }
     }
 
     fetchRatings()
-  }, [isOpen, user])
+  }, [isOpen, user?._id])
 
   if (!isOpen) return null
 
@@ -199,6 +217,7 @@ function UserProfileModal({ isOpen, onClose, user, currentUserId }) {
         className="bg-white rounded-xl max-w-2xl w-full max-h-[80vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
+        {/* Header */}
         <div className="sticky top-0 bg-white border-b border-gray-200 p-6 flex items-center justify-between">
           <h3 className="text-2xl font-bold">Thông tin người dùng</h3>
           <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition">
@@ -208,7 +227,9 @@ function UserProfileModal({ isOpen, onClose, user, currentUserId }) {
           </button>
         </div>
 
+        {/* Content */}
         <div className="p-6">
+          {/* User info */}
           <div className="flex items-center gap-4 mb-6">
             <img
               src={user?.avatar_url || "/placeholder.svg"}
@@ -224,16 +245,18 @@ function UserProfileModal({ isOpen, onClose, user, currentUserId }) {
             </div>
           </div>
 
+          {/* Ratings */}
           <div className="border-t border-gray-200 pt-4">
             <h4 className="font-bold text-lg mb-4">Đánh giá ({ratings.length})</h4>
+
             {loading ? (
               <div className="text-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto" />
               </div>
             ) : ratings.length > 0 ? (
               <div className="space-y-3">
-                {ratings.map((rating, idx) => (
-                  <div key={idx} className="bg-gray-50 p-4 rounded-lg">
+                {ratings.map((rating) => (
+                  <div key={rating._id} className="bg-gray-50 p-4 rounded-lg">
                     <div className="flex items-center justify-between mb-2">
                       <span className={`font-semibold ${rating.points > 0 ? "text-green-600" : "text-red-600"}`}>
                         {rating.points > 0 ? "+1" : "-1"}
@@ -242,6 +265,7 @@ function UserProfileModal({ isOpen, onClose, user, currentUserId }) {
                         {new Date(rating.createdAt).toLocaleDateString("vi-VN")}
                       </span>
                     </div>
+
                     {rating.comment && <p className="text-sm text-gray-700">{rating.comment}</p>}
                   </div>
                 ))}
@@ -275,12 +299,13 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
   const isBuyer = useMemo(() => currentUserId === orderData?.buyer_id._id, [currentUserId, orderData?.buyer_id._id])
 
   const loadOrderData = useCallback(async () => {
-    const token = localStorage.getItem("accessToken")
-    if (!token) return null
-    const response = await axios.get(`api/orders/${order._id}`);
-    const data = await response.json()
-    setOrderData(data)
-    console.log("Reloaded order data:", data)
+    try {
+      const response = await axios.get(`/api/orders/${order._id}`)
+      setOrderData(response.data)
+      console.log("Reloaded order data:", response.data)
+    } catch (err) {
+      console.error("Failed to load order data:", err)
+    }
   }, [order._id])
 
   useEffect(() => {
@@ -295,23 +320,21 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
       return
     }
 
-    // await fetch(`http://localhost:3000/api/orders/${orderData._id}`, {
-    //   method: "PUT",
-    //   headers: { "Content-Type": "application/json" },
-    //   body: JSON.stringify({
-    //     invoice_info: paymentInvoice,
-    //     address: deliveryAddress,
-    //     status: "pending_shipping",
-    //   }),
-    // })
-    await axios.put(`api/orders/${orderData._id}`, {
-      invoice_info: paymentInvoice,
-      address: deliveryAddress,
-      status: "pending_shipping",
-     })
+    try {
+      await axios.put(`/api/orders/${orderData._id}`, {
+        invoice_info: paymentInvoice,
+        address: deliveryAddress,
+        status: "pending_shipping",
+      })
 
-    alert("Đã gửi thông tin thanh toán!")
-    loadOrderData()
+      alert("Đã gửi thông tin thanh toán!")
+      setPaymentInvoice("")
+      setDeliveryAddress("")
+      loadOrderData()
+    } catch (err) {
+      console.error("Payment submission failed:", err)
+      alert(err.response?.data?.message || "Lỗi khi gửi thông tin thanh toán")
+    }
   }, [paymentInvoice, deliveryAddress, orderData._id, loadOrderData])
 
   const handleConfirmPayment = useCallback(async () => {
@@ -320,35 +343,33 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
       return
     }
 
-    // await fetch(`http://localhost:3000/api/orders/${orderData._id}`, {
-    //   method: "PUT",
-    //   headers: { "Content-Type": "application/json" },
-    //   body: JSON.stringify({
-    //     delivery_info: shippingInvoice,
-    //     status: "pending_delivery",
-    //   }),
-    // })
-    await axios.put(`api/orders/${orderData._id}`, {
-      delivery_info: shippingInvoice,
-      status: "pending_delivery",
+    try {
+      await axios.put(`/api/orders/${orderData._id}`, {
+        delivery_info: shippingInvoice,
+        status: "pending_delivery",
       })
 
-    alert("Đã xác nhận và gửi hàng!")
-    loadOrderData()
+      alert("Đã xác nhận và gửi hàng!")
+      setShippingInvoice("")
+      loadOrderData()
+    } catch (err) {
+      console.error("Confirm payment failed:", err)
+      alert(err.response?.data?.message || "Lỗi khi xác nhận thanh toán")
+    }
   }, [shippingInvoice, orderData._id, loadOrderData])
 
   const handleConfirmDelivery = useCallback(async () => {
-    // await fetch(`http://localhost:3000/api/orders/${orderData._id}`, {
-    //   method: "PUT",
-    //   headers: { "Content-Type": "application/json" },
-    //   body: JSON.stringify({ status: "completed" }),
-    // })
-    await axios.put(`api/orders/${orderData._id}`, {
-      status: "completed"
+    try {
+      await axios.put(`/api/orders/${orderData._id}`, {
+        status: "completed",
       })
 
-    alert("Đã xác nhận nhận hàng!")
-    loadOrderData()
+      alert("Đã xác nhận nhận hàng!")
+      loadOrderData()
+    } catch (err) {
+      console.error("Confirm delivery failed:", err)
+      alert(err.response?.data?.message || "Lỗi khi xác nhận nhận hàng")
+    }
   }, [orderData._id, loadOrderData])
 
   const handleCancelOrder = useCallback(async () => {
@@ -357,52 +378,27 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
       return
     }
 
-    // await fetch(`http://localhost:3000/api/orders/${orderData._id}`, {
-    //   method: "PUT",
-    //   headers: { "Content-Type": "application/json" },
-    //   body: JSON.stringify({
-    //     status: "cancelled",
-    //     cancelled_by: currentUserId,
-    //     cancellation_reason: cancelReason,
-    //   }),
-    // })
-    await axios.put(`api/orders/${orderData._id}`, {
-      status: "cancelled",
-      cancelled_by: currentUserId,
-      cancellation_reason: cancelReason,
+    try {
+      await axios.put(`/api/orders/${orderData._id}`, {
+        status: "cancelled",
+        cancelled_by: currentUserId,
+        cancellation_reason: cancelReason,
       })
-    alert("Đã hủy giao dịch và đánh giá -1 cho người mua")
-    handleSubmitRating(-1)
-    setShowCancelDialog(false)
-    loadOrderData()
+
+      alert("Đã hủy giao dịch")
+      setCancelReason("")
+      setShowCancelDialog(false)
+      loadOrderData()
+    } catch (err) {
+      console.error("Cancel order failed:", err)
+      alert(err.response?.data?.message || "Lỗi khi hủy giao dịch")
+    }
   }, [cancelReason, orderData._id, currentUserId, loadOrderData])
 
   const handleSubmitRating = useCallback(
     async (points) => {
       try {
-        // const token = localStorage.getItem("accessToken")
-        // if (userRating) {
-        //   await fetch(`http://localhost:3000/api/ratings/${userRating._id}`, {
-        //     method: "DELETE",
-        //     headers: { Authorization: `Bearer ${token}` },
-        //   })
-        // }
-        // const res = await fetch("http://localhost:3000/api/ratings", {
-        //   method: "POST",
-        //   headers: {
-        //     "Content-Type": "application/json",
-        //     Authorization: `Bearer ${token}`,
-        //   },
-        //   body: JSON.stringify({
-        //     product_id: product._id,
-        //     from_user_id: currentUserId,
-        //     to_user_id: isBuyer ? orderData.seller_id._id : orderData.buyer_id._id,
-        //     points,
-        //     comment: ratingComment,
-        //   }),
-        // })
-
-        const res = await axios.post("api/ratings", {
+        const res = await axios.post("/api/ratings", {
           product_id: product._id,
           from_user_id: currentUserId,
           to_user_id: isBuyer ? orderData.seller_id._id : orderData.buyer_id._id,
@@ -410,110 +406,67 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
           comment: ratingComment,
         })
 
-        if (!res.ok) {
-          const err = await res.json()
-          alert(err.message || "Đánh giá thất bại")
-          return
-        }
-
-        const ratingData = await res.json()
-        setUserRating(ratingData.data)
+        setUserRating(res.data)
         setPendingRating(null)
-        setRatingComment("") // reset comment after successful submission
-        // await fetch(`http://localhost:3000/api/orders/${orderData._id}`, {
-        //   method: "PUT",
-        //   headers: { "Content-Type": "application/json" },
-        //   body: JSON.stringify({ status: "completed" }),
-        // })
-        await axios.put(`api/orders/${orderData._id}`, {
-          status: "completed"
-          })
+        setRatingComment("")
+
+        await axios.put(`/api/orders/${orderData._id}`, {
+          status: "completed",
+        })
+
         alert("Đánh giá thành công!")
         loadOrderData()
       } catch (err) {
-        console.error(err)
-        alert("Lỗi khi gửi đánh giá")
+        console.error("Submit rating failed:", err)
+        alert(err.response?.data?.message || "Lỗi khi gửi đánh giá")
       }
     },
     [userRating, ratingComment, isBuyer, orderData, product._id, currentUserId, loadOrderData],
   )
+
   const handleUpdateRating = useCallback(
-  async (points) => {
-    if (!userRating?._id) {
-      alert("Không tìm thấy đánh giá để cập nhật")
-      return
-    }
-
-    try {
-      const token = localStorage.getItem("accessToken")
-
-      // const res = await fetch(`http://localhost:3000/api/ratings/${userRating._id}`, {
-      //   method: "PATCH",
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //     Authorization: `Bearer ${token}`,
-      //   },
-      //   body: JSON.stringify({
-      //     product_id: product._id,
-      //     from_user_id: currentUserId,
-      //     to_user_id: isBuyer ? orderData.seller_id._id : orderData.buyer_id._id,
-      //     points,
-      //     comment: ratingComment,
-      //   }),
-      // })
-
-      const res = await axios.patch(`api/ratings/${userRating._id}`, {
-        product_id: product._id,
-        from_user_id: currentUserId,
-        to_user_id: isBuyer ? orderData.seller_id._id : orderData.buyer_id._id,
-        points,
-        comment: ratingComment,
-      })
-
-      if (!res.ok) {
-        const err = await res.json()
-        alert(err.message || "Cập nhật đánh giá thất bại")
+    async (points) => {
+      if (!userRating?._id) {
+        alert("Không tìm thấy đánh giá để cập nhật")
         return
       }
 
-      const updatedRating = await res.json()
+      try {
+        const res = await axios.put(`/api/ratings/${userRating._id}`, {
+          product_id: product._id,
+          from_user_id: currentUserId,
+          to_user_id: isBuyer ? orderData.seller_id._id : orderData.buyer_id._id,
+          points,
+          comment: ratingComment,
+        })
 
-      setUserRating(updatedRating)
-      setPendingRating(null)
-      setRatingComment("")
-      alert("Cập nhật đánh giá thành công!")
-      loadOrderData()
-    } catch (err) {
-      console.error(err)
-      alert("Lỗi khi cập nhật đánh giá")
-    }
-  },
-  [userRating, ratingComment, isBuyer, orderData, product._id, currentUserId, loadOrderData],
-)
-
+        setUserRating(res.data)
+        setPendingRating(null)
+        setRatingComment("")
+        alert("Cập nhật đánh giá thành công!")
+        loadOrderData()
+      } catch (err) {
+        console.error("Update rating failed:", err)
+        alert(err.response?.data?.message || "Lỗi khi cập nhật đánh giá")
+      }
+    },
+    [userRating, ratingComment, isBuyer, orderData, product._id, currentUserId, loadOrderData],
+  )
 
   const loadUserRating = useCallback(async () => {
     try {
-      const token = localStorage.getItem("accessToken")
-      if (!token || !product?._id) return
+      if (!product?._id) return
 
       const toUserId = isBuyer ? orderData?.seller_id?._id : orderData?.buyer_id?._id
       if (!toUserId) return
 
-      // const res = await fetch(
-      //   `http://localhost:3000/api/ratings?product_id=${product._id}&from_user_id=${currentUserId}&to_user_id=${toUserId}`,
-      //   {
-      //     headers: { Authorization: `Bearer ${token}` },
-      //   },
-      // )
-      const res = await axios.get(`api/ratings?product_id=${product._id}&from_user_id=${currentUserId}&to_user_id=${toUserId}`);
+      const res = await axios.get(
+        `/api/ratings?product_id=${product._id}&from_user_id=${currentUserId}&to_user_id=${toUserId}`,
+      )
 
-      if (res.ok) {
-        const data = await res.json()
-        if (data && data.length > 0) {
-          setUserRating(data[0])
-          setRatingComment(data[0].comment || "")
-        }
+      if (res.data && res.data.length > 0) {
+        setUserRating(res.data[0])
+        setRatingComment(res.data[0].comment || "")
       }
     } catch (err) {
       console.error("Failed to load user rating:", err)
@@ -615,7 +568,7 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
                   placeholder="Nhập địa chỉ đầy đủ"
                   value={deliveryAddress}
                   onChange={(e) => setDeliveryAddress(e.target.value)}
-                  rows="3"
+                  rows={3}
                   className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
                 />
               </div>
@@ -679,11 +632,11 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
             <div className="space-y-4">
               <div className="bg-gray-50 p-3 rounded">
                 <label className="block text-sm font-semibold mb-1">Thông tin thanh toán từ người mua</label>
-                <p className="text-sm text-gray-700">{orderData.payment_invoice}</p>
+                <p className="text-sm text-gray-700">{orderData?.invoice_info || "Chưa cập nhật"}</p>
               </div>
               <div className="bg-gray-50 p-3 rounded">
                 <label className="block text-sm font-semibold mb-1">Địa chỉ giao hàng</label>
-                <p className="text-sm text-gray-700">{orderData.delivery_address}</p>
+                <p className="text-sm text-gray-700">{orderData?.address || "Chưa cập nhật"}</p>
               </div>
               <div>
                 <label className="block text-sm font-semibold mb-2">Hóa đơn vận chuyển</label>
@@ -753,7 +706,7 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
             <div className="space-y-4">
               <div className="bg-gray-50 p-3 rounded">
                 <label className="block text-sm font-semibold mb-1">Mã vận đơn</label>
-                <p className="text-sm text-gray-700">{orderData.delivery_info}</p>
+                <p className="text-sm text-gray-700">{orderData?.delivery_info || "Chưa cập nhật"}</p>
               </div>
               <button
                 onClick={handleConfirmDelivery}
@@ -882,7 +835,7 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
                       placeholder="Chia sẻ trải nghiệm của bạn..."
                       value={ratingComment}
                       onChange={(e) => setRatingComment(e.target.value)}
-                      rows="4"
+                      rows={4}
                       className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
                     />
                   </div>
@@ -970,7 +923,7 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
                 placeholder="Chia sẻ trải nghiệm của bạn..."
                 value={ratingComment}
                 onChange={(e) => setRatingComment(e.target.value)}
-                rows="4"
+                rows={4}
                 className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
               />
             </div>
@@ -1003,7 +956,7 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
     handleConfirmPayment,
     handleConfirmDelivery,
     handleSubmitRating,
-    loadUserRating, // Added loadUserRating here
+    handleUpdateRating,
   ])
 
   const handleShowUserProfile = useCallback((user) => {
@@ -1047,29 +1000,27 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
           </div>
 
           <div className="flex items-center gap-4">
-            {orderData?.status !== "cancelled" &&
-              orderData?.status !== "completed" && ( // Only show steps if not cancelled or completed
-                <div className="flex gap-2">
-                  {[1, 2, 3, 4].map((step) => (
-                    <button
-                      key={step}
-                      onClick={() => {
-                        // Could scroll to that step or show info
-                        console.log("Step", step)
-                      }}
-                      className={`w-8 h-8 rounded-full font-bold transition ${
-                        step === currentStep
-                          ? "bg-blue-600 text-white"
-                          : step < currentStep
-                            ? "bg-green-500 text-white"
-                            : "bg-gray-200 text-gray-600"
-                      }`}
-                    >
-                      {step < currentStep ? "✓" : step}
-                    </button>
-                  ))}
-                </div>
-              )}
+            {orderData?.status !== "cancelled" && orderData?.status !== "completed" && (
+              <div className="flex gap-2">
+                {[1, 2, 3, 4].map((step) => (
+                  <button
+                    key={step}
+                    onClick={() => {
+                      console.log("Step", step)
+                    }}
+                    className={`w-8 h-8 rounded-full font-bold transition ${
+                      step === currentStep
+                        ? "bg-blue-600 text-white"
+                        : step < currentStep
+                          ? "bg-green-500 text-white"
+                          : "bg-gray-200 text-gray-600"
+                    }`}
+                  >
+                    {step < currentStep ? "✓" : step}
+                  </button>
+                ))}
+              </div>
+            )}
 
             <button onClick={() => setIsMinimized(true)} className="p-2 hover:bg-gray-100 rounded-full transition">
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1077,7 +1028,6 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
               </svg>
             </button>
 
-            {/* Close button */}
             <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition">
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -1128,7 +1078,6 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
           ) : (
             <ChatInterface
               orderId={orderData?._id}
-              currentUserId={currentUserId}
               sellerId={orderData?.seller_id}
               buyerId={orderData?.buyer_id}
               seller={seller}
@@ -1145,16 +1094,14 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
         >
           <div className="bg-white rounded-xl max-w-md w-full p-6" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-xl font-bold mb-2">Bạn có chắc muốn hủy giao dịch?</h3>
-            <p className="text-sm text-gray-600 mb-4">
-              Hành động này sẽ tự động đánh giá -1 điểm cho người mua và không thể hoàn tác.
-            </p>
+            <p className="text-sm text-gray-600 mb-4">Hành động này sẽ hủy đơn hàng và không thể hoàn tác.</p>
             <div className="mb-4">
               <label className="block text-sm font-semibold mb-2">Lý do hủy</label>
               <textarea
                 placeholder="Nhập lý do hủy giao dịch"
                 value={cancelReason}
                 onChange={(e) => setCancelReason(e.target.value)}
-                rows="3"
+                rows={3}
                 className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-red-500 focus:outline-none"
               />
             </div>
@@ -1176,12 +1123,7 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
         </div>
       )}
 
-      <UserProfileModal
-        isOpen={showUserProfile}
-        onClose={() => setShowUserProfile(false)}
-        user={selectedUser}
-        currentUserId={currentUserId}
-      />
+      <UserProfileModal isOpen={showUserProfile} onClose={() => setShowUserProfile(false)} user={selectedUser} />
     </div>
   )
 }

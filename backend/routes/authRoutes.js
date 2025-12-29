@@ -1,4 +1,10 @@
 import express from "express";
+import{
+  registerSchema,
+  loginSchema,
+  emailSchema
+} from "../schemas/AuthSchema.js";
+import { validate } from "../middleware/validateMiddleware.js";
 import {
   register,
   login,
@@ -12,17 +18,16 @@ import { verifyRecaptcha } from "../middleware/recaptchaMiddleware.js";
 import passport from "../config/passport.js";
 import { authenticate } from "../middleware/authMiddleware.js";
 
-
 const router = express.Router();
 
 router.get("/me", authenticate, (req, res) => {
   res.status(200).json(req.user);
 });
-router.post("/register", verifyRecaptcha, register);
-router.post("/login", verifyRecaptcha, login);
+router.post("/register", validate({body: registerSchema}), verifyRecaptcha, register);
+router.post("/login", validate({body: loginSchema}), verifyRecaptcha, login);
 router.post("/logout", logout);
 router.get("/refresh", refresh);
-router.post("/check-email", checkEmail);
+router.post("/check-email", validate({body: emailSchema}), checkEmail);
 
 // GOOGLE
 router.get("/google", passport.authenticate("google", { scope: ["profile", "email"] }));
@@ -54,6 +59,6 @@ router.get(
   oauthSuccess
 );
 
-router.post("/reset-password", resetPassword);
+router.post("/reset-password", validate({body: emailSchema}), resetPassword);
 
 export default router;

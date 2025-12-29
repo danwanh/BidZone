@@ -21,16 +21,17 @@ export const getRatingByID = async (req, res) => {
 
 export const createRating = async (req, res) => {
   try {
-    const { product_id, from_user_id, to_user_id, comment, points } = req.body;
+    const { product_id, from_user_id, to_user_id, comment, points } =
+      req.validated.body;
 
-    // Validate
-    if (!product_id || !from_user_id || !to_user_id || points === undefined) {
-      return res.status(400).json({ message: "Missing required fields" });
-    }
+    // // Validate
+    // if (!product_id || !from_user_id || !to_user_id || points === undefined) {
+    //   return res.status(400).json({ message: "Missing required fields" });
+    // }
 
-    if (![1, -1].includes(points)) {
-      return res.status(400).json({ message: "Points must be 1 or -1" });
-    }
+    // if (![1, -1].includes(points)) {
+    //   return res.status(400).json({ message: "Points must be 1 or -1" });
+    // }
 
     if (from_user_id === to_user_id) {
       return res.status(400).json({ message: "User can't rate themself" });
@@ -78,7 +79,8 @@ export const createRating = async (req, res) => {
 };
 
 export const updateRating = async (req, res) => {
-  const { product_id, from_user_id, to_user_id, comment, points } = req.body;
+  const { product_id, from_user_id, to_user_id, comment, points } =
+    req.validated.body;
   try {
     await getRating(req, res);
     if (!res.rating) return res;
@@ -90,13 +92,13 @@ export const updateRating = async (req, res) => {
     }
 
     //Check for existence
-    const product = await findById(product_id);
+    const product = await Product.findById(product_id);
     if (!product) return res.status(404).json({ message: "Product not found" });
 
-    const rater = User.findById(from_user_id);
+    const rater = await User.findById(from_user_id);
     if (!rater) return res.status(404).json({ message: "Rater not found" });
 
-    const rated = User.findById(to_user_id);
+    const rated = await User.findById(to_user_id);
     if (!rated)
       return res
         .status(404)
@@ -107,9 +109,13 @@ export const updateRating = async (req, res) => {
     if (to_user_id) res.rating.to_user_id = to_user_id;
     if (comment) res.rating.comment = comment;
     if (points) res.rating.points = points;
-    const updated = await Rating.findByIdAndUpdate(req.params.id, res.rating, {
-      new: true,
-    });
+    const updated = await Rating.findByIdAndUpdate(
+      req.validated.params.id,
+      res.rating,
+      {
+        new: true,
+      }
+    );
 
     res.json(updated);
   } catch (err) {
@@ -123,7 +129,7 @@ export const deleteRating = async (req, res) => {
     await getRating(req, res);
     if (!res.rating) return res;
 
-    const deleted = await Rating.findByIdAndDelete(req.params.id);
+    const deleted = await Rating.findByIdAndDelete(req.validated.params.id);
     if (!deleted)
       return res.status(500).json({ message: "Failed to delete rating" });
 
@@ -137,11 +143,11 @@ export const deleteRating = async (req, res) => {
 async function getRating(req, res) {
   let rating;
   try {
-    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-      return res.status(400).json({ message: "Invalid ObjectId format" });
-    }
+    // if (!mongoose.Types.ObjectId.isValid(req.validated.params.id)) {
+    //   return res.status(400).json({ message: "Invalid ObjectId format" });
+    // }
 
-    rating = await Rating.findById(req.params.id);
+    rating = await Rating.findById(req.validated.params.id);
     if (!rating) {
       return res.status(500).json({ message: "Can't find rating" });
     }
@@ -154,11 +160,12 @@ async function getRating(req, res) {
 
 async function is_valid_req(req) {
   //Check for validation
-  if (!product_id || !from_user_id || !to_user_id || !comment) {
-    return res.status(400).json({ message: "Missing required fields" });
-  } else if (points !== 1 && points !== -1) {
-    return res.status(400).json({ message: "Points must be either 1 or -1" });
-  } else if (from_user_id === to_user_id) {
+  // if (!product_id || !from_user_id || !to_user_id || !comment) {
+  //   return res.status(400).json({ message: "Missing required fields" });
+  // } else if (points !== 1 && points !== -1) {
+  //   return res.status(400).json({ message: "Points must be either 1 or -1" });
+  // } else
+  if (from_user_id === to_user_id) {
     return res.status(400).json({ message: "User can't rate themself " });
   }
 
@@ -178,7 +185,9 @@ async function is_valid_req(req) {
 
 export const getRatingsByUser = async (req, res) => {
   try {
-    const ratings = await Rating.find({ to_user_id: req.params.userId })
+    const ratings = await Rating.find({
+      to_user_id: req.validated.params.userId,
+    })
       .populate("from_user_id")
       .sort({ createdAt: -1 });
 

@@ -1,5 +1,9 @@
 import express from "express";
 import {
+  ratingIdParamSchema,
+  ratingBodySchema,
+} from "../schemas/RatingSchema.js";
+import {
   getAllRatings,
   getRatingByID,
   createRating,
@@ -9,14 +13,38 @@ import {
 } from "../controllers/ratingController.js";
 
 import { authenticate } from "../middleware/authMiddleware.js";
+import { validate } from "../middleware/validateMiddleware.js";
 
 const router = express.Router();
 
 router.get("", authenticate, getAllRatings);
-router.get("/each/:id", getRatingByID);
-router.get("/user/:userId", authenticate, getRatingsByUser);
-router.post("/", createRating);
-router.patch("/:id", updateRating);
-router.delete("/:id", deleteRating);
+router.get(
+  "/each/:id",
+  validate({ params: ratingIdParamSchema }),
+  getRatingByID
+);
+
+router.get(
+  "/user/:userId",
+  authenticate,
+  validate({ params: ratingIdParamSchema }),
+  getRatingsByUser
+);
+
+router.post("/", authenticate, createRating);
+
+router.patch(
+  "/:id",
+  authenticate,
+  validate({ params: ratingIdParamSchema, body: ratingBodySchema }),
+  updateRating
+);
+
+router.delete(
+  "/:id",
+  authenticate,
+  validate({ params: ratingIdParamSchema }),
+  deleteRating
+);
 
 export default router;

@@ -58,12 +58,12 @@ export const SellerInfo = ({ seller, highestBidder, currentBid }) => {
                   tích cực
                 </span>
               </div>
-              <button
+              {/* <button
                 disabled
                 className="px-4 py-2 bg-gray-300 text-gray-600 rounded-lg cursor-not-allowed text-sm font-semibold"
               >
                 Hồ sơ được ẩn
-              </button>
+              </button> */}
             </div>
             <div className="text-right">
               <div className="text-sm text-gray-600 mb-1">Giá đặt cao nhất</div>

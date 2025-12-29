@@ -22,11 +22,11 @@ export const getAllQuestions = async (req, res) => {
 // };
 export const getQuestionsByProductId = async (req, res) => {
   try {
-    const { product_id } = req.params;
+    const { product_id } = req.validated.params;
 
-    if (!mongoose.isValidObjectId(product_id)) {
-      return res.status(400).json({ message: "Invalid product_id format" });
-    }
+    // if (!mongoose.isValidObjectId(product_id)) {
+    //   return res.status(400).json({ message: "Invalid product_id format" });
+    // }
 
     const questions = await Question.find({ product_id })
       .populate("bidder_id", "name email")
@@ -34,35 +34,35 @@ export const getQuestionsByProductId = async (req, res) => {
       .sort({ createdAt: -1 });
 
     res.json(questions);
-
   } catch (err) {
     console.error("Error fetching questions:", err);
     res.status(500).json({ message: "Server error" });
   }
 };
 
-
 export const createQuestion = async (req, res) => {
   try {
-    const { product_id, seller_id, bidder_id, question, answer } = req.body;
+    const { product_id, seller_id, bidder_id, question, answer } =
+      req.validated.body;
 
-    if (!mongoose.Types.ObjectId.isValid(product_id)) {
-      return res
-        .status(400)
-        .json({ message: "Invalid product_id ObjectId format" });
-    } else if (!mongoose.Types.ObjectId.isValid(seller_id)) {
-      return res
-        .status(400)
-        .json({ message: "Invalid seller_id ObjectId format" });
-    } else if (!mongoose.Types.ObjectId.isValid(bidder_id)) {
-      return res
-        .status(400)
-        .json({ message: "Invalid bidder_id ObjectId format" });
-    }
+    // if (!mongoose.Types.ObjectId.isValid(product_id)) {
+    //   return res
+    //     .status(400)
+    //     .json({ message: "Invalid product_id ObjectId format" });
+    // } else if (!mongoose.Types.ObjectId.isValid(seller_id)) {
+    //   return res
+    //     .status(400)
+    //     .json({ message: "Invalid seller_id ObjectId format" });
+    // } else if (!mongoose.Types.ObjectId.isValid(bidder_id)) {
+    //   return res
+    //     .status(400)
+    //     .json({ message: "Invalid bidder_id ObjectId format" });
+    // }
 
-    if (!product_id || !seller_id || !bidder_id || !question) {
-      return res.status(400).json({ message: "Missing required fields" });
-    } else if (seller_id === bidder_id) {
+    // if (!product_id || !seller_id || !bidder_id || !question) {
+    //   return res.status(400).json({ message: "Missing required fields" });
+    // } else
+    if (seller_id === bidder_id) {
       return res
         .status(400)
         .json({ message: "User can't ask/answer themself " });
@@ -83,8 +83,8 @@ export const createQuestion = async (req, res) => {
     appEvent.emit("QUESTION_ASKED", {
       seller,
       question: newQuestion,
-      product
-    })
+      product,
+    });
 
     res.status(201).json(save);
   } catch (err) {
@@ -94,14 +94,15 @@ export const createQuestion = async (req, res) => {
 };
 
 export const updateQuestion = async (req, res) => {
-  const { product_id, seller_id, bidder_id, question, answer } = req.body;
+  const { product_id, seller_id, bidder_id, question, answer } =
+    req.validated.body;
   try {
     await getQuestion(req, res);
     if (!res.question) return res;
 
-    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-      return res.status(400).json({ message: "Invalid ObjectId format" });
-    }
+    // if (!mongoose.Types.ObjectId.isValid(req.validated.params.id)) {
+    //   return res.status(400).json({ message: "Invalid ObjectId format" });
+    // }
 
     // if (product_id) question.product_id = product_id;
     // if(seller_id) question.seller_id = seller_id;
@@ -110,17 +111,17 @@ export const updateQuestion = async (req, res) => {
     //if (question) res.question.question = question;
     if (answer) res.question.answer = answer;
     const updated = await Question.findByIdAndUpdate(
-      req.params.id,
+      req.validated.params.id,
       res.question,
       { new: true }
     );
 
-    if (answer){
+    if (answer) {
       appEvent.emit("QUESTION_ANSWERED", {
         buyer: await User.findById(bidder_id),
         question: updated,
-        product: await Product.findById(product_id)
-      })
+        product: await Product.findById(product_id),
+      });
     }
 
     res.json(updated);
@@ -135,7 +136,7 @@ export const deleteQuestion = async (req, res) => {
     await getQuestion(req, res);
     if (!res.question) return res;
 
-    const deleted = await Question.findByIdAndDelete(req.params.id);
+    const deleted = await Question.findByIdAndDelete(req.validated.params.id);
     if (!deleted)
       return res.status(500).json({ message: "Failed to delete question" });
 
@@ -149,11 +150,11 @@ export const deleteQuestion = async (req, res) => {
 async function getQuestion(req, res) {
   let question;
   try {
-    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-      return res.status(400).json({ message: "Invalid ObjectId format" });
-    }
+    // if (!mongoose.Types.ObjectId.isValid(req.validated.params.id)) {
+    //   return res.status(400).json({ message: "Invalid ObjectId format" });
+    // }
 
-    question = await Question.findById(req.params.id);
+    question = await Question.findById(req.validated.params.id);
     if (!question) {
       return res.status(500).json({ message: "Can't find question" });
     }

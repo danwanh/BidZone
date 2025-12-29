@@ -178,6 +178,7 @@ export const ProductDetailPage = () => {
             user: maskName(bid.current_holder?.name),
             userId: bid.current_holder?._id,
             amount: bid.max_price,
+            price: bid.price,
             time: bid.createdAt,
             status: bid.status !== false,
           }))
@@ -281,8 +282,7 @@ export const ProductDetailPage = () => {
     if (id) {
       fetchProduct(id);
     }
-    console.log(user);
-    console.log(user._id);
+
   }, [id, fetchProduct]);
 
   useEffect(() => {
@@ -315,10 +315,11 @@ export const ProductDetailPage = () => {
       fetchQuestions(id),
     ]);
 
+    //const token = localStorage.getItem("accessToken");
     if (user) {
       fetchCurrentUser();
     } else {
-      setUserRole("bidder");
+      setUserRole("guest");
       setCurrentUser(null);
     }
 
@@ -450,9 +451,12 @@ export const ProductDetailPage = () => {
       if (!window.confirm("Bạn chắc chắn muốn từ chối người đấu giá này?")) {
         return;
       }
-
+      console.log(bidId, bidderId);
       try {
-        await axios.patch(`/api/bids/${bidId}/reject`);
+        const endpoint =
+        product.is_autobid === true ? "/api/autobids" : "/api/bids";
+
+        await axios.patch(`${endpoint}/${bidId}/reject`);
 
         await axios.patch(`/api/product/${id}`, { ban_bidder_id: bidderId });
 
@@ -632,8 +636,15 @@ export const ProductDetailPage = () => {
         highestBidder={highestBidder}
         currentBid={currentBid}
       />
-
-      <BidSection
+      {(userRole === "guest" && !currentUser) ? (
+        <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
+          <p className="text-yellow-700">Bạn cần đăng nhập để đấu giá.</p>
+          <button className="mt-2 px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700 transition">
+            <a href="/auth">Đăng nhập</a>
+          </button>
+        </div>
+      ) : (
+        <BidSection
         productStatus={productStatus}
         userRole={userRole}
         currentBid={currentBid}
@@ -646,13 +657,18 @@ export const ProductDetailPage = () => {
         onBuyNow={handleBuyNow}
       />
 
+      )}
+
+      
+
+
       {((product.is_autobid && userRole === "seller") ||
         !product.is_autobid) && (
         <BidHistory
           bidHistory={bidHistory}
           userRole={userRole}
           onRejectBid={handleRejectBid}
-          maskName={maskName}
+          isAutobid={product.is_autobid}
         />
       )}
 

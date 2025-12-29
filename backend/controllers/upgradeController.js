@@ -17,10 +17,10 @@ export const createUpgradeRequest = async (req, res) => {
       province = "",
       postal = "",
       country = "",
-    } = req.body;
-    if (!mongoose.Types.ObjectId.isValid(user_id)) {
-      return res.status(400).json({ message: "Invalid user_id" });
-    }
+    } = req.validated.body;
+    // if (!mongoose.Types.ObjectId.isValid(user_id)) {
+    //   return res.status(400).json({ message: "Invalid user_id" });
+    // }
 
     // Check if user exists
     const user = await User.findById(user_id);
@@ -77,7 +77,7 @@ export const createUpgradeRequest = async (req, res) => {
 // READ - Get all upgrade requests (Admin only)
 export const getAllUpgradeRequests = async (req, res) => {
   try {
-    const { status, q = "" } = req.query; // Filter by status if provided
+    const { status, q = "" } = req.validated.query; // Filter by status if provided
     let query = {};
     if (status) {
       query.status = status;
@@ -105,11 +105,11 @@ export const getAllUpgradeRequests = async (req, res) => {
 // READ - Get upgrade requests by user
 export const getUpgradeRequestsByUser = async (req, res) => {
   try {
-    const { user_id } = req.params;
+    const { user_id } = req.validated.params;
 
-    if (!mongoose.Types.ObjectId.isValid(user_id)) {
-      return res.status(400).json({ message: "Invalid user_id" });
-    }
+    // if (!mongoose.Types.ObjectId.isValid(user_id)) {
+    //   return res.status(400).json({ message: "Invalid user_id" });
+    // }
 
     // Check authorization
     if (req.user._id.toString() !== user_id && req.user.role !== "admin") {
@@ -130,11 +130,11 @@ export const getUpgradeRequestsByUser = async (req, res) => {
 // READ - Get single upgrade request by ID
 export const getUpgradeRequestById = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.validated.params;
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Invalid request ID" });
-    }
+    // if (!mongoose.Types.ObjectId.isValid(id)) {
+    //   return res.status(400).json({ message: "Invalid request ID" });
+    // }
 
     const request = await UpgradeRequest.findById(id)
       .populate("user_id", "name email rating_pos rating_neg")
@@ -162,12 +162,12 @@ export const getUpgradeRequestById = async (req, res) => {
 // UPDATE - Review upgrade request (Admin only)
 export const reviewUpgradeRequest = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { status, note } = req.body;
+    const { id } = req.validated.params;
+    const { status, note } = req.validated.body;
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Invalid request ID" });
-    }
+    // if (!mongoose.Types.ObjectId.isValid(id)) {
+    //   return res.status(400).json({ message: "Invalid request ID" });
+    // }
 
     // Validate status
     const validStatuses = ["accepted", "rejected"];
@@ -221,12 +221,12 @@ export const reviewUpgradeRequest = async (req, res) => {
 // UPDATE - Cancel upgrade request (User can cancel their own pending request)
 export const cancelUpgradeRequest = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.validated.params;
     console.log(id);
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Invalid request ID" });
-    }
+    // if (!mongoose.Types.ObjectId.isValid(id)) {
+    //   return res.status(400).json({ message: "Invalid request ID" });
+    // }
 
     const request = await UpgradeRequest.findById(id);
     if (!request) {
@@ -261,11 +261,11 @@ export const cancelUpgradeRequest = async (req, res) => {
 // DELETE - Delete upgrade request (Admin only)
 export const deleteUpgradeRequest = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.validated.params;
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Invalid request ID" });
-    }
+    // if (!mongoose.Types.ObjectId.isValid(id)) {
+    //   return res.status(400).json({ message: "Invalid request ID" });
+    // }
 
     const request = await UpgradeRequest.findByIdAndDelete(id);
     if (!request) {
