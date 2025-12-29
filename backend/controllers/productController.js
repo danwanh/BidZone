@@ -102,7 +102,13 @@ export const getAllProducts = async (req, res) => {
 
     // Status
     if (status) {
-      filter.status = status;
+      if (status === "all") {
+        filter.status = {
+          $in: ["active", "ended"],
+        };
+      } else {
+        filter.status = status;
+      }
     }
 
     //Category (cha hoặc con)
@@ -253,7 +259,6 @@ export const getAllProducts = async (req, res) => {
         Product.countDocuments(filter),
       ]);
     }
-
     res.status(200).json({
       message: "Got product list successfully!",
       page: pageNum,

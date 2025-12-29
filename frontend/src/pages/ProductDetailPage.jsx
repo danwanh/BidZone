@@ -118,11 +118,12 @@ export const ProductDetailPage = () => {
 
   const fetchCurrentUser = useCallback(async () => {
     try {
-      const res = await axios.get("/api/auth/me");
-      const user = res.data;
+      // const res = await axios.get("/api/auth/me");
+      // const user = res.data;
 
       if (user) {
         setCurrentUser(user);
+
         setUserRole(user._id === product?.seller_id?._id ? "seller" : "bidder");
         setCurrentUserId(user._id);
         console.log(user._id);
@@ -297,6 +298,8 @@ export const ProductDetailPage = () => {
     if (id) {
       fetchProduct(id);
     }
+    console.log(user);
+    console.log(user._id);
   }, [id, fetchProduct]);
 
   useEffect(() => {
@@ -329,8 +332,7 @@ export const ProductDetailPage = () => {
       fetchQuestions(id),
     ]);
 
-    const token = localStorage.getItem("accessToken");
-    if (token) {
+    if (user) {
       fetchCurrentUser();
     } else {
       setUserRole("bidder");
@@ -397,7 +399,7 @@ export const ProductDetailPage = () => {
     }
 
     const bidderId = currentUserId;
-
+    console.log(bidderId);
     try {
       const body =
         product.is_autobid === true

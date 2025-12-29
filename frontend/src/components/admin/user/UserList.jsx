@@ -4,7 +4,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import AddUser from "./AddUser";
 
-import UserRow from "../upgrade/UserRow";
+import UserRow from "./UserRow";
 import api from "../../../api/axios";
 
 import AdminContextMenu from "./AdminContextMenu";
@@ -59,6 +59,8 @@ const UserList = () => {
         setLoading(true);
         setError(null);
         const res = await api.get(`/api/users?${queryString}`);
+        const a = await api.get("/api/config/GIA_HAN");
+        console.log("Gia han:", a.data.value);
         if (isMounted) {
           setUsers(res.data);
         }
@@ -274,6 +276,7 @@ const UserList = () => {
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Ngày sinh
+                      {}
                     </th>
                   </tr>
                 </thead>

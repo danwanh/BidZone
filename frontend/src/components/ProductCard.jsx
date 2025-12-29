@@ -286,8 +286,11 @@ const ProductCard = ({ product }) => {
                     </svg>
                   </div>
                   <p className="text-[#667EEA] -ml-1">
-                    {product?.bidder_id?.rating_pos -
-                      product?.bidder_id?.rating_neg}
+                    {(product?.bidder_id?.rating_pos /
+                      (product?.bidder_id?.rating_pos +
+                        product?.bidder_id?.rating_neg)) *
+                      100 || 0}
+                    {"%"}
                   </p>
                 </div>
               )}

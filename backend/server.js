@@ -4,7 +4,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import jwt from "jsonwebtoken";
-import {errorHandler, notFoundHandler} from "./middleware/errorMiddleware.js";
+import { errorHandler, notFoundHandler } from "./middleware/errorMiddleware.js";
 import cron from "node-cron";
 
 import User from "./models/user.model.js";
@@ -21,6 +21,7 @@ import userRoutes from "./routes/userRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
 import chatRoutes from "./routes/chatRoutes.js";
 import upgradeRoutes from "./routes/upgradeRoutes.js";
+import configRoutes from "./routes/configRoutes.js";
 
 //authentication
 import authRoutes from "./routes/authRoutes.js";
@@ -57,6 +58,7 @@ app.use("/api/category", categoryRoutes);
 app.use("/api/watchlist", watchlistRoutes);
 app.use("/api/product", productRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/config", configRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/upgrade", upgradeRoutes);
