@@ -15,6 +15,7 @@ export const getBidById = async (req, res) => {
     res.status(500).json({ message: "Can't get bid" });
   }
 };
+
 export const createBid = async (req, res) => {
   const { product_id, bidder_id, price } = req.body;
 

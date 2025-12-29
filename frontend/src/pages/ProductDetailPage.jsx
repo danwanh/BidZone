@@ -451,9 +451,12 @@ export const ProductDetailPage = () => {
       if (!window.confirm("Bạn chắc chắn muốn từ chối người đấu giá này?")) {
         return;
       }
-
+      console.log(bidId, bidderId);
       try {
-        await axios.patch(`/api/bids/${bidId}/reject`);
+        const endpoint =
+        product.is_autobid === true ? "/api/autobids" : "/api/bids";
+
+        await axios.patch(`${endpoint}/${bidId}/reject`);
 
         await axios.patch(`/api/product/${id}`, { ban_bidder_id: bidderId });
 
