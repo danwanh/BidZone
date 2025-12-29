@@ -119,7 +119,7 @@ const FilterPopup = ({ initialFilters, onClose, onApply }) => {
                 setLocalFilters({ ...localFilters, status: e.target.value })
               }
             >
-              <option value="">Tất cả</option>
+              <option value="all">Tất cả</option>
               <option value="active">Đang hoạt động</option>
               <option value="ended">Đã kết thúc</option>
             </select>

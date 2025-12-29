@@ -19,7 +19,7 @@ const ProductList = () => {
 
   const [searchParams, setSearchParams] = useSearchParams();
   const q = searchParams.get("q") || "";
-  const statusParam = searchParams.get("status") || "";
+  const statusParam = searchParams.get("status") || "all";
   const categoryParam = searchParams.get("category") || "";
   const sellerParam = searchParams.get("seller") || "";
   const [searchTerm, setSearchTerm] = useState(q);

@@ -48,11 +48,12 @@ const Navbar = () => {
     ? categories.filter((cat) => cat.category_id === activeCategory._id) || []
     : [];
 
-  if (loading) return (
-    <div className="w-full h-[60px] flex justify-center items-center">
-      <ClipLoader loading={loading} size={50} />
-    </div>
-  );
+  if (loading)
+    return (
+      <div className="w-full h-[60px] flex justify-center items-center">
+        <ClipLoader loading={loading} size={50} />
+      </div>
+    );
 
   return (
     <nav className="bg-white shadow-sm relative Space text-md">
@@ -256,7 +257,7 @@ const Navbar = () => {
               {/* Admin mới thấy nút Bảng admin */}
               {user.role === "admin" && (
                 <Link
-                  to="/admin"
+                  to="/admin?tab=Danh+mục"
                   className="flex items-center gap-1 bg-red-400 text-white px-3 py-1 rounded-xl hover:bg-red-600"
                   title="Bảng admin"
                 >

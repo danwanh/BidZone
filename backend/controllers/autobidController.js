@@ -4,6 +4,7 @@ import Product from "../models/product.model.js";
 export const createAutoBid = async (req, res) => {
   try {
     const { product_id, bidder_id, max_price } = req.body;
+    console.log(bidder_id);
 
     const product = await Product.findById(product_id);
     if (!product) return res.status(404).json({ error: "Product not found" });
@@ -16,7 +17,8 @@ export const createAutoBid = async (req, res) => {
 
     if (userBid) {
       // Cập nhật giá tối đa
-      if(userBid.max_price >= max_price) return res.status(400).json({ error: "Max price need to be larger" });
+      if (userBid.max_price >= max_price)
+        return res.status(400).json({ error: "Max price need to be larger" });
       userBid.max_price = max_price;
       await userBid.save();
     } else {
@@ -30,7 +32,10 @@ export const createAutoBid = async (req, res) => {
         current_holder: bidder_id,
       });
     }
-    let allBids = await AutoBid.find({ product_id }).sort({ max_price: -1, date: 1 });
+    let allBids = await AutoBid.find({ product_id }).sort({
+      max_price: -1,
+      date: 1,
+    });
 
     const topBid = allBids[0];
     const secondBid = allBids[1];
@@ -74,12 +79,15 @@ export const createAutoBid = async (req, res) => {
     console.error(err);
     res.status(500).json({ error: "Error while creating autobid" });
   }
-}
+};
 
 export const getAutoBidsByProduct = async (req, res) => {
   try {
     const { product_id } = req.params;
-    const bids = await AutoBid.find({ product_id }).populate("bidder_id current_holder", "name");
+    const bids = await AutoBid.find({ product_id }).populate(
+      "bidder_id current_holder",
+      "name"
+    );
     res.json(bids);
   } catch (err) {
     console.error("Error fetching bids:", err);
@@ -88,29 +96,29 @@ export const getAutoBidsByProduct = async (req, res) => {
 };
 
 export const getAllAutoBids = async (req, res) => {
-    const bids = await AutoBid.find().populate("product_id bidder_id");
-    res.json(bids);
+  const bids = await AutoBid.find().populate("product_id bidder_id");
+  res.json(bids);
 };
 
 export const deleteAutoBid = async (req, res) => {
-    const bid = await AutoBid.findByIdAndDelete(req.params.id);
-    if (!bid) return res.status(404).json({ message: "AutoBid not found" });
-    res.json({ message: "AutoBid deleted" });
+  const bid = await AutoBid.findByIdAndDelete(req.params.id);
+  if (!bid) return res.status(404).json({ message: "AutoBid not found" });
+  res.json({ message: "AutoBid deleted" });
 };
 
 export const getAutoBidById = async (req, res) => {
-    try {
-      const { id: bid_id } = req.params;
-  
-      const bid = await Product.findById(bid_id);
-  
-      if (!bid) return res.status(400).json({ message: "No bid found" });
-      else return res.status(200).json(bid);
-    } catch (error) {
-      console.error("Error getting bid: ", error);
-      res.status(500).json({ message: "Can't get bid" });
-    }
-}
+  try {
+    const { id: bid_id } = req.params;
+
+    const bid = await Product.findById(bid_id);
+
+    if (!bid) return res.status(400).json({ message: "No bid found" });
+    else return res.status(200).json(bid);
+  } catch (error) {
+    console.error("Error getting bid: ", error);
+    res.status(500).json({ message: "Can't get bid" });
+  }
+};
 
 export const updateBidStatus = async (req, res) => {
   const { status } = req.body;
@@ -137,13 +145,11 @@ export const rejectAutoBid = async (req, res) => {
     }
 
     const highestValidBid = await AutoBid.findOne({
-  product_id: bid.product_id,
-  status: true,
-}).sort({ price: -1 });
+      product_id: bid.product_id,
+      status: true,
+    }).sort({ price: -1 });
 
-    const newPrice = highestValidBid
-      ? highestValidBid.price
-      : 0; 
+    const newPrice = highestValidBid ? highestValidBid.price : 0;
 
     await Product.findByIdAndUpdate(bid.product_id, {
       currentPrice: newPrice,

@@ -1,15 +1,15 @@
 import { useState, useMemo, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, Link } from "react-router-dom";
 
 const AdminNavBar = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [tab, setTab] = useState(searchParams.get("tab") ?? "Danh mục");
+  const tab = searchParams.get("tab") ?? "Danh mục";
 
-  useEffect(() => {
-    const next = new URLSearchParams(searchParams);
-    next.set("tab", tab);
-    setSearchParams(next);
-  }, [tab]);
+  const getLabelURL = (label) => {
+    const url = new URLSearchParams();
+    url.set("tab", label);
+    return `?${url.toString()}`;
+  };
 
   const menuItems = [
     {
@@ -95,10 +95,35 @@ const AdminNavBar = () => {
         </svg>
       ),
     },
+
+    {
+      id: "variables",
+      label: "Biến toàn cục",
+      icon: (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width={24}
+          height={24}
+          viewBox="0 0 24 24"
+        >
+          <g
+            fill={tab == "Biến toàn cục" ? "#FFFFFF" : "#404040"}
+            stroke={tab == "Biến toàn cục" ? "#FFFFFF" : "#404040"}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+          >
+            <rect width={4} height={6} x={14} y={14} rx={2} />
+            <rect width={4} height={6} x={6} y={4} rx={2} />
+            <path d="M6 20h4m4-10h4M6 14h2v6m6-16h2v6" />
+          </g>
+        </svg>
+      ),
+    },
   ];
 
   return (
-    <div className="w-53 h-fill bg-[rgba(154,66,66,0.65)] text-white shrink-0">
+    <div className="w-full flex md:flex-col md:w-53 h-fill bg-[rgba(154,66,66,0.65)] text-white shrink-0">
       {/* Header */}
       <div className="py-4 px-6">
         <div className="flex items-center gap-2">
@@ -129,11 +154,11 @@ const AdminNavBar = () => {
       </div>
 
       {/* Menu Items */}
-      <nav className="py-2">
+      <nav className="py-2 flex md:flex-col">
         {menuItems.map((item) => (
-          <button
+          <Link
             key={item.id}
-            onClick={() => setTab(item.label)}
+            to={getLabelURL(item.label)}
             className={`w-full px-6 py-3 flex items-center gap-3 cursor-pointer ${
               tab === item.label
                 ? "bg-[#523232af] border-l-4 border-white text-white"
@@ -142,7 +167,7 @@ const AdminNavBar = () => {
           >
             {item.icon}
             <span className="font-bold">{item.label}</span>
-          </button>
+          </Link>
         ))}
       </nav>
     </div>
