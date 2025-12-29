@@ -16,7 +16,7 @@ router.get("", authenticate, getAllRatings);
 router.get("/each/:id", getRatingByID);
 router.get("/user/:userId", authenticate, getRatingsByUser);
 router.post("/", createRating);
-router.patch("/:id", updateRating);
+router.put("/:id", authenticate, updateRating);
 router.delete("/:id", deleteRating);
 
 export default router;

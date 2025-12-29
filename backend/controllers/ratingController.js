@@ -90,13 +90,13 @@ export const updateRating = async (req, res) => {
     }
 
     //Check for existence
-    const product = await findById(product_id);
+    const product = await Product.findById(product_id);
     if (!product) return res.status(404).json({ message: "Product not found" });
 
-    const rater = User.findById(from_user_id);
+    const rater = await User.findById(from_user_id);
     if (!rater) return res.status(404).json({ message: "Rater not found" });
 
-    const rated = User.findById(to_user_id);
+    const rated = await User.findById(to_user_id);
     if (!rated)
       return res
         .status(404)

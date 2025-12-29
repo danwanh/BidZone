@@ -312,8 +312,8 @@ export const ProductDetailPage = () => {
       fetchQuestions(id),
     ]);
 
-    const token = localStorage.getItem("accessToken");
-    if (token) {
+    //const token = localStorage.getItem("accessToken");
+    if (user) {
       fetchCurrentUser();
     } else {
       setUserRole("bidder");

@@ -258,7 +258,7 @@ export const sendMessage = async (req, res) => {
   try {
     const { id } = req.params;
     const { content } = req.body;
-    const userId = req.user._id; // lấy từ JWT middleware
+    const userId = req.user._id;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: "Invalid order ID" });
@@ -273,7 +273,7 @@ export const sendMessage = async (req, res) => {
       return res.status(404).json({ message: "Order not found" });
     }
 
-    // chỉ buyer hoặc seller được chat
+    // chỉ buyer hoặc seller mới được chat
     if (
       !order.buyer_id.equals(userId) &&
       !order.seller_id.equals(userId)
@@ -281,21 +281,25 @@ export const sendMessage = async (req, res) => {
       return res.status(403).json({ message: "Not allowed to chat" });
     }
 
-    order.messages.push({
+    const newMessage = {
       sender: userId,
-      content,
-    });
+      content: content.trim(),
+      createdAt: new Date(),
+    };
 
+    order.messages.push(newMessage);
     await order.save();
 
     res.status(201).json({
       message: "Message sent",
-      data: order.messages[order.messages.length - 1],
+      data: newMessage,
     });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ message: err.message });
   }
 };
+
 
 export const getMessages = async (req, res) => {
   try {
