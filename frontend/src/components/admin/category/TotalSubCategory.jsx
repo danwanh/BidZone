@@ -14,7 +14,6 @@ const TotalSubCategory = ({ totalCat, refreshTrigger }) => {
         setError(null);
         if (totalCat === 0) return;
         const parent_res = await api.get("/api/category/top");
-        console.log(totalCat);
         if (isMounted) {
           setTotal(totalCat - parent_res.data.categories.length);
         }

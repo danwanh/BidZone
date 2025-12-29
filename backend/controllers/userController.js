@@ -161,7 +161,6 @@ export const updateUserRole = async (req, res) => {
       user.seller_expires = sevenDaysLater;
       console.log(user.seller_expires);
     } else {
-      // Nếu chuyển thành Bidder hoặc Admin -> Xóa hạn sử dụng
       user.seller_expires = null;
     }
 

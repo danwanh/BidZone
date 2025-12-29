@@ -59,8 +59,7 @@ const UserList = () => {
         setLoading(true);
         setError(null);
         const res = await api.get(`/api/users?${queryString}`);
-        const a = await api.get("/api/config/GIA_HAN");
-        console.log("Gia han:", a.data.value);
+
         if (isMounted) {
           setUsers(res.data);
         }

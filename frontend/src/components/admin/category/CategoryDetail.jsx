@@ -49,8 +49,8 @@ const CategoryDetail = ({
     try {
       setDeleting(true);
       const res = await api.delete(`api/category/${category._id}`);
-      deleteAction();
       toast.success("Đã xóa danh mục!");
+      deleteAction();
     } catch (err) {
       const message = err.response?.data?.message || err.message;
       if (message === "Can't delete category with products") {

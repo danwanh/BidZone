@@ -12,7 +12,7 @@ export const Admin = () => {
   const tab = searchParams.get("tab") || "";
 
   return (
-    <div className="flex rounded-xl border border-white h-fit w-full lg:h-155 -mt-5 overflow-hidden">
+    <div className="flex flex-col md:flex-row rounded-xl border border-white h-fit w-full lg:h-155 -mt-5 overflow-hidden">
       <AdminNavBar />
       {tab === "Danh mục" && <CategoryDashboard />}
       {tab === "Người dùng" && <UserList />}

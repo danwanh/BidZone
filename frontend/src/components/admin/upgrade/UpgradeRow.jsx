@@ -2,37 +2,7 @@ import api from "../../../api/axios";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-const UpgradeRow = ({ upgrade, updateList, status }) => {
-  const handleReject = async () => {
-    try {
-      const res = await api.put(`/api/upgrade/${upgrade._id}/review`, {
-        status: "rejected",
-      });
-      toast.success("Đã xóa request");
-      updateList();
-    } catch (err) {
-      console.log(err.data?.message || err.message);
-      toast.error("Can't reject request");
-    }
-  };
-
-  const handleAccept = async () => {
-    try {
-      console.log(upgrade.user_id);
-      const res = await api.put(`/api/users/${upgrade.user_id._id}/role`, {
-        role: "seller",
-      });
-      const accept = await api.put(`/api/upgrade/${upgrade._id}/review`, {
-        status: "accepted",
-      });
-      toast.success("Đã duyệt request");
-      updateList();
-    } catch (err) {
-      console.log(err.data?.message || err.message);
-      toast.error("Lỗi khi duyệt request");
-    }
-  };
-
+const UpgradeRow = ({ upgrade, updateList, status, onAccept, onReject }) => {
   return (
     <tr className="border-b border-gray-300 w-full transition-colors hover:bg-gray-50 cursor-context-menu">
       <td className="px-4 py-4 font-medium">
@@ -69,13 +39,15 @@ const UpgradeRow = ({ upgrade, updateList, status }) => {
             Xem chi tiết
           </button> */}
           <button
-            onClick={handleAccept}
+            onClick={() => onAccept(upgrade)}
+            disabled={status !== "pending"}
             className="px-4 bg-green-400 rounded-md py-2 text-white hover:-translate-y-0.5 cursor-pointer transition ease-in-out hover:shadow-md"
           >
             Duyệt
           </button>
           <button
-            onClick={handleReject}
+            onClick={() => onReject(upgrade._id)}
+            disabled={status !== "pending"}
             className="px-4 bg-red-400 rounded-md py-2 text-white hover:-translate-y-0.5 cursor-pointer transition ease-in-out hover:shadow-md"
           >
             Loại

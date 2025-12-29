@@ -17,8 +17,10 @@ const ProductCard = ({ product }) => {
 
   const location = useLocation();
   const is_profile = location.pathname.endsWith("/profile");
+  console.log(product?.bidder_id?._id || product);
   const is_bought =
-    product.status === "ended" && product.bidder_id._id == user._id;
+    (product.status === "ended" && product?.bidder_id?._id == user._id) ||
+    false;
 
   const is_new = new Date() - new Date(product.createdAt) <= 90 * 60 * 1000;
 
@@ -286,10 +288,12 @@ const ProductCard = ({ product }) => {
                     </svg>
                   </div>
                   <p className="text-[#667EEA] -ml-1">
-                    {(product?.bidder_id?.rating_pos /
-                      (product?.bidder_id?.rating_pos +
-                        product?.bidder_id?.rating_neg)) *
-                      100 || 0}
+                    {(
+                      (product?.bidder_id?.rating_pos /
+                        (product?.bidder_id?.rating_pos +
+                          product?.bidder_id?.rating_neg)) *
+                      100
+                    ).toFixed(0) || 0}
                     {"%"}
                   </p>
                 </div>

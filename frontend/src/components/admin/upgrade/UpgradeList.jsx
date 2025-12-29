@@ -49,7 +49,6 @@ const UpgradeList = () => {
       try {
         setLoading(true);
         setError(null);
-        console.log(queryString);
         const res = await api.get(`/api/upgrade?${queryString}`);
 
         if (isMounted) {
@@ -65,6 +64,43 @@ const UpgradeList = () => {
     };
     loadCategories();
   }, [queryString, , status, action]);
+
+  const handleReject = async (upgradeId) => {
+    if (!window.confirm("Bạn có chắc chắn muốn từ chối yêu cầu này?")) return;
+
+    try {
+      await api.put(`/api/upgrade/${upgradeId}/review`, {
+        status: "rejected",
+      });
+      toast.success("Đã từ chối request");
+      updateList();
+    } catch (err) {
+      console.log(err.response?.data?.message || err.message);
+      toast.error("Không thể từ chối request");
+    }
+  };
+
+  const handleAccept = async (upgrade) => {
+    if (!window.confirm("Bạn có chắc chắn muốn duyệt yêu cầu này?")) return;
+
+    try {
+      // Nâng quyền user
+      console.log(upgrade);
+      await api.put(`/api/users/${upgrade.user_id._id}/role`, {
+        role: "seller",
+      });
+      // Cập nhật trạng thái upgrade request
+      await api.put(`/api/upgrade/${upgrade._id}/review`, {
+        status: "accepted",
+      });
+
+      toast.success("Đã duyệt request thành công");
+      updateList();
+    } catch (err) {
+      console.log(err.response?.data?.message || err.message);
+      toast.error("Lỗi khi duyệt request");
+    }
+  };
 
   return (
     <div className="flex-1 min-h-screen bg-gradient-to-r from-[#ffffff80] to-[#B9C2E780] p-6 ">
@@ -187,6 +223,8 @@ const UpgradeList = () => {
                             upgrade={upgrade}
                             updateList={updateList}
                             status={status}
+                            onAccept={handleAccept}
+                            onReject={handleReject}
                           />
                         ))
                       ) : (

@@ -72,12 +72,12 @@ cron.schedule("0 * * * *", async () => {
     const result = await User.updateMany(
       {
         role: "seller",
-        seller_expiration: { $lt: now },
+        seller_expires: { $lt: now },
       },
       {
         $set: {
           role: "bidder",
-          seller_expiration: null,
+          seller_expires: null,
         },
       }
     );

@@ -327,7 +327,7 @@ const SideBar = ({ user, isOwnProfile }) => {
           {/* NAME + AGE DISPLAY */}
           <div>
             <p className="text-[#171a22] font-bold text-xl mb-2">{user.name}</p>
-            <div className="flex gap-5">
+            <div className="flex gap-5 flex-col md:flex-row">
               <div className="flex gap-2 items-center">
                 <svg
                   width="19"
@@ -363,7 +363,7 @@ const SideBar = ({ user, isOwnProfile }) => {
               {!isEditing && (
                 <button
                   onClick={() => setIsComment(true)}
-                  className="hover:bg-[#667EEA] ring ring-inset ring-2 ring-[#98a6e4] hover:ring-[#667EEA] rounded-lg py-1 px-3 text-[#98a6e4] hover:text-white transition-all duration-100 ease-in-out cursor-pointer ml-auto "
+                  className="hover:bg-[#667EEA] ring ring-inset ring-2 ring-[#98a6e4] hover:ring-[#667EEA] rounded-lg py-1 px-3 text-[#98a6e4] hover:text-white transition-all duration-100 ease-in-out cursor-pointer md:ml-auto "
                 >
                   Xem nhận xét
                 </button>
@@ -447,7 +447,7 @@ const SideBar = ({ user, isOwnProfile }) => {
                 className="input_style"
               />
             ) : (
-              <p className="other_users_text">
+              <p className="other_users_text whitespace-normal break-all">
                 {user.email || "Chưa cập nhật"}
               </p>
             )}

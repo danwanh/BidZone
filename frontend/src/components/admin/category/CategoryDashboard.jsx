@@ -33,6 +33,7 @@ const CategoryDashboard = () => {
 
         if (isMounted) {
           setCategories(res.data);
+          setTotalCat(res.data.length);
         }
       } catch (error) {
         console.error("Error loading parentCategory", error);

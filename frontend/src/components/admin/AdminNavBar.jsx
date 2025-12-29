@@ -123,9 +123,9 @@ const AdminNavBar = () => {
   ];
 
   return (
-    <div className="w-full flex md:flex-col md:w-53 h-fill bg-[rgba(154,66,66,0.65)] text-white shrink-0">
+    <div className="w-full flex md:flex-col md:w-53 h-100% bg-[rgba(154,66,66,0.65)] text-white shrink-0 overflow-x-scroll md:overflow-x-auto">
       {/* Header */}
-      <div className="py-4 px-6">
+      <div className="px-3 py-2 md:py-4 md:px-6 ">
         <div className="flex items-center gap-2">
           <svg
             width="40"
@@ -149,20 +149,20 @@ const AdminNavBar = () => {
             />
           </svg>
 
-          <h1 className="text-xl font-semibold">Bảng admin</h1>
+          <h1 className="text-xl font-semibold hidden md:block">Bảng admin</h1>
         </div>
       </div>
 
       {/* Menu Items */}
-      <nav className="py-2 flex md:flex-col">
+      <nav className="py-2 flex flex-row md:flex-col">
         {menuItems.map((item) => (
           <Link
             key={item.id}
             to={getLabelURL(item.label)}
-            className={`w-full px-6 py-3 flex items-center gap-3 cursor-pointer ${
+            className={`w-full px-3 py-1 md:px-6 md:py-3 flex items-center gap-1 md:gap-3 cursor-pointer whitespace-nowrap rounded-md md:rounded-none ${
               tab === item.label
-                ? "bg-[#523232af] border-l-4 border-white text-white"
-                : "hover:bg-[#5f363644] hover:border-l-1 hover:border-white text-[#404040]"
+                ? "bg-[#523232af] md:border-l-4 border-white text-white"
+                : "hover:bg-[#5f363644] md:hover:border-l-1 hover:border-white text-[#404040]"
             }`}
           >
             {item.icon}
