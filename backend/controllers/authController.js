@@ -7,14 +7,14 @@ import { sendEmail } from "../services/mailServices.js";
 // REGISTER - Create new user
 export const register = async (req, res) => {
   try {
-    const { name, email, password, phone, address, dob, role } = req.body;
+    const { name, email, password, phone, address, dob, role } = req.validated.body;
 
-    // Validate required fields
-    if (!name || !email || !password) {
-      return res
-        .status(400)
-        .json({ message: "Name, email and password are required" });
-    }
+    // // Validate required fields
+    // if (!name || !email || !password) {
+    //   return res
+    //     .status(400)
+    //     .json({ message: "Name, email and password are required" });
+    // }
 
     // Check if user exists
     const existingUser = await User.findOne({
@@ -75,14 +75,14 @@ export const register = async (req, res) => {
 // LOGIN
 export const login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password } = req.validated.body;
 
-    // Validate
-    if (!email || !password) {
-      return res
-        .status(400)
-        .json({ message: "Email and password are required" });
-    }
+    // // Validate
+    // if (!email || !password) {
+    //   return res
+    //     .status(400)
+    //     .json({ message: "Email and password are required" });
+    // }
 
     // Find user
     const user = await User.findOne({ email });
@@ -109,7 +109,7 @@ export const login = async (req, res) => {
       message: "Login successfully",
       accessToken: tokens.accessToken,
       user: {
-        id: user._id,
+        _id: user._id,
         name: user.name,
         email: user.email,
         role: user.role,
@@ -159,11 +159,11 @@ export const refresh = (req, res) => {
 
 // POST /auth/check-email
 export const checkEmail = async (req, res) => {
-  const { email } = req.body;
+  const { email } = req.validated.body;
   try {
-    if (!email) {
-      return res.status(400).json({ message: "Email không được rỗng" });
-    }
+    // if (!email) {
+    //   return res.status(400).json({ message: "Email không được rỗng" });
+    // }
     const user = await User.findOne({ email });
     if (user) {
       return res.status(400).json({ message: "Email này đã được sử dụng" });
@@ -201,11 +201,11 @@ export const oauthSuccess = async (req, res) => {
 
 export const resetPassword = async (req, res) => {
   try {
-    const { email } = req.body;
+    const { email } = req.validated.body;
 
-    if (!email) {
-      return res.status(400).json({ message: "Email không được rỗng" });
-    }
+    // if (!email) {
+    //   return res.status(400).json({ message: "Email không được rỗng" });
+    // }
 
     const user = await User.findOne({ email });
 

@@ -48,11 +48,12 @@ const Navbar = () => {
     ? categories.filter((cat) => cat.category_id === activeCategory._id) || []
     : [];
 
-  if (loading) return (
-    <div className="w-full h-[60px] flex justify-center items-center">
-      <ClipLoader loading={loading} size={50} />
-    </div>
-  );
+  if (loading)
+    return (
+      <div className="w-full h-[60px] flex justify-center items-center">
+        <ClipLoader loading={loading} size={50} />
+      </div>
+    );
 
   return (
     <nav className="bg-white shadow-sm relative Space text-md">

@@ -5,13 +5,13 @@ import mongoose from "mongoose";
 // CREATE - Create new order (when auction ends)
 export const createOrder = async (req, res) => {
   try {
-    const { product_id, seller_id, buyer_id } = req.body;
+    const { product_id, seller_id, buyer_id } = req.validated.body;
 
-    if (!product_id || !seller_id || !buyer_id) {
-      return res.status(400).json({
-        message: "Thiếu product_id, seller_id hoặc buyer_id",
-      });
-    }
+    // if (!product_id || !seller_id || !buyer_id) {
+    //   return res.status(400).json({
+    //     message: "Thiếu product_id, seller_id hoặc buyer_id",
+    //   });
+    // }
 
     const order = new Order({
       product_id,
@@ -35,7 +35,7 @@ export const createOrder = async (req, res) => {
 
 export const getOrderByProductId = async (req, res) => {
   try {
-    const { product_id } = req.params;
+    const { product_id } = req.validated.params;
 
     const order = await Order.findOne({ product_id })
       .populate("product_id")
@@ -59,7 +59,7 @@ export const getOrderByProductId = async (req, res) => {
 
 // export const createOrder = async (req, res) => {
 //     try {
-//         const { product_id, seller_id, buyer_id, address } = req.body;
+//         const { product_id, seller_id, buyer_id, address } = req.validated.body;
 
 //         // Validate ObjectIds
 //         if (!mongoose.Types.ObjectId.isValid(product_id)) {
@@ -121,12 +121,12 @@ export const getAllOrders = async (req, res) => {
 // READ - Get orders by user (as buyer or seller)
 export const getOrdersByUser = async (req, res) => {
   try {
-    const { user_id } = req.params;
-    const { role } = req.query; // "buyer" or "seller"
+    const { user_id } = req.validated.params;
+    const { role } = req.validated.query; // "buyer" or "seller"
 
-    if (!mongoose.Types.ObjectId.isValid(user_id)) {
-      return res.status(400).json({ message: "Invalid user_id" });
-    }
+    // if (!mongoose.Types.ObjectId.isValid(user_id)) {
+    //   return res.status(400).json({ message: "Invalid user_id" });
+    // }
 
     let query = {};
     if (role === "buyer") {
@@ -156,11 +156,11 @@ export const getOrdersByUser = async (req, res) => {
 // READ - Get single order by ID
 export const getOrderById = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.validated.params;
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Invalid order ID" });
-    }
+    // if (!mongoose.Types.ObjectId.isValid(id)) {
+    //   return res.status(400).json({ message: "Invalid order ID" });
+    // }
 
     const order = await Order.findById(id)
       .populate("product_id")
@@ -181,11 +181,11 @@ export const getOrderById = async (req, res) => {
 // UPDATE - Update order status and info
 export const updateOrder = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.validated.params;
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Invalid order ID" });
-    }
+    // if (!mongoose.Types.ObjectId.isValid(id)) {
+    //   return res.status(400).json({ message: "Invalid order ID" });
+    // }
 
     const updateData = {};
     const allowedFields = [
@@ -194,12 +194,12 @@ export const updateOrder = async (req, res) => {
       "delivery_info",
       "address",
       "cancellation_reason",
-      "cancelled_by"
+      "cancelled_by",
     ];
 
-    allowedFields.forEach(field => {
-      if (req.body[field] !== undefined) {
-        updateData[field] = req.body[field];
+    allowedFields.forEach((field) => {
+      if (req.validated.body[field] !== undefined) {
+        updateData[field] = req.validated.body[field];
       }
     });
 
@@ -232,15 +232,14 @@ export const updateOrder = async (req, res) => {
   }
 };
 
-
 // DELETE - Delete order (Admin only)
 export const deleteOrder = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.validated.params;
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Invalid order ID" });
-    }
+    // if (!mongoose.Types.ObjectId.isValid(id)) {
+    //   return res.status(400).json({ message: "Invalid order ID" });
+    // }
 
     const order = await Order.findByIdAndDelete(id);
     if (!order) {
@@ -256,17 +255,17 @@ export const deleteOrder = async (req, res) => {
 
 export const sendMessage = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { content } = req.body;
+    const { id } = req.validated.params;
+    const { content } = req.validated.body;
     const userId = req.user._id; // lấy từ JWT middleware
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Invalid order ID" });
-    }
+    // if (!mongoose.Types.ObjectId.isValid(id)) {
+    //   return res.status(400).json({ message: "Invalid order ID" });
+    // }
 
-    if (!content || !content.trim()) {
-      return res.status(400).json({ message: "Message content is required" });
-    }
+    // if (!content || !content.trim()) {
+    //   return res.status(400).json({ message: "Message content is required" });
+    // }
 
     const order = await Order.findById(id);
     if (!order) {
@@ -274,10 +273,7 @@ export const sendMessage = async (req, res) => {
     }
 
     // chỉ buyer hoặc seller được chat
-    if (
-      !order.buyer_id.equals(userId) &&
-      !order.seller_id.equals(userId)
-    ) {
+    if (!order.buyer_id.equals(userId) && !order.seller_id.equals(userId)) {
       return res.status(403).json({ message: "Not allowed to chat" });
     }
 
@@ -299,12 +295,12 @@ export const sendMessage = async (req, res) => {
 
 export const getMessages = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.validated.params;
     const userId = req.user._id;
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Invalid order ID" });
-    }
+    // if (!mongoose.Types.ObjectId.isValid(id)) {
+    //   return res.status(400).json({ message: "Invalid order ID" });
+    // }
 
     const order = await Order.findById(id)
       .populate("messages.sender", "name")
@@ -314,10 +310,7 @@ export const getMessages = async (req, res) => {
       return res.status(404).json({ message: "Order not found" });
     }
 
-    if (
-      !order.buyer_id.equals(userId) &&
-      !order.seller_id.equals(userId)
-    ) {
+    if (!order.buyer_id.equals(userId) && !order.seller_id.equals(userId)) {
       return res.status(403).json({ message: "Not allowed" });
     }
 

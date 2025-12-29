@@ -3,7 +3,7 @@ import Product from "../models/product.model.js";
 
 export const createAutoBid = async (req, res) => {
   try {
-    const { product_id, bidder_id, max_price } = req.body;
+    const { product_id, bidder_id, max_price } = req.validated.body;
 
     const product = await Product.findById(product_id);
     if (!product) return res.status(404).json({ error: "Product not found" });
@@ -78,7 +78,7 @@ export const createAutoBid = async (req, res) => {
 
 export const getAutoBidsByProduct = async (req, res) => {
   try {
-    const { product_id } = req.params;
+    const { product_id } = req.validated.params;
     const bids = await AutoBid.find({ product_id }).populate("bidder_id current_holder", "name");
     res.json(bids);
   } catch (err) {
@@ -93,14 +93,14 @@ export const getAllAutoBids = async (req, res) => {
 };
 
 export const deleteAutoBid = async (req, res) => {
-    const bid = await AutoBid.findByIdAndDelete(req.params.id);
+    const bid = await AutoBid.findByIdAndDelete(req.validated.params.id);
     if (!bid) return res.status(404).json({ message: "AutoBid not found" });
     res.json({ message: "AutoBid deleted" });
 };
 
 export const getAutoBidById = async (req, res) => {
     try {
-      const { id: bid_id } = req.params;
+      const { id: bid_id } = req.validated.params;
   
       const bid = await Product.findById(bid_id);
   
@@ -113,7 +113,7 @@ export const getAutoBidById = async (req, res) => {
 }
 
 export const updateBidStatus = async (req, res) => {
-  const { status } = req.body;
+  const { status } = req.validated.body;
   const bid = await Bid.findById(req.params.id);
   if (!bid) return res.status(404).json({ message: "Bid not found" });
 
@@ -124,7 +124,7 @@ export const updateBidStatus = async (req, res) => {
 
 export const rejectAutoBid = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.validated.params;
 
     const bid = await AutoBid.findByIdAndUpdate(
       id,

@@ -5,10 +5,10 @@ import Product from "../models/product.model.js";
 // POST /api/watchlist
 export const createWatchlist = async (req, res) => {
   try {
-    const { user_id: u_i, product_id: p_i } = req.body;
-    if (!u_i) {
-      return res.status(400).json({ message: "Missing required user_id" });
-    }
+    const { user_id: u_i, product_id: p_i } = req.validated.body;
+    // if (!u_i) {
+    //   return res.status(400).json({ message: "Missing required user_id" });
+    // }
 
     // Check if userId is in database
     if (!(await User.findById(u_i)))
@@ -60,7 +60,7 @@ export const getAllWatchlist = async (req, res) => {
 // GET /api/watchlist/:id
 export const getWatchlistById = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.validated.params;
     const watchlist = await Watchlist.findById(id);
     if (!watchlist) {
       console.log(`No watchlist in database`);
@@ -77,7 +77,7 @@ export const getWatchlistById = async (req, res) => {
 // GET /api/watchlist/user/:userId
 export const getWatchlistByUserId = async (req, res) => {
   try {
-    const { userId } = req.params;
+    const { userId } = req.validated.params;
 
     // Check if userId is in database
     if (!(await User.findById(userId)))
@@ -95,7 +95,7 @@ export const getWatchlistByUserId = async (req, res) => {
         .status(400)
         .json({ message: "No watchlist", products: watchlist });
     }
-    const { page = 1, per_page = 6, q = "" } = req.query;
+    const { page = 1, per_page = 6, q = "" } = req.validated.query;
     const page_num = Math.max(1, Number(page) || 1);
     const per_page_num = Math.max(1, Number(per_page) || 6);
     const filtered = watchlist?.product_id?.filter((p) =>
@@ -123,16 +123,14 @@ export const getWatchlistByUserId = async (req, res) => {
 // PATCH /api/watchlislt/:userId
 export const addToWatchlist = async (req, res) => {
   try {
-    const { userId } = req.params;
-    console.log("req" + req.data);
-    let productId;
-    if (req.body.product_id === undefined) productId = null;
-    else productId = req.body.product_id;
+    const { userId } = req.validated.params;
+    // console.log("req" + req.validated.data);
+    let productId = req.validated.body.product_id;
 
-    if (!userId)
-      return res.status(400).json({ message: "Missing required user id" });
-    if (!productId)
-      return res.status(400).json({ message: "Missing required product id" });
+    // if (!userId)
+    //   return res.status(400).json({ message: "Missing required user id" });
+    // if (!productId)
+    //   return res.status(400).json({ message: "Missing required product id" });
 
     // Check if userId is in database
     if (!(await User.findById(userId)))
@@ -165,12 +163,12 @@ export const addToWatchlist = async (req, res) => {
 // DELETE /api/watchlislt/:userId/:productId
 export const removeFromWatchlist = async (req, res) => {
   try {
-    const { userId, productId } = req.params;
+    const { userId, productId } = req.validated.params;
 
-    if (!userId)
-      return res.status(400).json({ message: "Missing required user id" });
-    if (!productId)
-      return res.status(400).json({ message: "Missing required product id" });
+    // if (!userId)
+    //   return res.status(400).json({ message: "Missing required user id" });
+    // if (!productId)
+    //   return res.status(400).json({ message: "Missing required product id" });
 
     // Check if userId is in database
     if (!(await User.findById(userId)))
@@ -200,10 +198,10 @@ export const removeFromWatchlist = async (req, res) => {
 // DELETE /api/watchlislt/:userId
 export const removeWatchlist = async (req, res) => {
   try {
-    const { userId: u_i } = req.params;
+    const { userId: u_i } = req.validated.params;
 
-    if (!u_i)
-      return res.status(400).json({ message: "Missing required user id" });
+    // if (!u_i)
+    //   return res.status(400).json({ message: "Missing required user id" });
 
     // Check if userId is in database
     if (!(await User.findById(u_i)))

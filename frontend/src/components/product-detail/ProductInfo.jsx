@@ -126,7 +126,7 @@ export const ProductInfo = ({
                   {new Date(item.updated_at).toLocaleString("vi-VN")}
                 </div>
                 <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">
-                  {item.description}
+                  dangerouslySetInnerHTML={{ __html: item.description }}
                 </p>
               </div>
             ))}

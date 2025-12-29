@@ -6,7 +6,7 @@ import mongoose from "mongoose";
 // READ - Get all users (Admin only)
 export const getAllUsers = async (req, res) => {
   try {
-    const { role, q = "" } = req.query; // Filter by role if provided
+    const { role, q = "" } = req.validated.query; // Filter by role if provided
 
     let query = {};
     if (role) query.role = role;
@@ -32,11 +32,11 @@ export const getAllUsers = async (req, res) => {
 // READ - Get user by ID
 export const getUserById = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.validated.params;
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Invalid user ID" });
-    }
+    // if (!mongoose.Types.ObjectId.isValid(id)) {
+    //   return res.status(400).json({ message: "Invalid user ID" });
+    // }
 
     const user = await User.findById(id).select(
       "-password_hash -reset_password_token"
@@ -72,7 +72,7 @@ export const getProfile = async (req, res) => {
 // UPDATE - Update user profile
 export const updateUser = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.validated.params;
     const {
       name = "",
       email = "",
@@ -82,11 +82,11 @@ export const updateUser = async (req, res) => {
       password = "",
       gender = "",
       username = "",
-    } = req.body;
+    } = req.validated.body;
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Invalid user ID" });
-    }
+    // if (!mongoose.Types.ObjectId.isValid(id)) {
+    //   return res.status(400).json({ message: "Invalid user ID" });
+    // }
 
     // Check authorization (user can only update their own profile, unless admin)
     if (req.user._id.toString() !== id && req.user.role !== "admin") {
@@ -136,17 +136,17 @@ export const updateUser = async (req, res) => {
 // UPDATE - Update user role (Admin only)
 export const updateUserRole = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { role } = req.body;
+    const { id } = req.validated.params;
+    const { role } = req.validated.body;
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Invalid user ID" });
-    }
+    // if (!mongoose.Types.ObjectId.isValid(id)) {
+    //   return res.status(400).json({ message: "Invalid user ID" });
+    // }
 
-    const validRoles = ["bidder", "seller", "admin"];
-    if (!validRoles.includes(role)) {
-      return res.status(400).json({ message: "Invalid role" });
-    }
+    // const validRoles = ["bidder", "seller", "admin"];
+    // if (!validRoles.includes(role)) {
+    //   return res.status(400).json({ message: "Invalid role" });
+    // }
 
     const user = await User.findById(id);
     if (!user) {
@@ -178,11 +178,11 @@ export const updateUserRole = async (req, res) => {
 // DELETE - Delete user (Admin only)
 export const deleteUser = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.validated.params;
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Invalid user ID" });
-    }
+    // if (!mongoose.Types.ObjectId.isValid(id)) {
+    //   return res.status(400).json({ message: "Invalid user ID" });
+    // }
 
     const user = await User.findByIdAndDelete(id);
     if (!user) {
@@ -199,12 +199,12 @@ export const deleteUser = async (req, res) => {
 // UPDATE - Ban/Unban user (Admin only)
 export const toggleUserBan = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { is_banned } = req.body;
+    const { id } = req.validated.params;
+    const { is_banned } = req.validated.body;
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Invalid user ID" });
-    }
+    // if (!mongoose.Types.ObjectId.isValid(id)) {
+    //   return res.status(400).json({ message: "Invalid user ID" });
+    // }
 
     const user = await User.findById(id);
     if (!user) {
@@ -226,7 +226,7 @@ export const toggleUserBan = async (req, res) => {
 
 export const rateUp = async (req, res) => {
   try {
-    const id = req.body?.id || "";
+    const id = req.validated.body?.id || "";
     const user = await User.findById(id);
     if (!user) {
       return res.status(400).json({ message: "No user with that id" });
@@ -246,7 +246,7 @@ export const rateUp = async (req, res) => {
 
 export const rateDown = async (req, res) => {
   try {
-    const id = req.body?.id || "";
+    const id = req.validated.body?.id || "";
     const user = await User.findById(id);
     if (!user) {
       return res.status(400).json({ message: "No user with that id" });
@@ -266,9 +266,9 @@ export const rateDown = async (req, res) => {
 
 export const changePassword = async (req, res) => {
   try {
-    console.log(req.body);
+    console.log(req.validated.body);
     const user = await User.findById(req.user._id);
-    const { oldPassword, newPassword } = req.body;
+    const { oldPassword, newPassword } = req.validated.body;
 
     if (user.password_hash) {
       const isMatch = await bcrypt.compare(oldPassword, user.password_hash);
@@ -302,7 +302,7 @@ export const createUser = async (req, res) => {
       email = "",
       password = "",
       gender = "Khác",
-    } = req.body;
+    } = req.validated.body;
 
     const salt = await bcrypt.genSalt(10);
     const newPasswordHash = await bcrypt.hash(password, salt);
@@ -335,7 +335,7 @@ export const createUser = async (req, res) => {
 
 export const setPrivate = async () => {
   try {
-    const id = req.body?.id || "";
+    const id = req.validated.body?.id || "";
     if (id !== req.user._id) {
       return res.status(400).json({ message: "Not your account" });
     }
@@ -354,7 +354,7 @@ export const setPrivate = async () => {
 
 export const setPublic = async () => {
   try {
-    const id = req.body?.id || "";
+    const id = req.validated.body?.id || "";
     if (id !== req.user._id) {
       return res.status(400).json({ message: "Not your account" });
     }

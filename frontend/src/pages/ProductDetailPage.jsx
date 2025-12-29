@@ -118,8 +118,8 @@ export const ProductDetailPage = () => {
 
   const fetchCurrentUser = useCallback(async () => {
     try {
-      const res = await axios.get("/api/auth/me");
-      const user = res.data;
+      // const res = await axios.get("/api/auth/me");
+      // const user = res.data;
 
       if (user) {
         setCurrentUser(user);

@@ -1,10 +1,10 @@
 import axios from "axios";
 
 export const verifyRecaptcha = async (req, res, next) => {
-  const { recaptcha } = req.body;
-  if (!recaptcha) {
-    return res.status(400).json({ message: "Recaptcha token is required" });
-  }
+  const { recaptcha } = req.validated.body;
+  // if (!recaptcha) {
+  //   return res.status(400).json({ message: "Recaptcha token is required" });
+  // }
 
   //Verify recaptcha with Google
   const recaptchaVerifyURL = process.env.CAPTCHA_VERIFY_URL;

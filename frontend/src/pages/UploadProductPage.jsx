@@ -1,7 +1,10 @@
-"use client";
-
+import { Editor } from "@tinymce/tinymce-react";
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
+import api from "../api/axios";
+import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
+
 export default function UploadProductPage() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
@@ -22,13 +25,15 @@ export default function UploadProductPage() {
     allow_unrated_bidders: false,
   });
 
+  const navigate = useNavigate();
+
   useEffect(() => {
     fetchCategories();
   }, []);
 
   const fetchCategories = async () => {
     try {
-      const response = await fetch("http://localhost:3000/api/category");
+      const response = await api.get("/api/category");
       const data = await response.json();
 
       setCategories(data);
@@ -105,34 +110,29 @@ export default function UploadProductPage() {
     setLoading(true);
 
     try {
-      const response = await fetch("http://localhost:3000/api/product", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: formData.name,
-          description: formData.description,
-          image_url: images,
-          start_price: Number.parseFloat(formData.start_price),
-          bid_step: Number.parseFloat(formData.bid_step),
-          buy_now_price: formData.buy_now_price
-            ? Number.parseFloat(formData.buy_now_price)
-            : undefined,
-          category_id: selectedCategory,
-          // start_time: formData.start_time,
-          end_time: formData.end_time,
-          is_autobid: formData.is_autobid,
-          allow_unrated_bidders: formData.allow_unrated_bidders,
-          seller_id: user._id || "",
-          current_price: Number.parseFloat(formData.start_price),
-          status: "active",
-        }),
+      const response = await api.post("/api/product", {
+        name: formData.name,
+        description: formData.description,
+        image_url: images,
+        start_price: Number.parseFloat(formData.start_price),
+        bid_step: Number.parseFloat(formData.bid_step),
+        buy_now_price: formData.buy_now_price
+          ? Number.parseFloat(formData.buy_now_price)
+          : undefined,
+        category_id: selectedCategory,
+        // start_time: formData.start_time,
+        end_time: formData.end_time,
+        is_autobid: formData.is_autobid,
+        allow_unrated_bidders: formData.allow_unrated_bidders,
+        seller_id: user._id || "",
+        current_price: Number.parseFloat(formData.start_price),
+        status: "active",
       });
 
       if (response.ok) {
         alert("Đăng sản phẩm thành công!");
-        // window.location.href = "/seller/products"
+        console.log(response);
+        navigate(`products/${response.data._id}`);
       } else {
         alert("Có lỗi xảy ra khi đăng sản phẩm");
       }
@@ -415,16 +415,22 @@ export default function UploadProductPage() {
               >
                 Mô tả sản phẩm <span className="text-red-500">*</span>
               </label>
-              <textarea
-                id="description"
-                required
+              <Editor
+                apiKey={import.meta.env.VITE_TINYMCE_API_KEY}
                 value={formData.description}
-                onChange={(e) =>
-                  setFormData({ ...formData, description: e.target.value })
+                onEditorChange={(content) =>
+                  setFormData({ ...formData, description: content })
                 }
+                init={{
+                  height: 300,
+                  menubar: false,
+                  plugins: ["lists", "link", "preview", "code", "autolink"],
+                  toolbar:
+                    "undo redo | bold italic underline | bullist numlist | link | removeformat",
+                  branding: false,
+                }}
                 placeholder="Nhập mô tả chi tiết về sản phẩm..."
-                rows={6}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                // className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
               />
             </div>
 

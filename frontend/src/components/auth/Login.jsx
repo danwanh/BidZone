@@ -27,7 +27,7 @@ const Login = ({ toRegister }) => {
         recaptcha: captcha,
       });
 
-      login(res.data.accessToken, res.data.user);
+      await login(res.data.accessToken, res.data.user);
       toast.success("Đăng nhập thành công");
       navigate("/");
     } catch (err) {
@@ -87,7 +87,7 @@ const Login = ({ toRegister }) => {
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="10%"
-                  height="fill"
+                  height="100%"
                   viewBox="0 0 24 24"
                   className="absolute top-0 right-0 cursor-pointer pr-2 hover:brightness-150"
                   onClick={() => setSeePass(false)}
@@ -109,7 +109,7 @@ const Login = ({ toRegister }) => {
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="9%"
-                  height="fill"
+                  height="100%"
                   viewBox="0 0 24 24"
                   className="absolute top-0 right-0 cursor-pointer pr-2 hover:brightness-150"
                   onClick={() => setSeePass(true)}
