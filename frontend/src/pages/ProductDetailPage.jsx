@@ -178,6 +178,7 @@ export const ProductDetailPage = () => {
             user: maskName(bid.current_holder?.name),
             userId: bid.current_holder?._id,
             amount: bid.max_price,
+            price: bid.price,
             time: bid.createdAt,
             status: bid.status !== false,
           }))
@@ -656,7 +657,7 @@ export const ProductDetailPage = () => {
           bidHistory={bidHistory}
           userRole={userRole}
           onRejectBid={handleRejectBid}
-          maskName={maskName}
+          isAutobid={product.is_autobid}
         />
       )}
 
