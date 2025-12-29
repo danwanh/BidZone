@@ -4,7 +4,7 @@ import appEvent from "../utils/eventEmiiter.js";
 
 export const getBidById = async (req, res) => {
   try {
-    const { id: bid_id } = req.params;
+    const { id: bid_id } = req.validated.params;
 
     const bid = await Product.findById(bid_id);
 
@@ -17,7 +17,7 @@ export const getBidById = async (req, res) => {
 };
 
 export const createBid = async (req, res) => {
-  const { product_id, bidder_id, price } = req.body;
+  const { product_id, bidder_id, price } = req.validated.body;
 
   const product = await Product.findById(product_id);
   if (!product) return res.status(404).json({ message: "Product not found" });
@@ -47,7 +47,7 @@ export const createBid = async (req, res) => {
 
 export const getBidsByProduct = async (req, res) => {
   try {
-    const { product_id } = req.params;
+    const { product_id } = req.validated.params;
     const bids = await Bid.find({ product_id }).populate(
       "bidder_id",
       "name email"
@@ -62,11 +62,11 @@ export const getBidsByProduct = async (req, res) => {
 // /api/bid/user/:id
 export const getBidByUser = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.validated.params;
     const products = await Bid.find({ bidder_id: id }).populate(
       "product_id bidder_id"
     );
-    const { page = 1, per_page = 6, q = "" } = req.query;
+    const { page = 1, per_page = 6, q = "" } = req.validated.query;
     const page_num = Math.max(1, Number(page) || 1);
     const per_page_num = Math.max(1, Number(per_page) || 6);
     const filtered = products.filter((p) =>
@@ -92,7 +92,7 @@ export const getBidByUser = async (req, res) => {
 // /api/bid/user/bidding/:id
 export const getBiddingByUser = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.validated.params;
     const products = await Bid.find({
       bidder_id: id,
     }).populate("product_id bidder_id");
@@ -102,7 +102,7 @@ export const getBiddingByUser = async (req, res) => {
     }
     const active = products.filter((p) => p?.product_id?.status !== "ended");
 
-    const { page = 1, per_page = 6, q = "" } = req.query;
+    const { page = 1, per_page = 6, q = "" } = req.validated.query;
     const page_num = Math.max(1, Number(page) || 1);
     const per_page_num = Math.max(1, Number(per_page) || 6);
     const filtered = active.filter((p) =>
@@ -131,8 +131,8 @@ export const getAllBids = async (req, res) => {
 };
 
 export const updateBidStatus = async (req, res) => {
-  const { status } = req.body;
-  const bid = await Bid.findById(req.params.id);
+  const { status } = req.validated.body;
+  const bid = await Bid.findById(req.validated.params.id);
   if (!bid) return res.status(404).json({ message: "Bid not found" });
 
   bid.status = status;
@@ -141,14 +141,14 @@ export const updateBidStatus = async (req, res) => {
 };
 
 export const deleteBid = async (req, res) => {
-  const bid = await Bid.findByIdAndDelete(req.params.id);
+  const bid = await Bid.findByIdAndDelete(req.validated.params.id);
   if (!bid) return res.status(404).json({ message: "Bid not found" });
   res.json({ message: "Bid deleted" });
 };
 
 export const rejectBid = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.validated.params;
 
     const bid = await Bid.findByIdAndUpdate(
       id,

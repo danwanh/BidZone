@@ -6,20 +6,20 @@ const { ObjectId } = mongoose.Types;
 // POST /api/category
 export const createCategory = async (req, res) => {
   try {
-    const { category_id, name, slug } = req.body;
+    const { category_id, name, slug } = req.validated.body;
 
-    if (
-      category_id &&
-      category_id !== "" &&
-      !mongoose.isValidObjectId(category_id)
-    ) {
-      return res.status(400).json({ message: "Invalid category_id format" });
-    }
+    // if (
+    //   category_id &&
+    //   category_id !== "" &&
+    //   !mongoose.isValidObjectId(category_id)
+    // ) {
+    //   return res.status(400).json({ message: "Invalid category_id format" });
+    // }
     const CATEGORY_ID = category_id === "" ? null : new ObjectId(category_id);
 
-    if (!name) {
-      return res.status(400).json({ message: "Missing required fields" });
-    }
+    // if (!name) {
+    //   return res.status(400).json({ message: "Missing required fields" });
+    // }
 
     if (CATEGORY_ID) {
       const parent = await Category.findById(CATEGORY_ID);
@@ -66,7 +66,7 @@ export const getAllTopCategories = async (req, res) => {
 // [GET] /api/category/:categoryId
 export const getCategoryById = async (req, res) => {
   try {
-    const { categoryId: c_i } = req.params;
+    const { categoryId: c_i } = req.validated.params;
     const category = await Category.findById(c_i);
     res.status(200).json(category);
   } catch (err) {
@@ -78,7 +78,7 @@ export const getCategoryById = async (req, res) => {
 // [GET] /api/category/:categoryId/subcategories
 export const getLowerCategoriesById = async (req, res) => {
   try {
-    const { categoryId: c_i } = req.params;
+    const { categoryId: c_i } = req.validated.params;
 
     // Check if id is in database
     if (!(await Category.findById(c_i)))
@@ -104,7 +104,7 @@ export const getLowerCategoriesById = async (req, res) => {
 // [PATCH] /api/category/:categoryID
 export const changeCategoryById = async (req, res) => {
   try {
-    const { categoryId: c_i } = req.params;
+    const { categoryId: c_i } = req.validated.params;
 
     // Check if id is in database
     if (!(await Category.findById(c_i)))
@@ -112,8 +112,8 @@ export const changeCategoryById = async (req, res) => {
 
     const updates = {};
 
-    if (req.body.category_id !== undefined) {
-      const cat_id = req.body.category_id;
+    if (req.validated.body.category_id !== undefined) {
+      const cat_id = req.validated.body.category_id;
       const parent = await Category.findById(cat_id);
       if (!parent)
         return res
@@ -121,8 +121,8 @@ export const changeCategoryById = async (req, res) => {
           .json({ message: `Can't find parent id: ${cat_id}` });
       updates.category_id = cat_id;
     }
-    if (req.body.name !== undefined) updates.name = req.body.name;
-    if (req.body.slug !== undefined) updates.slug = req.body.slug;
+    if (req.validated.body.name !== undefined) updates.name = req.validated.body.name;
+    if (req.validated.body.slug !== undefined) updates.slug = req.validated.body.slug;
 
     const updated_category = await Category.findByIdAndUpdate(
       c_i,
@@ -142,7 +142,7 @@ export const changeCategoryById = async (req, res) => {
 // [DELETE] /api/category/:categoryID
 export const deleteCategoryById = async (req, res) => {
   try {
-    const { categoryId } = req.params;
+    const { categoryId } = req.validated.params;
 
     const category = await Category.findById(categoryId);
     if (!category)

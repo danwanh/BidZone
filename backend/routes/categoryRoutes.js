@@ -1,5 +1,9 @@
 import express from "express";
-const router = express.Router();
+import {
+  categoryIdParamSchema,
+  createCategorySchema,
+  updateCategorySchema,
+} from "../schemas/CategorySchema.js";
 import {
   getAllTopCategories,
   getLowerCategoriesById,
@@ -7,15 +11,52 @@ import {
   changeCategoryById,
   deleteCategoryById,
   getAllCategories,
-  getCategoryById
+  getCategoryById,
 } from "../controllers/categoryController.js";
 
-router.post("/", createCategory);
+import { authenticate, isAdmin } from "../middleware/authMiddleware.js";
+import { validate } from "../middleware/validateMiddleware.js";
+
+const router = express.Router();
+
+router.post(
+  "/",
+  authenticate,
+  isAdmin,
+  validate({ body: createCategorySchema }),
+  createCategory
+);
+
 router.get("/", getAllCategories);
+
 router.get("/top", getAllTopCategories);
-router.get("/:categoryId", getCategoryById);
-router.get("/subcategories/:categoryId", getLowerCategoriesById);
-router.patch("/:categoryId", changeCategoryById);
-router.delete("/:categoryId", deleteCategoryById);
+
+router.get(
+  "/:categoryId",
+  validate({ params: categoryIdParamSchema }),
+  getCategoryById
+);
+
+router.get(
+  "/subcategories/:categoryId",
+  validate({ params: categoryIdParamSchema }),
+  getLowerCategoriesById
+);
+
+router.patch(
+  "/:categoryId",
+  authenticate,
+  isAdmin,
+  validate({ params: categoryIdParamSchema, doby: updateCategorySchema }),
+  changeCategoryById
+);
+
+router.delete(
+  "/:categoryId",
+  authenticate,
+  isAdmin,
+  validate({ params: categoryIdParamSchema }),
+  deleteCategoryById
+);
 
 export default router;

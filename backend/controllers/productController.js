@@ -6,6 +6,8 @@ import multer from "multer";
 import fs from "fs";
 import Watchlist from "../models/watchlist.model.js";
 import Order from "../models/order.model.js";
+import { sanitizeDescription } from "../utils/sanitizeHtml.js";
+
 // POST /api/product
 export const addProduct = async (req, res) => {
   try {
@@ -27,11 +29,11 @@ export const addProduct = async (req, res) => {
       allow_unrated_bidders,
       slug,
       image_url,
-    } = req.body;
+    } = req.validated.body;
 
-    if (!name || !seller_id || !start_price || !end_time) {
-      return res.status(400).json({ message: "Missing required fields" });
-    }
+    // if (!name || !seller_id || !start_price || !end_time) {
+    //   return res.status(400).json({ message: "Missing required fields" });
+    // }
 
     const seller = await User.findById(seller_id);
     if (!seller)
@@ -47,6 +49,10 @@ export const addProduct = async (req, res) => {
     if (!valid_statuses.includes(status)) {
       return res.status(400).json({ message: "Wrong status value" });
     }
+
+    const cleanDescription = description
+      ? sanitizeDescription(description)
+      : "";
 
     const newProduct = new Product({
       name,
@@ -66,7 +72,9 @@ export const addProduct = async (req, res) => {
       allow_unrated_bidders,
       slug,
 
-      description_history: description ? [{ description }] : [],
+      description_history: cleanDescription
+        ? [{ description: cleanDescription }]
+        : [],
     });
 
     await newProduct.save();
@@ -91,7 +99,7 @@ export const getAllProducts = async (req, res) => {
       sortBy,
       order,
       status = "active",
-    } = req.query;
+    } = req.validated.query;
 
     const pageNum = Math.max(1, Number(page));
     const limit = Math.max(1, Number(per_page));
@@ -274,7 +282,7 @@ export const getAllProducts = async (req, res) => {
 
 // GET /api/product/:id
 export const getProductById = async (req, res) => {
-  const product = await Product.findById(req.params.id)
+  const product = await Product.findById(req.validated.params.id)
     .populate("seller_id")
     .populate("bidder_id");
 
@@ -308,13 +316,13 @@ export const getProductById = async (req, res) => {
 // GET /api/product/user/:id
 export const getBoughtByUserId = async (req, res) => {
   try {
-    const { id: u_i } = req.params;
+    const { id: u_i } = req.validated.params;
 
     const products = await Product.find({
       bidder_id: u_i,
       status: "ended",
     }).populate("bidder_id");
-    const { page = 1, per_page = 6, q = "" } = req.query;
+    const { page = 1, per_page = 6, q = "" } = req.validated.query;
     const page_number = Math.max(1, Number(page) || 1);
     const per_page_number = Math.max(1, Number(per_page) || 1);
     const filtered = products.filter((p) =>
@@ -341,7 +349,7 @@ export const getBoughtByUserId = async (req, res) => {
 // GET /api/product/category/:id
 export const getBoughtByCategoryId = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.validated.params;
 
     const categories = await Category.find({
       $or: [{ _id: id }, { category_id: id }],
@@ -352,7 +360,7 @@ export const getBoughtByCategoryId = async (req, res) => {
       category_id: { $in: categories },
       status: "ended",
     }).populate("bidder_id");
-    const { page = 1, per_page = 10000, q = "" } = req.query;
+    const { page = 1, per_page = 10000, q = "" } = req.validated.query;
     const page_number = Math.max(1, Number(page) || 1);
     const per_page_number = Math.max(1, Number(per_page) || 1);
     const filtered = products.filter((p) =>
@@ -378,7 +386,7 @@ export const getBoughtByCategoryId = async (req, res) => {
 
 export const getProductByCategoryId = async (req, res) => {
   try {
-    const { categoryId = "" } = req.query;
+    const { categoryId = "" } = req.validated.query;
 
     const category = await Category.findById(categoryId);
 
@@ -408,8 +416,8 @@ export const getProductByCategoryId = async (req, res) => {
 // GET /api/product/:id/seller
 export const getProductBySellerId = async (req, res) => {
   try {
-    const { id: p_i } = req.params;
-    const { per_page = 1, page = 1, q = "", status = "active" } = req.query;
+    const { id: p_i } = req.validated.params;
+    const { per_page = 1, page = 1, q = "", status = "active" } = req.validated.query;
 
     // Check if seller id is valid
     const seller = await User.findById(p_i);
@@ -446,8 +454,8 @@ export const getProductBySellerId = async (req, res) => {
 // PATCH /api/product/:id
 export const changeProductById = async (req, res) => {
   try {
-    const { id: p_i } = req.params;
-    const { ban_bidder_id } = req.body;
+    const { id: p_i } = req.validated.params;
+    const { ban_bidder_id } = req.validated.body;
 
     const product = await Product.findById(p_i);
     if (!product) {
@@ -480,8 +488,8 @@ export const changeProductById = async (req, res) => {
     ];
 
     allowedFields.forEach((field) => {
-      if (req.body[field] !== undefined) {
-        product[field] = req.body[field];
+      if (req.validated.body[field] !== undefined) {
+        product[field] = req.validated.body[field];
       }
     });
 
@@ -496,7 +504,7 @@ export const changeProductById = async (req, res) => {
 // DELETE
 export const deleteProductById = async (req, res) => {
   try {
-    const { id: p_i } = req.params;
+    const { id: p_i } = req.validated.params;
 
     const deletedProduct = await Product.findByIdAndDelete(p_i);
 
@@ -568,7 +576,7 @@ export const getTop5Price = async (req, res) => {
 // GET /products/by-category/:id
 export const getProductsByCategory = async (req, res) => {
   try {
-    const categoryId = req.params.id;
+    const categoryId = req.validated.params.id;
     const LIMIT = 5;
 
     console.log("ASDLJKASD " + typeof categoryId);
@@ -628,7 +636,7 @@ export const getProductsByCategory = async (req, res) => {
 // GET /products/by-category/simple/:id
 export const getProductsByCategoryIdSimple = async (req, res) => {
   try {
-    const id = req.params.id;
+    const id = req.validated.params.id;
 
     const categories = await Category.find({
       $or: [{ _id: id }, { category_id: id }],
@@ -638,7 +646,7 @@ export const getProductsByCategoryIdSimple = async (req, res) => {
       return res.status(404).json({ message: "Category not found" });
     }
 
-    const { status = "" } = req.query;
+    const { status = "" } = req.validated.query;
     const STATUS =
       status !== "" && status !== "active" && status !== "ended" ? "" : status;
 
@@ -669,8 +677,8 @@ export const getLikedProducts = (req, res) => {
 
 export const addDescriptionHistory = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { description } = req.body;
+    const { id } = req.validated.params;
+    const { description } = req.validated.body;
 
     if (!description) {
       return res.status(400).json({
