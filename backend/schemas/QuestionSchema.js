@@ -25,5 +25,5 @@ export const questionBodySchema = Joi.object({
   question: Joi.string().required().messages({
     "any.required": "Câu hỏi là bắt buộc",
   }),
-  answer: Joi.string().optional(),
+  answer: Joi.string().allow("").optional(),
 });

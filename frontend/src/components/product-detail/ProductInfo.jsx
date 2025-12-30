@@ -1,5 +1,3 @@
-"use client";
-
 export const ProductInfo = ({
   product,
   productStatus,
@@ -125,9 +123,10 @@ export const ProductInfo = ({
                 <div className="text-xs text-gray-500 mb-1">
                   {new Date(item.updated_at).toLocaleString("vi-VN")}
                 </div>
-                <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap">
+                <p
+                  className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap"
                   dangerouslySetInnerHTML={{ __html: item.description }}
-                </p>
+                />
               </div>
             ))}
         </div>

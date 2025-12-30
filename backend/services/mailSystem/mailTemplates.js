@@ -41,6 +41,7 @@ const baseLayout = ({ title, message, product, extra }) => `
       ${extra || ""}
     </div>
 
+    <!--
     <div style="text-align:center">
       <a href="https://bidzone.vn/product/${product.slug}"
          style="
@@ -55,6 +56,7 @@ const baseLayout = ({ title, message, product, extra }) => `
         Xem sản phẩm
       </a>
     </div>
+    -->
 
     <hr style="margin:24px 0" />
     <p style="font-size:12px; color:#718096; text-align:center">
@@ -138,6 +140,7 @@ export const bidRejectedTemplate = (product, reason) => `
       </td></tr>
     </table>
 
+    <!--
     <div style="text-align:center; margin-top:20px">
       <a href="https://bidzone.vn/product/${product.slug}"
          style="padding:12px 20px; background:#3182ce; color:#fff;
@@ -145,6 +148,7 @@ export const bidRejectedTemplate = (product, reason) => `
         Xem sản phẩm
       </a>
     </div>
+    -->
 
   </div>
 </div>

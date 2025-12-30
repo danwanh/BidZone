@@ -1,5 +1,7 @@
 import AutoBid from "../models/autobid.model.js";
 import Product from "../models/product.model.js";
+import appEvent from "../services/mailSystem/mailEvents.js";
+import User from "../models/user.model.js";
 
 export const createAutoBid = async (req, res) => {
   try {
@@ -7,8 +9,10 @@ export const createAutoBid = async (req, res) => {
 
     const product = await Product.findById(product_id);
     if (!product) return res.status(404).json({ error: "Product not found" });
-    if (product.status !== "active") return res.status(400).json({ error: "Autobid out of date" });
-    if (product.is_autobid !== true) return res.status(400).json({ error: "Product is not auto-bidded" });
+    if (product.status !== "active")
+      return res.status(400).json({ error: "Autobid out of date" });
+    if (product.is_autobid !== true)
+      return res.status(400).json({ error: "Product is not auto-bidded" });
 
     const bidStep = product.bid_step || 0;
     // Kiểm tra xem bidder này đã từng đặt chưa
@@ -58,6 +62,18 @@ export const createAutoBid = async (req, res) => {
     product.current_price = newPrice;
     product.bidder_id = newHolder;
     await product.save();
+
+    let prevBidder;
+    if (secondBid) prevBidder = await User.findById(secondBid.bidder_id);
+    const bidder = await User.findById(bidder_id);
+    const seller = await User.findById(product.seller_id);
+
+    appEvent.emit("BID_SUCCESS", {
+      product,
+      bidder,
+      seller,
+      prevBidder,
+    });
 
     // Cập nhật tất cả bản ghi AutoBid của sản phẩm
     // await AutoBid.updateMany(

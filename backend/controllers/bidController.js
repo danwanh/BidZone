@@ -1,6 +1,7 @@
 import Bid from "../models/bid.model.js";
 import Product from "../models/product.model.js";
-import appEvent from "../utils/eventEmiiter.js";
+import appEvent from "../services/mailSystem/mailEvents.js";
+import User from "../models/user.model.js";
 
 export const getBidById = async (req, res) => {
   try {
@@ -21,7 +22,8 @@ export const createBid = async (req, res) => {
 
   const product = await Product.findById(product_id);
   if (!product) return res.status(404).json({ message: "Product not found" });
-  if (product.status !== "active") return res.status(400).json({ error: "Phiên đấu giá không còn hiệu lực" });
+  if (product.status !== "active")
+    return res.status(400).json({ error: "Phiên đấu giá không còn hiệu lực" });
 
   if (price < product.current_price + (product.bid_step || 0))
     return res.status(400).json({ message: "Bid too low" });
@@ -29,18 +31,23 @@ export const createBid = async (req, res) => {
   const bid = new Bid({ product_id, bidder_id, price });
   await bid.save();
 
-  appEvent.emit("BID_SUCCESS", {
-    product,
-    bidder,
-    seller,
-    prevBidder,
-  });
+  let prevBidder = null;
+  if (product.bidder_id) prevBidder = await User.findById(product.bidder_id);
 
   // update product
   product.current_price = price;
   product.highest_bidder_id = bidder_id;
   product.total_bids = (product.total_bids || 0) + 1;
   await product.save();
+
+  const bidder = await User.findById(bidder_id);
+  const seller = await User.findById(product.seller_id);
+  appEvent.emit("BID_SUCCESS", {
+    product,
+    bidder,
+    seller,
+    prevBidder,
+  });
 
   res.status(201).json(bid);
 };

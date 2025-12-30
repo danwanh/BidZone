@@ -2,7 +2,7 @@ import Question from "../models/question.model.js";
 import User from "../models/user.model.js";
 import Product from "../models/product.model.js";
 import mongoose from "mongoose";
-import appEvent from "../utils/eventEmiiter.js";
+import appEvent from "../services/mailSystem/mailEvents.js";
 
 export const getAllQuestions = async (req, res) => {
   try {

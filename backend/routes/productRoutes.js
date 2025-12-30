@@ -49,7 +49,11 @@ router.patch(
   validate({ params: productIdParamSchema, body: updateProductSchema }),
   changeProductById
 );
-router.get("/by-category/:id", getProductsByCategory);
+router.get(
+  "/by-category/:id",
+  validate({ params: productIdParamSchema }),
+  getProductsByCategory
+);
 router.get("/liked/:id", getLikedProducts);
 router.get("/:id", validate({ params: productIdParamSchema }), getProductById);
 router.patch("/des-history/:id/", addDescriptionHistory);
