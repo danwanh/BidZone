@@ -99,7 +99,7 @@ export const getAllProducts = async (req, res) => {
       sortBy,
       order,
       status = "active",
-    } = req.validated.query;
+    } = req.query;
 
     const pageNum = Math.max(1, Number(page));
     const limit = Math.max(1, Number(per_page));

@@ -1,5 +1,3 @@
-"use client"
-
 export const QASection = ({
   questions,
   userRole,

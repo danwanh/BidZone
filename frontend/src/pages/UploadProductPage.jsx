@@ -34,7 +34,7 @@ export default function UploadProductPage() {
   const fetchCategories = async () => {
     try {
       const response = await api.get("/api/category");
-      const data = await response.json();
+      const data = await response.data;
 
       setCategories(data);
 
@@ -120,7 +120,7 @@ export default function UploadProductPage() {
           ? Number.parseFloat(formData.buy_now_price)
           : undefined,
         category_id: selectedCategory,
-        // start_time: formData.start_time,
+        start_time: formData.start_time,
         end_time: formData.end_time,
         is_autobid: formData.is_autobid,
         allow_unrated_bidders: formData.allow_unrated_bidders,
@@ -322,7 +322,7 @@ export default function UploadProductPage() {
               </p>
             </div>
             <div className="grid md:grid-cols-2 gap-4">
-              {/* <div className="space-y-2">
+              <div className="space-y-2">
                   <label htmlFor="start_time" className="block font-bold text-gray-700">
                     Thời gian bắt đầu <span className="text-red-500">*</span>
                   </label>
@@ -334,7 +334,7 @@ export default function UploadProductPage() {
                     onChange={(e) => setFormData({ ...formData, start_time: e.target.value })}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
-                </div> */}
+                </div>
 
               <div className="space-y-2">
                 <label

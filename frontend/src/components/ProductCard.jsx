@@ -17,7 +17,7 @@ const ProductCard = ({ product }) => {
 
   const location = useLocation();
   const is_profile = location.pathname.endsWith("/profile");
-  console.log(product?.bidder_id?._id || product);
+  // console.log(product?.bidder_id?._id || product);
   const is_bought =
     (product.status === "ended" && product?.bidder_id?._id == user._id) ||
     false;
