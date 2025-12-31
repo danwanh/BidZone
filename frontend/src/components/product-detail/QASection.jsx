@@ -13,6 +13,7 @@ export const QASection = ({
   onAnswerQuestion,
   maskName,
 }) => {
+  console.log(userRole);
   return (
     <div className="bg-white p-8 rounded-xl shadow-xl mb-6">
       <div className="flex items-center justify-between mb-4">

@@ -95,7 +95,7 @@ export const getWatchlistByUserId = async (req, res) => {
         .status(400)
         .json({ message: "No watchlist", products: watchlist });
     }
-    const { page = 1, per_page = 6, q = "" } = req.validated.query;
+    const { page = 1, per_page = 6, q = "" } = req.query;
     const page_num = Math.max(1, Number(page) || 1);
     const per_page_num = Math.max(1, Number(per_page) || 6);
     const filtered = watchlist?.product_id?.filter((p) =>

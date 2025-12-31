@@ -8,6 +8,13 @@ export const bidIdParamSchema = Joi.object({
   }),
 });
 
+export const bidProductIdParamSchema = Joi.object({
+  product_id: idSchema.required().messages({
+    "any.required": "Bid ID is required",
+    "any.invalid": "Invalid Bid ID",
+  }),
+});
+
 // For creating a new Bid
 export const createBidSchema = Joi.object({
   product_id: idSchema.required().messages({
