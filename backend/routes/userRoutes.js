@@ -13,6 +13,7 @@ import {
   createUser,
   setPrivate,
   setPublic,
+  softDeleteUser,
 } from "../controllers/userController.js";
 import { authenticate, isAdmin } from "../middleware/authMiddleware.js";
 import {
@@ -129,5 +130,7 @@ router.post(
   validate({ body: createUserSchema }), // Xác thực body khi tạo người dùng mới
   createUser
 );
+
+router.delete("/soft/:id", softDeleteUser);
 
 export default router;

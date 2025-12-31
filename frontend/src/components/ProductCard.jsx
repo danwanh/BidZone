@@ -263,7 +263,10 @@ const ProductCard = ({ product }) => {
               </div>
             </div>
             <div className={`pl-3`}>
-              {has_user_name && (
+              {product?.bidder_id?.is_deleted && (
+                <p className="text-gray-400">Người dùng đã bị xóa</p>
+              )}
+              {!product?.bidder_id?.is_deleted && has_user_name && (
                 <div className="flex gap-2">
                   <p
                     onClick={toUserProfile}
@@ -299,7 +302,9 @@ const ProductCard = ({ product }) => {
                 </div>
               )}
 
-              {!has_user_name && "Không có bidder"}
+              {!product?.bidder_id?.is_deleted &&
+                !has_user_name &&
+                "Không có bidder"}
             </div>
             <ProductTimer end_time={product.end_time} />
           </>

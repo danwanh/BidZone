@@ -77,7 +77,7 @@ export const createUpgradeRequest = async (req, res) => {
 // READ - Get all upgrade requests (Admin only)
 export const getAllUpgradeRequests = async (req, res) => {
   try {
-    const { status, q = "" } = req.validated.query; // Filter by status if provided
+    const { status, q = "" } = req.query; // Filter by status if provided
     let query = {};
     if (status) {
       query.status = status;
@@ -198,9 +198,14 @@ export const reviewUpgradeRequest = async (req, res) => {
     await request.save();
 
     // If accepted, upgrade user to seller
+
     if (status === "accepted") {
       const user = await User.findById(request.user_id._id);
+      const sevenDaysLater = new Date();
+      sevenDaysLater.setDate(sevenDaysLater.getDate() + 7);
+      user.seller_expires = sevenDaysLater;
       user.role = "seller";
+      console.log(user.seller_expires);
       await user.save();
     }
 

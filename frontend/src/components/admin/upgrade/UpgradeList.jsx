@@ -70,6 +70,7 @@ const UpgradeList = () => {
 
     try {
       await api.put(`/api/upgrade/${upgradeId}/review`, {
+        user_id: upgradeId,
         status: "rejected",
       });
       toast.success("Đã từ chối request");
@@ -84,12 +85,6 @@ const UpgradeList = () => {
     if (!window.confirm("Bạn có chắc chắn muốn duyệt yêu cầu này?")) return;
 
     try {
-      // Nâng quyền user
-      console.log(upgrade);
-      await api.put(`/api/users/${upgrade.user_id._id}/role`, {
-        role: "seller",
-      });
-      // Cập nhật trạng thái upgrade request
       await api.put(`/api/upgrade/${upgrade._id}/review`, {
         status: "accepted",
       });

@@ -57,7 +57,10 @@ router.put(
   "/:id/review",
   authenticate,
   isAdmin,
-  validate({ params: upgradeRequestIdParamSchema, body: upgradeRequestBodySchema }),
+  validate({
+    params: upgradeRequestIdParamSchema,
+    body: upgradeRequestBodySchema,
+  }),
   reviewUpgradeRequest
 );
 
@@ -66,7 +69,10 @@ router.put(
 router.put(
   "/:id/cancel",
   authenticate,
-  validate({ params: upgradeRequestIdParamSchema, body: upgradeRequestBodySchema }),
+  validate({
+    params: upgradeRequestIdParamSchema,
+    body: upgradeRequestBodySchema,
+  }),
   cancelUpgradeRequest
 );
 

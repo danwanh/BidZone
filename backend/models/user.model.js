@@ -83,6 +83,11 @@ const UserSchema = mongoose.Schema(
       type: Boolean,
     },
 
+    is_deleted: {
+      type: Boolean,
+      default: false,
+    },
+
     oauth: {
       google: {
         id: String,
