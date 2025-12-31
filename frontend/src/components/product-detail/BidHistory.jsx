@@ -22,15 +22,23 @@ export const BidHistory = ({ bidHistory, userRole, onRejectBid, isAutobid }) => 
               {
                 isAutobid && userRole === "seller" && (
                   <div>
+                  <div>
                     <div className="text-gray-500 text-sm mr-4">Giá vào</div>
                     <div className="text-black font-bold text-lg mr-4">{b.price?.toLocaleString()} VNĐ</div>
                   </div>
+                  <div>
+                  <div className="text-gray-500 text-sm mr-4">Giá tối đa</div>
+                  <div className="text-black font-bold text-lg mr-4">{b.amount?.toLocaleString()} VNĐ</div>
+              </div>
+              </div>
                 )
               }
-              <div>
-                  <div className="text-gray-500 text-sm mr-4">Giá tối đa</div>
-              <div className="text-black font-bold text-lg mr-4">{b.amount?.toLocaleString()} VNĐ</div>
-              </div>
+              {!isAutobid && (
+                <div className="text-black font-bold text-lg mr-4">
+                  {b.amount?.toLocaleString()} VNĐ
+                </div>
+              )}
+              
               {b.status && userRole === "seller" && (
                 <button
                   onClick={() => onRejectBid(b.id, b.userId)}

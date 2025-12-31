@@ -105,6 +105,10 @@ export const ProductDetailPage = () => {
         setUserRole(user._id === product?.seller_id?._id ? "seller" : "bidder");
         setCurrentUserId(user._id);
         // console.log(user._id);
+      } else {
+        setUserRole("guest");
+        setCurrentUserId("");
+        setCurrentUser(null);
       }
     } catch (err) {
       console.error("Fetch user error:", err);
@@ -309,14 +313,7 @@ export const ProductDetailPage = () => {
       fetchRelatedProducts(product.category_id),
       fetchQuestions(id),
     ]);
-
-    if (user) {
-      fetchCurrentUser();
-    } else {
-      setUserRole("guest");
-      setCurrentUser(null);
-    }
-
+    fetchCurrentUser();
     checkAndLoadOrder();
   }, [
     product,
@@ -708,6 +705,16 @@ export const ProductDetailPage = () => {
           </p>
           <p className="text-red-600 mt-1">{bidBlockReason}</p>
         </div>
+      )}
+      
+      {((product.is_autobid && userRole === "seller") ||
+        !product.is_autobid) && (
+        <BidHistory
+          bidHistory={bidHistory}
+          userRole={userRole}
+          onRejectBid={handleRejectBid}
+          maskName={maskName}
+        />
       )}
 
       <QASection

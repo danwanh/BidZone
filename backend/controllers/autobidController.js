@@ -3,29 +3,68 @@ import Product from "../models/product.model.js";
 import appEvent from "../services/mailSystem/mailEvents.js";
 import User from "../models/user.model.js";
 
+import SystemConfig from "../models/system_config.model.js";
 export const createAutoBid = async (req, res) => {
   try {
     const { product_id, bidder_id, max_price } = req.validated.body;
 
     const product = await Product.findById(product_id);
-    if (!product) return res.status(404).json({ error: "Product not found" });
+    if (!product)
+      return res.status(404).json({ error: "Product not found" });
+
     if (product.status !== "active")
       return res.status(400).json({ error: "Autobid out of date" });
+
     if (product.is_autobid !== true)
       return res.status(400).json({ error: "Product is not auto-bidded" });
 
+    // check banned bidders
+    if (
+      product.banned_bidders?.some(
+        (id) => id.toString() === bidder_id.toString()
+      )
+    ) {
+      return res.status(403).json({
+        error: "Bạn đã bị người bán chặn tham gia đấu giá sản phẩm này",
+      });
+    }
+
+    const bidder = await User.findById(bidder_id);
+    if (!bidder)
+      return res.status(404).json({ error: "Bidder not found" });
+
+    // check bidder rating
+    const pos = bidder.rating_pos || 0;
+    const neg = bidder.rating_neg || 0;
+    const total = pos + neg;
+
+    if (total === 0 && !product.allow_unrated_bidders) {
+      return res.status(403).json({
+        error:
+          "Người bán không cho phép người chưa có đánh giá tham gia đấu giá",
+      });
+    }
+
+    if (total > 0 && pos / total < 0.8) {
+      return res.status(403).json({
+        error: "Điểm uy tín của bạn chưa đạt 80%",
+      });
+    }
+
     const bidStep = product.bid_step || 0;
-    // Kiểm tra xem bidder này đã từng đặt chưa
+
+    // check max_price
     let userBid = await AutoBid.findOne({ product_id, bidder_id });
 
     if (userBid) {
-      // Cập nhật giá tối đa
       if (userBid.max_price >= max_price)
-        return res.status(400).json({ error: "Max price need to be larger" });
+        return res
+          .status(400)
+          .json({ error: "Max price need to be larger" });
+
       userBid.max_price = max_price;
       await userBid.save();
     } else {
-      // Nếu chưa có tạo mới
       const startPrice = product.current_price || product.start_price;
       userBid = await AutoBid.create({
         product_id,
@@ -35,9 +74,11 @@ export const createAutoBid = async (req, res) => {
         current_holder: bidder_id,
       });
     }
-    let allBids = await AutoBid.find({ product_id }).sort({
+
+    // calculate new current price and holder: nếu là bidder cũ thì update max_price, bidder mới thì tạo autobid
+    const allBids = await AutoBid.find({ product_id }).sort({
       max_price: -1,
-      date: 1,
+      createdAt: 1,
     });
 
     const topBid = allBids[0];
@@ -47,25 +88,47 @@ export const createAutoBid = async (req, res) => {
     let newHolder = topBid.bidder_id;
 
     if (!secondBid) {
-      // chỉ có 1 người
       newPrice = product.start_price;
     } else {
-      // Giá vào = min(top.max, second.max + bước)
-      newPrice = Math.min(topBid.max_price, secondBid.max_price + bidStep);
+      newPrice = Math.min(
+        topBid.max_price,
+        secondBid.max_price + bidStep
+      );
       newHolder = topBid.bidder_id;
     }
 
     userBid.current_holder = newHolder;
     userBid.price = newPrice;
     await userBid.save();
-    // Cập nhật product
+
+    // extend auction time if needed
+    const config = await SystemConfig.findOne().sort({
+      createdAt: -1,
+    });
+
+    if (config && product.end_time) {
+      const now = new Date();
+      const diffMinutes =
+        (new Date(product.end_time).getTime() - now.getTime()) / 60000;
+
+      if (diffMinutes >= Number(config.value)) {
+        product.end_time = new Date(
+          new Date(product.end_time).getTime() +
+            Number(config.extend) * 60000
+        );
+      }
+    }
+
+    // update product
     product.current_price = newPrice;
-    product.bidder_id = newHolder;
+    product.highest_bidder_id = newHolder;
     await product.save();
 
     let prevBidder;
-    if (secondBid) prevBidder = await User.findById(secondBid.bidder_id);
-    const bidder = await User.findById(bidder_id);
+    if (secondBid) {
+      prevBidder = await User.findById(secondBid.bidder_id);
+    }
+
     const seller = await User.findById(product.seller_id);
 
     appEvent.emit("BID_SUCCESS", {
@@ -74,12 +137,6 @@ export const createAutoBid = async (req, res) => {
       seller,
       prevBidder,
     });
-
-    // Cập nhật tất cả bản ghi AutoBid của sản phẩm
-    // await AutoBid.updateMany(
-    //   { product_id },
-    //   { $set: { price: newPrice, current_holder: newHolder } }
-    // );
 
     res.status(200).json({
       message: "Success",
@@ -91,7 +148,7 @@ export const createAutoBid = async (req, res) => {
       },
     });
   } catch (err) {
-    console.error(err);
+    console.error("Create autobid error:", err);
     res.status(500).json({ error: "Error while creating autobid" });
   }
 };

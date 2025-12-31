@@ -5,9 +5,9 @@ const myCache = new NodeCache({ stdTTL: 0 });
 
 export const createConfig = async (req, res) => {
   try {
-    const { key, value } = req.body;
+    const { key, value, extend } = req.body;
 
-    const newConfig = await SystemConfig.create({ key, value });
+    const newConfig = await SystemConfig.create({ key, value, extend });
 
     // Lưu ngay vào cache
     myCache.set(key.toUpperCase(), value);
@@ -102,3 +102,5 @@ export const deleteConfig = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+//thêm extend vào tát cả controller

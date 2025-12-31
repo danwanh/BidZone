@@ -2,6 +2,7 @@ import Bid from "../models/bid.model.js";
 import Product from "../models/product.model.js";
 import appEvent from "../services/mailSystem/mailEvents.js";
 import User from "../models/user.model.js";
+import SystemConfig from "../models/system_config.model.js";
 
 export const getBidById = async (req, res) => {
   try {
@@ -17,41 +18,143 @@ export const getBidById = async (req, res) => {
   }
 };
 
+// export const createBid = async (req, res) => {
+//   const { product_id, bidder_id, price } = req.validated.body;
+
+//   const product = await Product.findById(product_id);
+//   if (!product) return res.status(404).json({ message: "Product not found" });
+//   if (product.status !== "active")
+//     return res.status(400).json({ error: "Phiên đấu giá không còn hiệu lực" });
+
+//   if (price < product.current_price + (product.bid_step || 0))
+//     return res.status(400).json({ message: "Bid too low" });
+
+//   const bid = new Bid({ product_id, bidder_id, price });
+//   await bid.save();
+
+//   let prevBidder = null;
+//   if (product.bidder_id) prevBidder = await User.findById(product.bidder_id);
+
+//   // update product
+//   product.current_price = price;
+//   product.highest_bidder_id = bidder_id;
+//   product.total_bids = (product.total_bids || 0) + 1;
+//   await product.save();
+
+//   const bidder = await User.findById(bidder_id);
+//   const seller = await User.findById(product.seller_id);
+//   appEvent.emit("BID_SUCCESS", {
+//     product,
+//     bidder,
+//     seller,
+//     prevBidder,
+//   });
+
+//   res.status(201).json(bid);
+// };
 export const createBid = async (req, res) => {
-  const { product_id, bidder_id, price } = req.validated.body;
+  try {
+    const { product_id, bidder_id, price } = req.validated.body;
 
-  const product = await Product.findById(product_id);
-  if (!product) return res.status(404).json({ message: "Product not found" });
-  if (product.status !== "active")
-    return res.status(400).json({ error: "Phiên đấu giá không còn hiệu lực" });
+    const product = await Product.findById(product_id);
+    if (!product)
+      return res.status(404).json({ message: "Product not found" });
 
-  if (price < product.current_price + (product.bid_step || 0))
-    return res.status(400).json({ message: "Bid too low" });
+    if (product.status !== "active")
+      return res
+        .status(400)
+        .json({ message: "Phiên đấu giá không còn hiệu lực" });
 
-  const bid = new Bid({ product_id, bidder_id, price });
-  await bid.save();
+    // check if bidder is banned
+    if (
+      product.banned_bidders?.some(
+        (id) => id.toString() === bidder_id.toString()
+      )
+    ) {
+      return res.status(403).json({
+        message: "Bạn đã bị người bán chặn tham gia đấu giá sản phẩm này",
+      });
+    }
 
-  let prevBidder = null;
-  if (product.bidder_id) prevBidder = await User.findById(product.bidder_id);
+    const bidder = await User.findById(bidder_id);
+    if (!bidder)
+      return res.status(404).json({ message: "Bidder not found" });
 
-  // update product
-  product.current_price = price;
-  product.highest_bidder_id = bidder_id;
-  product.total_bids = (product.total_bids || 0) + 1;
-  await product.save();
+    // check bidder rating
+    const pos = bidder.rating_pos || 0;
+    const neg = bidder.rating_neg || 0;
+    const total = pos + neg;
 
-  const bidder = await User.findById(bidder_id);
-  const seller = await User.findById(product.seller_id);
-  appEvent.emit("BID_SUCCESS", {
-    product,
-    bidder,
-    seller,
-    prevBidder,
-  });
+    if (total === 0 && !product.allow_unrated_bidders) {
+      return res.status(403).json({
+        message:
+          "Người bán không cho phép người chưa có đánh giá tham gia đấu giá",
+      });
+    }
 
-  res.status(201).json(bid);
+    if (total > 0 && pos / total < 0.8) {
+      return res.status(403).json({
+        message: "Điểm uy tín của bạn chưa đạt 80%",
+      });
+    }
+
+    //check min price
+    const minPrice =
+      product.current_price + (product.bid_step || 0);
+
+    if (price < minPrice) {
+      return res.status(400).json({
+        message: `Giá đấu tối thiểu là ${minPrice}`,
+      });
+    }
+
+    // create bid
+    const bid = new Bid({ product_id, bidder_id, price });
+    await bid.save();
+
+    let prevBidder = null;
+    if (product.highest_bidder_id) {
+      prevBidder = await User.findById(product.highest_bidder_id);
+    }
+
+    // extend auction time if needed
+    const config = await SystemConfig.findOne()
+      .sort({ createdAt: -1 });
+
+    if (config && product.end_time) {
+      const now = new Date();
+      const diffMinutes =
+        (new Date(product.end_time).getTime() - now.getTime()) / 60000;
+
+      if (diffMinutes >= Number(config.value)) {
+        product.end_time = new Date(
+          new Date(product.end_time).getTime() +
+            Number(config.extend) * 60000
+        );
+      }
+    }
+
+    // update product
+    product.current_price = price;
+    product.highest_bidder_id = bidder_id;
+    product.total_bids = (product.total_bids || 0) + 1;
+    await product.save();
+
+    const seller = await User.findById(product.seller_id);
+
+    appEvent.emit("BID_SUCCESS", {
+      product,
+      bidder,
+      seller,
+      prevBidder,
+    });
+
+    res.status(201).json(bid);
+  } catch (error) {
+    console.error("Create bid error:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
 };
-
 export const getBidsByProduct = async (req, res) => {
   try {
     const { product_id } = req.validated.params;

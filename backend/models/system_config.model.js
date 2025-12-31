@@ -13,6 +13,10 @@ const systemConfigSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.Mixed,
       required: true,
     },
+    extend: {
+      type: mongoose.Schema.Types.Mixed,
+      required: true,
+    },
   },
   { timestamps: true }
 );
