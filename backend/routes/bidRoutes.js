@@ -1,6 +1,7 @@
 import express from "express";
 import {
   bidIdParamSchema,
+  bidProductIdParamSchema,
   createBidSchema,
   updateBidStatusSchema,
 } from "../schemas/BidSchema.js";
@@ -26,7 +27,7 @@ router.get("/:id", validate({ params: bidIdParamSchema }), getBidById);
 
 router.get(
   "/product/:product_id",
-  validate({ params: bidIdParamSchema }),
+  validate({ params: bidProductIdParamSchema }),
   getBidsByProduct
 );
 

@@ -1,6 +1,7 @@
 import express from "express";
 import {
   questionIdParamSchema,
+  questionProductIdParamSchema,
   questionBodySchema,
 } from "../schemas/QuestionSchema.js";
 import {
@@ -18,7 +19,7 @@ const router = express.Router();
 router.get("", getAllQuestions);
 router.get(
   "/:product_id",
-  validate({ params: questionIdParamSchema }),
+  validate({ params: questionProductIdParamSchema }),
   getQuestionsByProductId
 );
 router.post(
