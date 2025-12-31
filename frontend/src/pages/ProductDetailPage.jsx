@@ -99,9 +99,6 @@ export const ProductDetailPage = () => {
 
   const fetchCurrentUser = useCallback(async () => {
     try {
-      // const res = await axios.get("/api/auth/me");
-      // const user = res.data;
-
       if (user) {
         setCurrentUser(user);
 
@@ -113,7 +110,7 @@ export const ProductDetailPage = () => {
       console.error("Fetch user error:", err);
       return null;
     }
-  }, [product?.seller_id?._id]);
+  }, [product?.seller_id?._id, user]);
 
   const fetchBids = useCallback(
     async (productId) => {
@@ -279,8 +276,8 @@ export const ProductDetailPage = () => {
   useEffect(() => {
     if (id) {
       fetchProduct(id);
+      fetchCurrentUser();
     }
-
   }, [id, fetchProduct]);
 
   useEffect(() => {
@@ -313,7 +310,6 @@ export const ProductDetailPage = () => {
       fetchQuestions(id),
     ]);
 
-    //const token = localStorage.getItem("accessToken");
     if (user) {
       fetchCurrentUser();
     } else {
@@ -452,7 +448,7 @@ export const ProductDetailPage = () => {
       console.log(bidId, bidderId);
       try {
         const endpoint =
-        product.is_autobid === true ? "/api/autobids" : "/api/bids";
+          product.is_autobid === true ? "/api/autobids" : "/api/bids";
 
         await axios.patch(`${endpoint}/${bidId}/reject`);
 
@@ -565,6 +561,53 @@ export const ProductDetailPage = () => {
     );
   }, [order, currentUserId]);
 
+  const { canBid, bidBlockReason } = useMemo(() => {
+    if (!currentUser || !product) {
+      return { canBid: false, bidBlockReason: "Vui lòng đăng nhập để đấu giá" };
+    }
+    console.log(product.banned_bidders, currentUser._id);
+
+    const userId = currentUser._id;
+    if (
+      Array.isArray(product.banned_bidders) &&
+      product.banned_bidders.some((id) => id?.toString() === userId?.toString())
+    ) {
+      return {
+        canBid: false,
+        bidBlockReason:
+          "Bạn đã bị người bán chặn, không thể tham gia đấu giá sản phẩm này",
+      };
+    }
+
+    const pos = currentUser.rating_pos || 0;
+    const neg = currentUser.rating_neg || 0;
+    const total = pos + neg;
+
+    if (total === 0) {
+      if (product.allow_unrated_bidders) {
+        return { canBid: true, bidBlockReason: "" };
+      }
+      return {
+        canBid: false,
+        bidBlockReason:
+          "Người bán không cho phép người chưa có đánh giá tham gia đấu giá",
+      };
+    }
+
+    const score = pos / total;
+
+    if (score >= 0.8) {
+      return { canBid: true, bidBlockReason: "" };
+    }
+
+    return {
+      canBid: false,
+      bidBlockReason: `Điểm uy tín của bạn là ${Math.round(
+        score * 100
+      )}%. Cần tối thiểu 80% để tham gia đấu giá`,
+    };
+  }, [currentUser, product]);
+
   if (loading || !product) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -634,40 +677,37 @@ export const ProductDetailPage = () => {
         highestBidder={highestBidder}
         currentBid={currentBid}
       />
-      {(userRole === "guest" && !currentUser) ? (
+
+      {userRole === "guest" ? (
         <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
           <p className="text-yellow-700">Bạn cần đăng nhập để đấu giá.</p>
-          <button className="mt-2 px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700 transition">
-            <a href="/auth">Đăng nhập</a>
-          </button>
+          <a
+            href="/auth"
+            className="inline-block mt-2 px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700"
+          >
+            Đăng nhập
+          </a>
         </div>
-      ) : (
+      ) : canBid ? (
         <BidSection
-        productStatus={productStatus}
-        userRole={userRole}
-        currentBid={currentBid}
-        bidStep={bidStep}
-        bidInput={bidInput}
-        setBidInput={setBidInput}
-        bidError={bidError}
-        onBid={handleBid}
-        product={product}
-        onBuyNow={handleBuyNow}
-      />
-
-      )}
-
-      
-
-
-      {((product.is_autobid && userRole === "seller") ||
-        !product.is_autobid) && (
-        <BidHistory
-          bidHistory={bidHistory}
+          productStatus={productStatus}
           userRole={userRole}
-          onRejectBid={handleRejectBid}
-          isAutobid={product.is_autobid}
+          currentBid={currentBid}
+          bidStep={bidStep}
+          bidInput={bidInput}
+          setBidInput={setBidInput}
+          bidError={bidError}
+          onBid={handleBid}
+          product={product}
+          onBuyNow={handleBuyNow}
         />
+      ) : (
+        <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-6">
+          <p className="text-red-700 font-medium">
+            Bạn không đủ điều kiện tham gia đấu giá
+          </p>
+          <p className="text-red-600 mt-1">{bidBlockReason}</p>
+        </div>
       )}
 
       <QASection
