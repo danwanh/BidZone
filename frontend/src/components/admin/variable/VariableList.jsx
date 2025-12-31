@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import api from "../../../api/axios";
 import { Trash2, Edit, Plus, X, Save } from "lucide-react";
+import { toast } from "react-toastify";
 
 const VariableList = () => {
   const [variables, setVariables] = useState([]);
@@ -71,7 +72,7 @@ const VariableList = () => {
       loadVariables();
       setIsModalOpen(false);
     } catch (err) {
-      alert(err.response?.data?.message || "Có lỗi xảy ra khi lưu.");
+      toast(err.response?.data?.message || "Có lỗi xảy ra khi lưu.");
     }
   };
 
@@ -85,7 +86,7 @@ const VariableList = () => {
       // Xóa item khỏi state để đỡ phải gọi lại API (tối ưu UI)
       setVariables(variables.filter((v) => v.key !== key));
     } catch (err) {
-      alert("Không thể xóa biến này.");
+      toast.error("Không thể xóa biến này.");
     }
   };
 

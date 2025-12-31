@@ -1,7 +1,7 @@
 import { useContext, createContext, useState, useEffect } from "react";
 import api from "../api/axios";
 import { useAuth } from "./AuthContext";
-
+import { toast } from "react-toastify";
 const LikedContext = createContext();
 
 export const useLiked = () => useContext(LikedContext);
@@ -39,7 +39,7 @@ export function LikedProvider({ children }) {
 
   const addToLikedList = async (id) => {
     if (!user) {
-      alert("Please login first");
+      toast.error("Please login first");
       return;
     }
     try {

@@ -103,7 +103,7 @@ export default function UploadProductPage() {
     e.preventDefault();
 
     if (images.length < 3) {
-      alert("Vui lòng tải lên ít nhất 3 ảnh sản phẩm");
+      toast.error("Vui lòng tải lên ít nhất 3 ảnh sản phẩm");
       return;
     }
 
@@ -130,15 +130,15 @@ export default function UploadProductPage() {
       });
 
       if (response.ok) {
-        alert("Đăng sản phẩm thành công!");
+        toast.success("Đăng sản phẩm thành công!");
         console.log(response);
         navigate(`products/${response.data._id}`);
       } else {
-        alert("Có lỗi xảy ra khi đăng sản phẩm");
+        toast.error("Có lỗi xảy ra khi đăng sản phẩm");
       }
     } catch (error) {
       console.error("Error:", error);
-      alert("Có lỗi xảy ra");
+      toast.error("Có lỗi xảy ra");
     } finally {
       setLoading(false);
     }

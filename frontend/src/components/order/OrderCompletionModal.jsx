@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react"
 import axios from "../../api/axios"
 import { useAuth } from "../../context/AuthContext"
+import { toast } from "react-toastify"
 function ChatInterface({ orderId, sellerId, buyerId, seller, buyer }) {
   const { user, loading: authLoading } = useAuth()
 
@@ -85,7 +86,7 @@ function ChatInterface({ orderId, sellerId, buyerId, seller, buyer }) {
       prev.filter((msg) => msg._id !== tempId)
     );
 
-    alert(
+    toast.error(
       "Gửi tin nhắn thất bại: " +
         (err.response?.data?.message || err.message)
     );
@@ -316,7 +317,7 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
 
   const handleSubmitPayment = useCallback(async () => {
     if (!paymentInvoice.trim() || !deliveryAddress.trim()) {
-      alert("Vui lòng nhập đầy đủ thông tin")
+      toast.error("Vui lòng nhập đầy đủ thông tin")
       return
     }
 
@@ -327,19 +328,19 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
         status: "pending_shipping",
       })
 
-      alert("Đã gửi thông tin thanh toán!")
+      toast.success("Đã gửi thông tin thanh toán!")
       setPaymentInvoice("")
       setDeliveryAddress("")
       loadOrderData()
     } catch (err) {
       console.error("Payment submission failed:", err)
-      alert(err.response?.data?.message || "Lỗi khi gửi thông tin thanh toán")
+      toast.error(err.response?.data?.message || "Lỗi khi gửi thông tin thanh toán")
     }
   }, [paymentInvoice, deliveryAddress, orderData._id, loadOrderData])
 
   const handleConfirmPayment = useCallback(async () => {
     if (!shippingInvoice.trim()) {
-      alert("Vui lòng nhập mã vận đơn")
+      toast.error("Vui lòng nhập mã vận đơn")
       return
     }
 
@@ -349,12 +350,12 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
         status: "pending_delivery",
       })
 
-      alert("Đã xác nhận và gửi hàng!")
+      toast.success("Đã xác nhận và gửi hàng!")
       setShippingInvoice("")
       loadOrderData()
     } catch (err) {
       console.error("Confirm payment failed:", err)
-      alert(err.response?.data?.message || "Lỗi khi xác nhận thanh toán")
+      toast.error(err.response?.data?.message || "Lỗi khi xác nhận thanh toán")
     }
   }, [shippingInvoice, orderData._id, loadOrderData])
 
@@ -364,17 +365,17 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
         status: "completed",
       })
 
-      alert("Đã xác nhận nhận hàng!")
+      toast.success("Đã xác nhận nhận hàng!")
       loadOrderData()
     } catch (err) {
       console.error("Confirm delivery failed:", err)
-      alert(err.response?.data?.message || "Lỗi khi xác nhận nhận hàng")
+      toast.error(err.response?.data?.message || "Lỗi khi xác nhận nhận hàng")
     }
   }, [orderData._id, loadOrderData])
 
   const handleCancelOrder = useCallback(async () => {
     if (!cancelReason.trim()) {
-      alert("Vui lòng nhập lý do hủy")
+      toast.error("Vui lòng nhập lý do hủy")
       return
     }
 
@@ -385,13 +386,13 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
         cancellation_reason: cancelReason,
       })
 
-      alert("Đã hủy giao dịch")
+      toast.success("Đã hủy giao dịch")
       setCancelReason("")
       setShowCancelDialog(false)
       loadOrderData()
     } catch (err) {
       console.error("Cancel order failed:", err)
-      alert(err.response?.data?.message || "Lỗi khi hủy giao dịch")
+      toast.error(err.response?.data?.message || "Lỗi khi hủy giao dịch")
     }
   }, [cancelReason, orderData._id, currentUserId, loadOrderData])
 
@@ -414,11 +415,11 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
           status: "completed",
         })
 
-        alert("Đánh giá thành công!")
+        toast.success("Đánh giá thành công!")
         loadOrderData()
       } catch (err) {
         console.error("Submit rating failed:", err)
-        alert(err.response?.data?.message || "Lỗi khi gửi đánh giá")
+        toast.error(err.response?.data?.message || "Lỗi khi gửi đánh giá")
       }
     },
     [userRating, ratingComment, isBuyer, orderData, product._id, currentUserId, loadOrderData],
@@ -427,7 +428,7 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
   const handleUpdateRating = useCallback(
     async (points) => {
       if (!userRating?._id) {
-        alert("Không tìm thấy đánh giá để cập nhật")
+        toast.error("Không tìm thấy đánh giá để cập nhật")
         return
       }
 
@@ -443,11 +444,11 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
         setUserRating(res.data)
         setPendingRating(null)
         setRatingComment("")
-        alert("Cập nhật đánh giá thành công!")
+        toast.success("Cập nhật đánh giá thành công!")
         loadOrderData()
       } catch (err) {
         console.error("Update rating failed:", err)
-        alert(err.response?.data?.message || "Lỗi khi cập nhật đánh giá")
+        toast.error(err.response?.data?.message || "Lỗi khi cập nhật đánh giá")
       }
     },
     [userRating, ratingComment, isBuyer, orderData, product._id, currentUserId, loadOrderData],

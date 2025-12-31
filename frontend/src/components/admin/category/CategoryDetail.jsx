@@ -41,7 +41,7 @@ const CategoryDetail = ({
   };
 
   const onUpdateNoCategory = () => {
-    alert.error("No category selected.");
+    toast.error("No category selected.");
   };
 
   const handleDelete = async () => {

@@ -13,6 +13,7 @@ import { OrderAlert } from "../components/product-detail/OrderAlert";
 import { useAuth } from "../context/AuthContext";
 import axios from "../api/axios";
 import { useLiked } from "../context/LikedContext";
+import { toast } from "react-toastify";
 
 export const ProductDetailPage = () => {
   const { user } = useAuth();
@@ -425,7 +426,7 @@ export const ProductDetailPage = () => {
         product.is_autobid === true ? "/api/autobids" : "/api/bids";
       const response = await axios.post(endpoint, body);
 
-      alert("Đặt giá thành công!");
+      toast.success("Đặt giá thành công!");
       fetchProduct(id);
       setBidInput("");
     } catch (error) {
@@ -457,7 +458,7 @@ export const ProductDetailPage = () => {
 
   const handleAppendDescription = useCallback(async () => {
     if (!newDescription.trim()) {
-      alert("Vui lòng nhập mô tả mới");
+      toast.error("Vui lòng nhập mô tả mới");
       return;
     }
 
@@ -469,11 +470,11 @@ export const ProductDetailPage = () => {
       setDescriptionHistory(response.data.description_history);
       setNewDescription("");
       setIsEditMode(false);
-      alert("Đã thêm mô tả thành công!");
+      toast.success("Đã thêm mô tả thành công!");
     } catch (error) {
       const errorMsg =
         error.response?.data?.message || "Không thể cập nhật mô tả";
-      alert(errorMsg);
+      toast.error(errorMsg);
     }
   }, [newDescription, id]);
 
@@ -491,7 +492,7 @@ export const ProductDetailPage = () => {
 
         await axios.patch(`/api/product/${id}`, { ban_bidder_id: bidderId });
 
-        alert("Đã từ chối người đấu giá");
+        toast.success("Đã từ chối người đấu giá");
 
         if (product.is_autobid) {
           fetchAutoBid(id);
@@ -501,7 +502,7 @@ export const ProductDetailPage = () => {
         fetchProduct(id);
       } catch (error) {
         console.error("Error rejecting bid:", error);
-        alert("Có lỗi xảy ra");
+        toast.error("Có lỗi xảy ra");
       }
     },
     [product, id, fetchBids, fetchAutoBid, fetchProduct]
@@ -532,20 +533,20 @@ export const ProductDetailPage = () => {
           buyer_id: buyerId,
         });
 
-        alert("Mua ngay thành công! Order đã được tạo.");
+        toast.success("Mua ngay thành công! Order đã được tạo.");
         setProduct(response.data);
         window.location.reload();
       }
       setWinnerFromProduct(product);
     } catch (error) {
       console.error("Lỗi khi mua ngay:", error);
-      alert("Có lỗi xảy ra khi mua ngay.");
+      toast.error("Có lỗi xảy ra khi mua ngay.");
     }
   }, [product, currentUserId, id]);
 
   const handleSubmitQuestion = useCallback(async () => {
     if (!questionText.trim()) {
-      alert("Vui lòng nhập câu hỏi");
+      toast.error("Vui lòng nhập câu hỏi");
       return;
     }
 
@@ -558,13 +559,13 @@ export const ProductDetailPage = () => {
         answer: "",
       });
 
-      alert("Đã gửi câu hỏi thành công!");
+      toast.success("Đã gửi câu hỏi thành công!");
       setQuestionText("");
       setShowQuestionForm(false);
       fetchQuestions(id);
     } catch (error) {
       console.error("Error submitting question:", error);
-      alert("Có lỗi xảy ra");
+      toast.error("Có lỗi xảy ra");
     }
   }, [questionText, product, currentUserId, id, fetchQuestions]);
 
@@ -572,7 +573,7 @@ export const ProductDetailPage = () => {
     async (questionId) => {
       const answer = answerText[questionId];
       if (!answer?.trim()) {
-        alert("Vui lòng nhập câu trả lời");
+        toast.error("Vui lòng nhập câu trả lời");
         return;
       }
 
@@ -581,13 +582,13 @@ export const ProductDetailPage = () => {
           answer: answer.trim(),
         });
 
-        alert("Đã trả lời câu hỏi!");
+        toast.success("Đã trả lời câu hỏi!");
         setAnswerText({ ...answerText, [questionId]: "" });
         setShowAnswerForm({ ...showAnswerForm, [questionId]: false });
         fetchQuestions(id);
       } catch (error) {
         console.error("Error answering question:", error);
-        alert("Có lỗi xảy ra");
+        toast.error("Có lỗi xảy ra");
       }
     },
     [answerText, showAnswerForm, id, fetchQuestions]
