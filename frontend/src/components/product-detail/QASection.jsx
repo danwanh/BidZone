@@ -31,7 +31,9 @@ export const QASection = ({
 
       {userRole === "bidder" && showQuestionForm && (
         <div className="mb-6 p-4 bg-indigo-50 rounded-lg border-2 border-indigo-200">
-          <label className="text-sm font-semibold mb-2 block text-indigo-700">Câu hỏi của bạn:</label>
+          <label className="text-sm font-semibold mb-2 block text-indigo-700">
+            Câu hỏi của bạn:
+          </label>
           <textarea
             value={questionText}
             onChange={(e) => setQuestionText(e.target.value)}
@@ -48,8 +50,8 @@ export const QASection = ({
             </button>
             <button
               onClick={() => {
-                setShowQuestionForm(false)
-                setQuestionText("")
+                setShowQuestionForm(false);
+                setQuestionText("");
               }}
               className="px-6 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition text-sm font-semibold"
             >
@@ -63,12 +65,28 @@ export const QASection = ({
         {questions.length > 0 ? (
           questions.map((q, i) => (
             <div key={i} className="border-l-4 border-indigo-500 pl-4 py-2">
-              <div className="font-semibold text-sm text-gray-700 mb-1">{maskName(q.bidder_id?.name || null)}</div>
-              <div className="text-gray-800 mb-2">{q.question}</div>
+              {q.bidder_id?.is_deleted && (
+                <div>
+                  <p className="font-semibold text-sm text-gray-500 underline mb-1">
+                    Người dùng đã bị xóa
+                  </p>
+                  <div className="text-gray-800 mb-2">{q.question}</div>
+                </div>
+              )}
+              {!q.bidder_id?.is_deleted && (
+                <div>
+                  <div className="font-semibold text-sm text-gray-700 mb-1">
+                    {maskName(q.bidder_id?.name || null)}
+                  </div>
+                  <div className="text-gray-800 mb-2">{q.question}</div>
+                </div>
+              )}
 
               {q.answer && (
                 <div className="bg-gray-50 p-3 rounded ml-2 border-l-2 border-green-500">
-                  <div className="font-semibold text-sm text-green-700 mb-1">Trả lời từ người bán:</div>
+                  <div className="font-semibold text-sm text-green-700 mb-1">
+                    Trả lời từ người bán:
+                  </div>
                   <div className="text-gray-700 text-sm">{q.answer}</div>
                 </div>
               )}
@@ -77,7 +95,9 @@ export const QASection = ({
                 <div className="mt-3 ml-2">
                   {!showAnswerForm[q._id] ? (
                     <button
-                      onClick={() => setShowAnswerForm({ ...showAnswerForm, [q._id]: true })}
+                      onClick={() =>
+                        setShowAnswerForm({ ...showAnswerForm, [q._id]: true })
+                      }
                       className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition text-sm"
                     >
                       Trả lời câu hỏi
@@ -86,7 +106,12 @@ export const QASection = ({
                     <div className="space-y-2">
                       <textarea
                         value={answerText[q._id] || ""}
-                        onChange={(e) => setAnswerText({ ...answerText, [q._id]: e.target.value })}
+                        onChange={(e) =>
+                          setAnswerText({
+                            ...answerText,
+                            [q._id]: e.target.value,
+                          })
+                        }
                         placeholder="Nhập câu trả lời..."
                         className="w-full p-3 border border-gray-300 rounded text-sm"
                         rows="3"
@@ -99,7 +124,12 @@ export const QASection = ({
                           Gửi trả lời
                         </button>
                         <button
-                          onClick={() => setShowAnswerForm({ ...showAnswerForm, [q._id]: false })}
+                          onClick={() =>
+                            setShowAnswerForm({
+                              ...showAnswerForm,
+                              [q._id]: false,
+                            })
+                          }
                           className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400 transition text-sm"
                         >
                           Hủy
@@ -118,5 +148,5 @@ export const QASection = ({
         )}
       </div>
     </div>
-  )
-}
+  );
+};

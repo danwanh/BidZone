@@ -147,7 +147,7 @@ const UserList = () => {
       setIsDeleting(true);
       const userId = deletingUser._id || deletingUser.id;
 
-      await api.delete(`/api/users/${userId}`);
+      await api.delete(`/api/users/soft/${userId}`);
 
       setUsers(users.filter((u) => u._id !== userId && u.id !== userId));
 

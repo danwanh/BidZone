@@ -153,17 +153,6 @@ export const updateUserRole = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Set hạn 7 ngày
-    if (role === "seller") {
-      // Nếu chuyển thành Seller -> Set hạn 7 ngày
-      const sevenDaysLater = new Date();
-      sevenDaysLater.setDate(sevenDaysLater.getDate() + 7);
-      user.seller_expires = sevenDaysLater;
-      console.log(user.seller_expires);
-    } else {
-      user.seller_expires = null;
-    }
-
     user.role = role;
     await user.save();
 
@@ -364,6 +353,20 @@ export const setPublic = async () => {
     }
     user.is_private = false;
     await user.save();
+  } catch (err) {
+    console.log(err);
+    res.status(400).json({ message: "Server error" });
+  }
+};
+
+export const softDeleteUser = async (req, res) => {
+  //Chỉnh is_deleted thành true của user có id từ params
+  try {
+    const { id } = req.params;
+    const user = await User.findById(id);
+    user.is_deleted = true;
+    await user.save();
+    res.status(200).json({ message: "User soft deleted successfully" });
   } catch (err) {
     console.log(err);
     res.status(400).json({ message: "Server error" });

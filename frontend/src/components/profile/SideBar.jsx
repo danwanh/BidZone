@@ -132,6 +132,16 @@ const SideBar = ({ user, isOwnProfile }) => {
     return name ? name.charAt(0).toUpperCase() : "U";
   };
 
+  if (user && user.is_deleted) {
+    return (
+      <div className="info">
+        <p className="text-gray-500 text-center py-4">
+          Tài khoản này đã bị xóa.
+        </p>
+      </div>
+    );
+  }
+
   if (isComment) {
     return (
       <div className="info">
@@ -512,14 +522,15 @@ const SideBar = ({ user, isOwnProfile }) => {
                 )}
               </>
             )}
-
-            <button
-              className="bg-red-600 h-fit w-fit p-3 rounded-xl hover:bg-red-700"
-              type="button"
-              onClick={handleLogout}
-            >
-              <div className="font-bold text-white">Đăng xuất</div>
-            </button>
+            {isOwnProfile && (
+              <button
+                className="bg-red-400 h-fit w-fit px-3 py-1 rounded-lg hover:scale-110 transition-all duration-100 ease-in-out cursor-pointer hover:shadow-xl"
+                type="button"
+                onClick={handleLogout}
+              >
+                <div className="font-bold text-white">Đăng xuất</div>
+              </button>
+            )}
           </div>
         </form>
       </div>

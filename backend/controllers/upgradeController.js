@@ -198,9 +198,14 @@ export const reviewUpgradeRequest = async (req, res) => {
     await request.save();
 
     // If accepted, upgrade user to seller
+
     if (status === "accepted") {
       const user = await User.findById(request.user_id._id);
+      const sevenDaysLater = new Date();
+      sevenDaysLater.setDate(sevenDaysLater.getDate() + 7);
+      user.seller_expires = sevenDaysLater;
       user.role = "seller";
+      console.log(user.seller_expires);
       await user.save();
     }
 

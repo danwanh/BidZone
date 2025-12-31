@@ -6,6 +6,14 @@ const UserRow = ({ user, onContextMenu }) => {
     return new Date(dateString).toLocaleDateString("vi-VN");
   };
 
+  if (user.is_deleted) {
+    return (
+      <tr className="border-b border-gray-300 w-full bg-gray-200 cursor-not-allowed">
+        <td className="px-4 py-4 font-medium">Người dùng đã bị xóa</td>
+      </tr>
+    );
+  }
+
   return (
     <tr
       // Gọi hàm từ Cha truyền xuống

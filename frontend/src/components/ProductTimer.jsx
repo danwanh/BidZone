@@ -19,6 +19,19 @@ const ProductTimer = ({ end_time }) => {
   const minutes = Math.floor((remain / (1000 * 60)) % 60);
   const seconds = Math.floor((remain / 1000) % 60);
 
+  const formatDateTime = (timestamp) => {
+    return new Date(timestamp).toLocaleString("vi-VN", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+  };
+
+  const displayContent =
+    days >= 3
+      ? formatDateTime(end_date)
+      : `${days}:${hours}:${minutes}:${seconds}`;
+
   return (
     <div
       className={`${
@@ -45,7 +58,7 @@ const ProductTimer = ({ end_time }) => {
             remain > 1000 * 10 ? `text-[#856404]` : `text-[#850404]`
           } text-[15px] font-bold py-2`}
         >
-          {`${days}:${hours}:${minutes}:${seconds}`}
+          {displayContent}
         </p>
       )}
 
