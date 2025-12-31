@@ -96,6 +96,31 @@ export const ProductDetailPage = () => {
     if (minutes > 0) return `${minutes} phút trước`;
     return `vừa mới`;
   }, []);
+  const setWinnerFromProduct = useCallback(
+    (product) => {
+      if (!product?.bidder_id) return;
+
+      const u = product.bidder_id;
+      setCurrentBid(product.buy_now_price || product.current_price);
+      setHighestBidder({
+        name: maskName(u.name),
+        rating_pos: u.rating_pos || 0,
+        reviews: (u.rating_pos || 0) + (u.rating_neg || 0),
+        avatar: u.avatar_url,
+      });
+
+      setBuyer({
+        _id: u._id,
+        name: u.name,
+        rating_pos: u.rating_pos || 0,
+        rating_neg: u.rating_neg || 0,
+        avatar_url:
+          u.avatar_url ||
+          "https://www.gravatar.com/avatar/3b3be63a4c2a439b013787725dfce802?d=identicon",
+      });
+    },
+    [maskName]
+  );
 
   const fetchCurrentUser = useCallback(async () => {
     try {
@@ -115,12 +140,12 @@ export const ProductDetailPage = () => {
       return null;
     }
   }, [product?.seller_id?._id, user]);
-
   const fetchBids = useCallback(
     async (productId) => {
       try {
         const res = await axios.get(`/api/bids/product/${productId}`);
         const data = res.data;
+
         const mapped = data
           .map((bid) => ({
             id: bid._id,
@@ -134,9 +159,15 @@ export const ProductDetailPage = () => {
 
         setBidHistory(mapped);
 
+        if (product.status === "ended") {
+          setWinnerFromProduct(product);
+          return;
+        }
+
         const activeBids = mapped.filter((b) => b.status);
         if (activeBids.length > 0) {
           setCurrentBid(activeBids[0].amount);
+
           const topBidData = data.find((b) => b._id === activeBids[0].id);
           if (topBidData) {
             setHighestBidder({
@@ -163,7 +194,7 @@ export const ProductDetailPage = () => {
         console.error("Error fetching bids:", error);
       }
     },
-    [maskName]
+    [maskName, product, setWinnerFromProduct]
   );
 
   const fetchAutoBid = useCallback(
@@ -171,6 +202,7 @@ export const ProductDetailPage = () => {
       try {
         const res = await axios.get(`/api/autobids/product/${productId}`);
         const data = res.data;
+
         const mapped = data
           .map((bid) => ({
             id: bid._id,
@@ -184,6 +216,11 @@ export const ProductDetailPage = () => {
           .sort((a, b) => b.amount - a.amount);
 
         setBidHistory(mapped);
+
+        if (product.status === "ended") {
+          setWinnerFromProduct(product);
+          return;
+        }
 
         const activeBids = mapped.filter((b) => b.status);
         if (activeBids.length > 0) {
@@ -218,8 +255,10 @@ export const ProductDetailPage = () => {
         console.error("Error fetching auto bids:", error);
       }
     },
-    [maskName]
+    [maskName, product, setWinnerFromProduct]
   );
+
+  
 
   const fetchQuestions = useCallback(async (productId) => {
     try {
@@ -308,11 +347,12 @@ export const ProductDetailPage = () => {
         "https://www.gravatar.com/avatar/3b3be63a4c2a439b013787725dfce802?d=identicon",
     });
 
-    Promise.all([
-      product.is_autobid ? fetchAutoBid(id) : fetchBids(id),
-      fetchRelatedProducts(product.category_id),
-      fetchQuestions(id),
-    ]);
+    
+    product.is_autobid ? fetchAutoBid(id) : fetchBids(id);
+  
+    fetchRelatedProducts(product.category_id);
+    fetchQuestions(id);
+
     fetchCurrentUser();
     checkAndLoadOrder();
   }, [
@@ -475,13 +515,14 @@ export const ProductDetailPage = () => {
     }
     const productId = id;
     const buyerId = currentUserId;
-    const sellerId = product.seller_id;
+    const sellerId = product.seller_id._id;
 
     try {
       const response = await axios.patch(`/api/product/${productId}`, {
         end_time: new Date(),
         bidder_id: buyerId,
         status: "ended",
+        current_price: product.buy_now_price,
       });
 
       if (response.data) {
@@ -495,6 +536,7 @@ export const ProductDetailPage = () => {
         setProduct(response.data);
         window.location.reload();
       }
+      setWinnerFromProduct(product);
     } catch (error) {
       console.error("Lỗi khi mua ngay:", error);
       alert("Có lỗi xảy ra khi mua ngay.");
@@ -706,7 +748,6 @@ export const ProductDetailPage = () => {
           <p className="text-red-600 mt-1">{bidBlockReason}</p>
         </div>
       )}
-      
       {((product.is_autobid && userRole === "seller") ||
         !product.is_autobid) && (
         <BidHistory

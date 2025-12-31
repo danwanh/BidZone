@@ -76,6 +76,7 @@ export const updateProductSchema = Joi.object({
   banned_bidders: Joi.array().items(Joi.string()).optional(),
   allow_unrated_bidders: Joi.boolean().optional(),
   slug: Joi.string().optional(),
+  bidder_id: idSchema.optional(),
   image_url: Joi.array()
     .items(Joi.string().uri().required().messages({
       'any.required': 'URL hình ảnh là bắt buộc',
