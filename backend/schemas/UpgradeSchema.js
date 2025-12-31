@@ -3,9 +3,9 @@ import { idSchema } from "./IdSchema.js"; // Assuming you already have this sche
 
 // Validation for creating or updating an upgrade request
 export const upgradeRequestBodySchema = Joi.object({
-  user_id: idSchema.required().messages({
-    "any.required": "User ID is required",
-    "any.invalid": "Invalid User ID format",
+  user_id: idSchema.optional(),
+  status: Joi.string().required().messages({
+    "any.required": "Phải có trạng thái của yêu cầu",
   }),
   note: Joi.string().optional(),
   first_name: Joi.string().min(2).max(100).optional(),

@@ -77,7 +77,7 @@ export const createUpgradeRequest = async (req, res) => {
 // READ - Get all upgrade requests (Admin only)
 export const getAllUpgradeRequests = async (req, res) => {
   try {
-    const { status, q = "" } = req.validated.query; // Filter by status if provided
+    const { status, q = "" } = req.query; // Filter by status if provided
     let query = {};
     if (status) {
       query.status = status;
