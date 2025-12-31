@@ -417,7 +417,12 @@ export const getProductByCategoryId = async (req, res) => {
 export const getProductBySellerId = async (req, res) => {
   try {
     const { id: p_i } = req.validated.params;
-    const { per_page = 1, page = 1, q = "", status = "active" } = req.validated.query;
+    const {
+      per_page = 1,
+      page = 1,
+      q = "",
+      status = "active",
+    } = req.validated.query;
 
     // Check if seller id is valid
     const seller = await User.findById(p_i);

@@ -9,6 +9,13 @@ export const questionIdParamSchema = Joi.object({
   }),
 });
 
+export const questionProductIdParamSchema = Joi.object({
+  product_id: idSchema.required().messages({
+    "any.required": "ID câu hỏi là bắt buộc",
+    "any.invalid": "ID câu hỏi không hợp lệ",
+  }),
+});
+
 export const questionBodySchema = Joi.object({
   product_id: idSchema.required().messages({
     "any.required": "ID sản phẩm là bắt buộc",
