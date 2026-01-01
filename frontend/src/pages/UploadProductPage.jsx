@@ -130,10 +130,10 @@ export default function UploadProductPage() {
         status: "active",
       });
 
-      if (response.ok) {
+      if (response) {
         toast.success("Đăng sản phẩm thành công!");
         console.log(response);
-        navigate(`products/${response.data._id}`);
+        navigate(`/`);
       } else {
         toast.error("Có lỗi xảy ra khi đăng sản phẩm");
       }

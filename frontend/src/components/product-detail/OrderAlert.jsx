@@ -1,5 +1,3 @@
-"use client"
-
 export const OrderAlert = ({ productStatus, isSellerOrBuyer, order, onOpenOrderModal }) => {
   return (
     <>

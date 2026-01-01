@@ -57,13 +57,8 @@ export const updateOrderSchema = Joi.object({
       "any.only": "Trạng thái đơn hàng không hợp lệ",
     }),
 
-  invoice_info: Joi.object().unknown(true).messages({
-    "object.base": "Thông tin hóa đơn phải là một object",
-  }),
-
-  delivery_info: Joi.object().unknown(true).messages({
-    "object.base": "Thông tin giao hàng phải là một object",
-  }),
+  invoice_info: Joi.string().optional(),
+  delivery_info: Joi.string().optional(),
 
   address: Joi.string().trim().messages({
     "string.base": "Địa chỉ phải là chuỗi",

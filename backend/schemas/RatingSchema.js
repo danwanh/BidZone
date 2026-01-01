@@ -16,6 +16,18 @@ export const ratingUserIdParamSchema = Joi.object({
   }),
 });
 
+export const ratingQuerySchema = Joi.object({
+  product_id: idSchema.optional().allow("", null).messages({
+    "any.invalid": "ID sản phẩm không hợp lệ",
+  }),
+  from_user_id: idSchema.optional().allow("", null).messages({
+    "any.invalid": "ID người đánh giá không hợp lệ",
+  }),
+  to_user_id: idSchema.optional().allow("", null).messages({
+    "any.invalid": "ID người được đánh giá không hợp lệ",
+  }),
+});
+
 // Validation for the Rating body
 export const ratingBodySchema = Joi.object({
   product_id: idSchema.required().messages({
