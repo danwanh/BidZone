@@ -41,7 +41,7 @@ const CategoryDetail = ({
   };
 
   const onUpdateNoCategory = () => {
-    toast.error("No category selected.");
+    toast.error("Hãy chọn 1 danh mục trước khi sửa đổi");
   };
 
   const handleDelete = async () => {

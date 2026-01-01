@@ -1,40 +1,39 @@
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
-import ProductTimer from "./ProductTimer";
-import { useLiked } from "../context/LikedContext";
-import { useAuth } from "../context/AuthContext";
-import { toast } from "react-toastify";
-import axios from "../api/axios";
+"use client"
+
+import { Link, useLocation, useNavigate } from "react-router-dom"
+import { useState } from "react"
+import { useForm } from "react-hook-form"
+import ProductTimer from "./ProductTimer"
+import { useLiked } from "../context/LikedContext"
+import { useAuth } from "../context/AuthContext"
+import { toast } from "react-toastify"
+import axios from "../api/axios"
 
 const ProductCard = ({ product }) => {
-  const [showPopup, setShowPopup] = useState(false);
-  const { addToLikedList, removeFromLikedList, likedIds } = useLiked();
-  const { user } = useAuth();
-  const navigate = useNavigate();
+  const [showPopup, setShowPopup] = useState(false)
+  const { addToLikedList, removeFromLikedList, likedIds } = useLiked()
+  const { user } = useAuth()
+  const navigate = useNavigate()
 
-  const [isLiked, setIsLiked] = useState(likedIds.has(product._id));
+  const [isLiked, setIsLiked] = useState(likedIds.has(product._id))
 
-  const location = useLocation();
-  const is_profile = location.pathname.endsWith("/profile");
+  const location = useLocation()
+  const is_profile = location.pathname.endsWith("/profile")
   // console.log(product?.bidder_id?._id || product);
-  const is_bought =
-    (product.status === "ended" && product?.bidder_id?._id == user._id) ||
-    false;
+  const is_bought = (product.status === "ended" && product?.bidder_id?._id == user._id) || false
 
-  const is_new = new Date() - new Date(product.createdAt) <= 90 * 60 * 1000;
+  const is_new = new Date() - new Date(product.createdAt) <= 90 * 60 * 1000
 
-  const has_user_name =
-    product?.bidder_id?.username || product?.bidder_id?.name;
+  const has_user_name = product?.bidder_id?.username || product?.bidder_id?.name
 
   const { register, handleSubmit, watch, setValue } = useForm({
     defaultValues: {
       vote: null,
       review: "",
     },
-  });
+  })
 
-  const vote = watch("vote");
+  const vote = watch("vote")
 
   const onSubmit = async (data) => {
     const body = {
@@ -43,68 +42,68 @@ const ProductCard = ({ product }) => {
       to_user_id: product?.seller_id?._id || product.seller_id,
       comment: data.review,
       points: vote === "up" ? 1 : -1,
-    };
+    }
 
     try {
-      const response = await axios.post(`/api/ratings/`, body);
+      const response = await axios.post(`/api/ratings/`, body)
 
       if (data?.vote == "up") {
-        setShowPopup(false);
+        setShowPopup(false)
         const up = await axios.patch(`/api/users/rateup`, {
           id: product.seller_id,
-        });
+        })
       } else if (data?.vote == "down") {
-        setShowPopup(false);
+        setShowPopup(false)
         const down = await axios.patch(`/api/users/ratedown`, {
           id: product.seller_id,
-        });
+        })
       }
-      toast.success("Đánh giá thành công!");
-      setShowPopup(false);
+      toast.success("Đánh giá thành công!")
+      setShowPopup(false)
     } catch (err) {
-      toast.error(err.response?.data?.message || err);
+      toast.error(err.response?.data?.message || err)
     }
-  };
+  }
 
   const handleClick = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setShowPopup(true);
-  };
+    e.preventDefault()
+    e.stopPropagation()
+    setShowPopup(true)
+  }
 
   const handleHuyBan = () => {
-    setValue("vote", "down");
-    setValue("review", "Người thắng không thanh toán");
-    handleSubmit(onSubmit)();
-    setShowPopup(false);
-  };
+    setValue("vote", "down")
+    setValue("review", "Người thắng không thanh toán")
+    handleSubmit(onSubmit)()
+    setShowPopup(false)
+  }
 
   const handleLike = async (value) => {
     if (value && !isLiked) {
       try {
-        console.log(product);
-        setIsLiked(true);
-        addToLikedList(product._id);
+        console.log(product)
+        setIsLiked(true)
+        addToLikedList(product._id)
       } catch (error) {
-        console.error("Failed to add to watchlist:", error.message);
+        console.error("Failed to add to watchlist:", error.message)
       }
     } else if (!value && isLiked) {
       try {
-        setIsLiked(false);
-        removeFromLikedList(product._id);
+        setIsLiked(false)
+        removeFromLikedList(product._id)
       } catch (error) {
-        console.error("Failed to remove from watchlist:", error.message);
+        console.error("Failed to remove from watchlist:", error.message)
       }
     }
-  };
+  }
 
   const toUserProfile = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    console.log("123456");
-    console.log(product);
-    navigate(`/profile?tab=Đang+đấu+giá&page=1&id=${product.bidder_id._id}`);
-  };
+    e.preventDefault()
+    e.stopPropagation()
+    console.log("123456")
+    console.log(product)
+    navigate(`/profile?tab=Đang+đấu+giá&page=1&id=${product.bidder_id._id}`)
+  }
 
   return (
     <div className="relative">
@@ -146,10 +145,7 @@ const ProductCard = ({ product }) => {
           </div>
 
           {/* Review Form */}
-          <form
-            onSubmit={handleSubmit(onSubmit)}
-            className="flex flex-col h-full"
-          >
+          <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col h-full">
             <textarea
               {...register("review")}
               className="w-full rounded-lg p-2 h-full mt-4 bg-[#f0f0f0]"
@@ -174,10 +170,7 @@ const ProductCard = ({ product }) => {
                   Hủy bán
                 </button>
               )}
-              <button
-                type="submit"
-                className="px-4 bg-blue-600 text-white font-bold rounded-[100px] cursor-pointer"
-              >
+              <button type="submit" className="px-4 bg-blue-600 text-white font-bold rounded-[100px] cursor-pointer">
                 Đăng
               </button>
             </div>
@@ -211,14 +204,12 @@ const ProductCard = ({ product }) => {
         />
 
         <div className="flex justify-between text-black-500 px-[10px] text-sm z-5 items-center">
-          <p className="mt-[2px] -mb-[1px]">
-            {new Date(product.start_time).toLocaleDateString("en-GB")}
-          </p>
+          <p className="mt-[2px] -mb-[1px]">{new Date(product.start_time).toLocaleDateString("en-GB")}</p>
           <svg
             onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              handleLike(isLiked ? false : true);
+              e.preventDefault()
+              e.stopPropagation()
+              handleLike(isLiked ? false : true)
             }}
             width="19"
             height="17"
@@ -234,12 +225,11 @@ const ProductCard = ({ product }) => {
             />
           </svg>
         </div>
+
         <div className="px-[10px] flex flex-col">
-          <p className="font-bold max-h-18 overflow-hidden">{product.name}</p>
+          <p className="font-bold line-clamp-2 truncate">{product.name}</p>
           {!is_profile && (
-            <p className="text-[#666666] h-10 overflow-hidden line-clamp-2 text-sm">
-              {product.description}
-            </p>
+            <p className="text-[#666666] h-10 overflow-hidden line-clamp-2 text-sm">{product.description}</p>
           )}
         </div>
         {/* Gia and Lan ra gia */}
@@ -255,47 +245,32 @@ const ProductCard = ({ product }) => {
               </div>
               {/* right */}
               <div className="flex flex-col text-right leading-[24px]">
-                <p className="text-sm text-[#666666] whitespace-nowrap">
-                  Lần ra giá
-                </p>
-                <p className="text-[22px] font-bold text-orange-600">
-                  {product.total_bids ? product.total_bids : 0}
-                </p>
+                <p className="text-sm text-[#666666] whitespace-nowrap">Lần ra giá</p>
+                <p className="text-[22px] font-bold text-orange-600">{product.total_bids ? product.total_bids : 0}</p>
               </div>
             </div>
             <div className={`pl-3`}>
-              {product?.bidder_id?.is_deleted && (
-                <p className="text-gray-400">Người dùng đã bị xóa</p>
-              )}
+              {product?.bidder_id?.is_deleted && <p className="text-gray-400">Người dùng đã bị xóa</p>}
               {!product?.bidder_id?.is_deleted && has_user_name && (
                 <div className="flex gap-2">
                   <p
                     onClick={toUserProfile}
-                    className=" whitespace-nowrap max-w-40 truncate overflow-hidden underline cursor-pointer hover:text-blue-600"
+                    className="whitespace-nowrap truncate overflow-hidden underline cursor-pointer hover:text-blue-600"
                   >
-                    {product?.bidder_id?.username
-                      ? product?.bidder_id?.username
-                      : product?.bidder_id?.name}
+                    {product?.bidder_id?.username ? product?.bidder_id?.username : product?.bidder_id?.name}
                   </p>
-                  <div className="mt-[2px] ml-1">
-                    <svg
-                      width="15"
-                      height="18"
-                      viewBox="0 0 19 21"
-                      fill="none"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
+                  <div className="mt-[2px] ml-1 flex-shrink-0">
+                    <svg width="15" height="18" viewBox="0 0 19 21" fill="none" xmlns="http://www.w3.org/2000/svg">
                       <path
                         d="M7.55198 1.95796C7.65103 0.708975 9.00264 -0.256819 10.4594 0.0611047L10.8571 0.149269C11.5626 0.304223 12.1889 0.7584 12.3992 1.43833C12.7344 2.52835 13.2114 4.79256 12.4937 7.46285C12.7181 7.43575 12.9432 7.41304 13.1687 7.39473C14.2552 7.3079 15.712 7.29855 17.0026 7.67525C17.792 7.90634 18.5173 8.58494 18.8312 9.37574C19.1116 10.0864 19.075 10.928 18.4746 11.6907C18.562 11.851 18.6321 12.0126 18.6849 12.1756C18.8022 12.5363 18.8571 12.933 18.8571 13.3191C18.8571 13.7051 18.8022 14.1019 18.6849 14.4625C18.6255 14.6429 18.5478 14.8272 18.4411 15.0022C18.6986 15.5192 18.6041 16.0962 18.4365 16.5357C18.264 16.9693 18.0129 17.3757 17.6929 17.7393C17.7752 17.9423 17.8087 18.1561 17.8087 18.3604C17.8087 18.7679 17.6731 19.1953 17.4232 19.5787C16.9142 20.3615 15.904 21 14.4762 21H9.14283C8.22093 21 7.51236 20.8918 6.90893 20.7088C6.38997 20.5429 5.89411 20.326 5.43084 20.0623L5.3577 20.0222C4.5897 19.6121 3.83542 19.2087 2.20647 19.0577C1.03924 18.9482 0 18.1227 0 16.9926V11.6493C0 10.5139 1.04381 9.73641 2.0678 9.49196C3.36152 9.18205 4.46627 8.44067 5.31656 7.60846C6.16989 6.7709 6.70932 5.89862 6.89979 5.41906C7.20303 4.65096 7.44227 3.36324 7.55198 1.9593V1.95796Z"
                         fill="#667EEA"
                       />
                     </svg>
                   </div>
-                  <p className="text-[#667EEA] -ml-1">
+                  <p className="text-[#667EEA] -ml-1 flex-shrink-0">
                     {(
                       (product?.bidder_id?.rating_pos /
-                        (product?.bidder_id?.rating_pos +
-                          product?.bidder_id?.rating_neg)) *
+                        (product?.bidder_id?.rating_pos + product?.bidder_id?.rating_neg)) *
                       100
                     ).toFixed(0) || 0}
                     {"%"}
@@ -303,9 +278,7 @@ const ProductCard = ({ product }) => {
                 </div>
               )}
 
-              {!product?.bidder_id?.is_deleted &&
-                !has_user_name &&
-                "Không có bidder"}
+              {!product?.bidder_id?.is_deleted && !has_user_name && "Không có bidder"}
             </div>
             <ProductTimer end_time={product.end_time} />
           </>
@@ -323,7 +296,7 @@ const ProductCard = ({ product }) => {
         )}
       </Link>
     </div>
-  );
-};
+  )
+}
 
-export default ProductCard;
+export default ProductCard

@@ -799,6 +799,7 @@ export const ProductDetailPage = () => {
           userRole={userRole}
           onRejectBid={handleRejectBid}
           maskName={maskName}
+          isAutobid={product.is_autobid}
         />
       )}
 

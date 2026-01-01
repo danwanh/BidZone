@@ -39,7 +39,7 @@ export function LikedProvider({ children }) {
 
   const addToLikedList = async (id) => {
     if (!user) {
-      toast.error("Please login first");
+      toast.error("Vui lòng đăng nhập để sử dụng tính năng này");
       return;
     }
     try {
