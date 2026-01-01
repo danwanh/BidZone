@@ -417,12 +417,7 @@ export const getProductByCategoryId = async (req, res) => {
 export const getProductBySellerId = async (req, res) => {
   try {
     const { id } = req.validated.params;
-    const {
-      per_page = 1,
-      page = 1,
-      q = "",
-      status = "active",
-    } = req.query;
+    const { per_page = 1, page = 1, q = "", status = "active" } = req.query;
 
     // Check if seller id is valid
     const seller = await User.findById(id);
@@ -509,14 +504,14 @@ export const changeProductById = async (req, res) => {
 // DELETE
 export const deleteProductById = async (req, res) => {
   try {
-    const { id: p_i } = req.validated.params;
+    const { id } = req.validated.params;
 
-    const deletedProduct = await Product.findByIdAndDelete(p_i);
+    const deletedProduct = await Product.findByIdAndDelete(id);
 
     if (!deletedProduct)
       return res
         .status(404)
-        .json({ message: `No product found with id: ${p_i}` });
+        .json({ message: `No product found with id: ${id}` });
 
     res
       .status(200)

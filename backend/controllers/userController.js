@@ -6,10 +6,11 @@ import mongoose from "mongoose";
 // READ - Get all users (Admin only)
 export const getAllUsers = async (req, res) => {
   try {
-    const { role, q = "" } = req.validated.query; // Filter by role if provided
+    const { role, q = "", is_deleted = false } = req.validated.query; // Filter by role if provided
 
     let query = {};
     if (role) query.role = role;
+    query.is_deleted = is_deleted;
 
     if (q) {
       query.$or = [
