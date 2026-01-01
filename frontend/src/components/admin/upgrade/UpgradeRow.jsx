@@ -6,13 +6,13 @@ const UpgradeRow = ({ upgrade, updateList, status, onAccept, onReject }) => {
   return (
     <tr className="border-b border-gray-300 w-full transition-colors hover:bg-gray-50 cursor-context-menu">
       <td className="px-4 py-4 font-medium">
-        {upgrade?.user_id?.username || "Không có tên"}
+        {upgrade?.user_id?.username || "Không có tên tài khoản"}
       </td>
 
       <td className="px-4 py-4 font-medium text-center">
-        {upgrade?.user_id.first_name || upgrade?.user_id.last_name
-          ? upgrade.user_id.first_name + " " + upgrade.user_id.last_name
-          : "Không có tên"}
+        {upgrade?.user_id?.name
+          ? upgrade.user_id.name
+          : "Không có tên người dùng"}
       </td>
 
       <td className="px-4 py-4 text-gray-600 text-center">

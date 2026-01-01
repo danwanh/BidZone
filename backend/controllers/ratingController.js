@@ -55,7 +55,9 @@ export const createRating = async (req, res) => {
       to_user_id,
     });
     if (existed) {
-      return res.status(400).json({ message: "You already rated this user" });
+      return res
+        .status(400)
+        .json({ message: "Bạn đã rate người bán này với sản phẩm này rồi" });
     }
 
     const rating = await Rating.create({

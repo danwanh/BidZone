@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import BecomeSeller from "./BecomeSeller";
 import "../../style/profile.css";
 import api from "../../api/axios";
 import { toast } from "react-toastify";
@@ -11,6 +10,7 @@ const SideBar = ({ user, isOwnProfile }) => {
   const [showPopUp, setShowPopUp] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const { logout } = useAuth();
+  const [userData, setUserData] = useState(user);
   const navigate = useNavigate();
 
   const [comments, setComments] = useState([]);
@@ -42,14 +42,9 @@ const SideBar = ({ user, isOwnProfile }) => {
         return;
       }
       const response = await api.put(`/api/users/${user._id}`, data);
-      setUser(response?.data.user);
-      reset({
-        fullname: "",
-        username: "",
-        phonenumber: "",
-        gender: "",
-        email: "",
-      });
+      reset(data);
+
+      setUserData((prev) => ({ ...prev, ...data }));
       setIsEditing(false);
       console.log(response?.data?.message || response);
       toast.success("Success! Updated user.");
@@ -109,10 +104,6 @@ const SideBar = ({ user, isOwnProfile }) => {
     }
   };
 
-  const handleBecomeSeller = () => {
-    toast.info("Chức năng đăng ký trở thành người bán!");
-  };
-
   const handleLogout = () => {
     logout();
     navigate("/");
@@ -132,7 +123,7 @@ const SideBar = ({ user, isOwnProfile }) => {
     return name ? name.charAt(0).toUpperCase() : "U";
   };
 
-  if (user && user.is_deleted) {
+  if (user && userData.is_deleted) {
     return (
       <div className="info">
         <p className="text-gray-500 text-center py-4">
@@ -336,7 +327,9 @@ const SideBar = ({ user, isOwnProfile }) => {
 
           {/* NAME + AGE DISPLAY */}
           <div>
-            <p className="text-[#171a22] font-bold text-xl mb-2">{user.name}</p>
+            <p className="text-[#171a22] font-bold text-xl mb-2">
+              {userData.name}
+            </p>
             <div className="flex gap-5 flex-col md:flex-row">
               <div className="flex gap-2 items-center">
                 <svg
@@ -351,7 +344,9 @@ const SideBar = ({ user, isOwnProfile }) => {
                     fill="#667EEA"
                   />
                 </svg>
-                <p className="text-[#667eea] font-bold">{user.rating_pos}</p>
+                <p className="text-[#667eea] font-bold">
+                  {userData.rating_pos}
+                </p>
               </div>
 
               <div className="flex gap-2 items-center">
@@ -368,7 +363,9 @@ const SideBar = ({ user, isOwnProfile }) => {
                     fill="#4b60ba"
                   />
                 </svg>
-                <p className="text-[#667eea] font-bold">{user.rating_neg}</p>
+                <p className="text-[#667eea] font-bold">
+                  {userData.rating_neg}
+                </p>
               </div>
               {!isEditing && (
                 <button
@@ -385,13 +382,15 @@ const SideBar = ({ user, isOwnProfile }) => {
             <div className="info_header">HỌ TÊN</div>
             {isEditing ? (
               <input
-                {...registerPersonalInfo("fullname")}
+                {...registerPersonalInfo("name")}
                 type="text"
-                placeholder={user.name}
+                placeholder={userData.name}
                 className="input_style"
               />
             ) : (
-              <p className="other_users_text">{user.name || "Chưa cập nhật"}</p>
+              <p className="other_users_text">
+                {userData.name || "Chưa cập nhật"}
+              </p>
             )}
           </div>
 
@@ -401,12 +400,12 @@ const SideBar = ({ user, isOwnProfile }) => {
               <input
                 {...registerPersonalInfo("username")}
                 type="text"
-                placeholder={user.username}
+                placeholder={userData.username}
                 className="input_style"
               />
             ) : (
               <p className="other_users_text">
-                {user.username || "Chưa cập nhật"}
+                {userData.username || "Chưa cập nhật"}
               </p>
             )}
           </div>
@@ -418,12 +417,12 @@ const SideBar = ({ user, isOwnProfile }) => {
                 <input
                   {...registerPersonalInfo("phonenumber")}
                   type="text"
-                  placeholder={user.phone}
+                  placeholder={userData.phone}
                   className="input_style"
                 />
               ) : (
                 <p className="other_users_text">
-                  {user.phone || "Chưa cập nhật"}
+                  {userData.phone || "Chưa cập nhật"}
                 </p>
               )}
             </div>
@@ -441,7 +440,7 @@ const SideBar = ({ user, isOwnProfile }) => {
                 </select>
               ) : (
                 <p className="other_users_text">
-                  {user.gender || "Chưa cập nhật"}
+                  {userData.gender || "Chưa cập nhật"}
                 </p>
               )}
             </div>
@@ -453,12 +452,12 @@ const SideBar = ({ user, isOwnProfile }) => {
               <input
                 {...registerPersonalInfo("email")}
                 type="email"
-                placeholder={user.email}
+                placeholder={userData.email}
                 className="input_style"
               />
             ) : (
               <p className="other_users_text whitespace-normal break-all">
-                {user.email || "Chưa cập nhật"}
+                {userData.email || "Chưa cập nhật"}
               </p>
             )}
           </div>
@@ -470,12 +469,12 @@ const SideBar = ({ user, isOwnProfile }) => {
                 {...registerPersonalInfo("dob")}
                 type="date"
                 className="input_style"
-                defaultValue={user?.dob ? user.dob.slice(0, 10) : ""}
+                defaultValue={userData?.dob ? userData.dob.slice(0, 10) : ""}
               />
             ) : (
               <p className="other_users_text">
-                {user?.dob
-                  ? new Date(user.dob).toLocaleDateString("vi-VN")
+                {userData?.dob
+                  ? new Date(userData.dob).toLocaleDateString("vi-VN")
                   : "Chưa cập nhật"}
               </p>
             )}
@@ -497,7 +496,7 @@ const SideBar = ({ user, isOwnProfile }) => {
             {isOwnProfile && (
               <>
                 {isEditing ? (
-                  <div className="flex gap-3">
+                  <div className="flex gap-3 md:flex-row flex-col">
                     <button className="button flex-1" type="submit">
                       <div className="font-bold text-white whitespace-nowrap">
                         Lưu thay đổi

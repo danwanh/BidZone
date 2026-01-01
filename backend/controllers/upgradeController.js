@@ -8,8 +8,7 @@ export const createUpgradeRequest = async (req, res) => {
     const {
       user_id,
       note = "",
-      first_name = "",
-      last_name = "",
+      name = "",
       email = "",
       phone_number = "",
       address = "",
@@ -50,8 +49,7 @@ export const createUpgradeRequest = async (req, res) => {
       user_id: user_id,
       status: "pending",
       note: note,
-      first_name: first_name,
-      last_name: last_name,
+      name: name,
       phone_number: phone_number,
       address: address,
       city: city,
@@ -85,8 +83,7 @@ export const getAllUpgradeRequests = async (req, res) => {
     if (q) {
       console.log(q);
       query.$or = [
-        { first_name: { $regex: q, $options: "i" } },
-        { last_name: { $regex: q, $options: "i" } },
+        { name: { $regex: q, $options: "i" } },
         { email: { $regex: q, $options: "i" } },
       ];
     }
