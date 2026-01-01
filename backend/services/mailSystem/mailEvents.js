@@ -69,12 +69,10 @@ appEvent.on("QUESTION_ASKED", async ({ seller, question, product }) => {
 
 appEvent.on("QUESTION_ANSWERED", async ({ buyer, question, product }) => {
   await Promise.all(
-    buyers.map((buyer) =>
-      sendEmail(
-        buyer.email,
-        "Câu hỏi đã được trả lời",
-        answerTemplate(question, product)
-      )
+    sendEmail(
+      buyer.email,
+      "Câu hỏi đã được trả lời",
+      answerTemplate(question, product)
     )
   );
 });

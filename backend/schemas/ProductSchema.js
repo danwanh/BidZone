@@ -87,4 +87,5 @@ export const updateProductSchema = Joi.object({
     .messages({
       'array.min': 'Vui lòng tải lên ít nhất 3 hình ảnh',
     }),
+
 });

@@ -33,7 +33,7 @@ const auctionCronJob = cron.schedule("* * * * *", async () => {
         .populate("bidder_id");
 
       let winner = null;
-      if (winningBid.bidder_id)
+      if (winningBid?.bidder_id)
         winner = await User.findById(winningBid.bidder_id);
 
       // Create an order after auction ends
