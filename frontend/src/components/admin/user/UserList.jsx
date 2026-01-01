@@ -118,7 +118,7 @@ const UserList = () => {
 
   const handleUpdateUser = async (updatedData) => {
     try {
-      await api.put(`/api/users/${updatedData.id}`, updatedData);
+      await api.put(`/api/users/update/${updatedData.id}`, updatedData);
 
       setUsers(
         users.map((u) =>

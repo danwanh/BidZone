@@ -79,7 +79,7 @@ export const updateUserSchema = Joi.object({
   address: Joi.string().optional().allow("", null).messages({
     "string.base": "Địa chỉ phải là một chuỗi",
   }),
-  dob: Joi.date().optional().messages({
+  dob: Joi.date().optional().allow("", null).messages({
     "date.base": "Ngày sinh không hợp lệ",
   }),
   password: Joi.string().min(6).max(100).optional().allow("", null).messages({

@@ -111,7 +111,7 @@ export const createAutoBid = async (req, res) => {
       const diffMinutes =
         (new Date(product.end_time).getTime() - now.getTime()) / 60000;
 
-      if (diffMinutes >= Number(config.value)) {
+      if (diffMinutes <= Number(config.value)) {
         product.end_time = new Date(
           new Date(product.end_time).getTime() +
             Number(config.extend) * 60000
@@ -223,8 +223,14 @@ export const rejectAutoBid = async (req, res) => {
 
     const newPrice = highestValidBid ? highestValidBid.price : 0;
 
-    await Product.findByIdAndUpdate(bid.product_id, {
+    const product = await Product.findByIdAndUpdate(bid.product_id, {
       currentPrice: newPrice,
+    });
+
+    appEvent.emit("BID_REJECTED", {
+      bidder: await User.findById(bid.bidder_id),
+      product,
+      reason: "Lượt ra giá của bạn đã bị từ chối bời người bán",
     });
 
     res.json({

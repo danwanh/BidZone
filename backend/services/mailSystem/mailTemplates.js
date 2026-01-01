@@ -41,9 +41,8 @@ const baseLayout = ({ title, message, product, extra }) => `
       ${extra || ""}
     </div>
 
-    <!--
     <div style="text-align:center">
-      <a href="https://bidzone.vn/product/${product.slug}"
+      <a href="${process.env.FRONTEND_URL}/products/${product._id}"
          style="
            display:inline-block;
            padding:12px 20px;
@@ -56,7 +55,6 @@ const baseLayout = ({ title, message, product, extra }) => `
         Xem sản phẩm
       </a>
     </div>
-    -->
 
     <hr style="margin:24px 0" />
     <p style="font-size:12px; color:#718096; text-align:center">
@@ -140,15 +138,13 @@ export const bidRejectedTemplate = (product, reason) => `
       </td></tr>
     </table>
 
-    <!--
     <div style="text-align:center; margin-top:20px">
-      <a href="https://bidzone.vn/product/${product.slug}"
+      <a href="${process.env.FRONTEND_URL}/products/${product._id}"
          style="padding:12px 20px; background:#3182ce; color:#fff;
          border-radius:6px; text-decoration:none; font-weight:bold">
         Xem sản phẩm
       </a>
     </div>
-    -->
 
   </div>
 </div>
@@ -288,6 +284,21 @@ export const answerTemplate = (question, product) => `
           </td>
         </tr>
       </table>
+    </div>
+
+    <div style="text-align:center">
+      <a href="${process.env.FRONTEND_URL}/products/${product._id}"
+         style="
+           display:inline-block;
+           padding:12px 20px;
+           background:#3182ce;
+           color:#fff;
+           border-radius:6px;
+           text-decoration:none;
+           font-weight:bold
+         ">
+        Xem sản phẩm
+      </a>
     </div>
 
     <hr style="margin:20px 0" />
