@@ -504,7 +504,11 @@ export const changeProductById = async (req, res) => {
 // DELETE
 export const deleteProductById = async (req, res) => {
   try {
+<<<<<<< HEAD
     const { id } = req.validated.params;
+=======
+    const { id} = req.params;
+>>>>>>> 0d597b26dad3175f615b558eea13b3d11f5c75fc
 
     const deletedProduct = await Product.findByIdAndDelete(id);
 

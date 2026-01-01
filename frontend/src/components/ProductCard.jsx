@@ -239,6 +239,11 @@ const ProductCard = ({ product }) => {
 
         <div className="px-[10px] flex flex-col">
           <p className="font-bold line-clamp-2 truncate">{product.name}</p>
+          {/* {!is_profile && (
+            <p className="text-[#666666] h-10 overflow-hidden line-clamp-2 text-sm">
+              {product.description}
+            </p>
+          )} */}
         </div>
         {/* Gia and Lan ra gia */}
         {!is_bought && (
@@ -257,7 +262,7 @@ const ProductCard = ({ product }) => {
                   Lần ra giá
                 </p>
                 <p className="text-[22px] font-bold text-orange-600">
-                  {product.total_bids ? product.total_bids : 0}
+                  {product?.total_bids ? product.total_bids : 0}
                 </p>
               </div>
             </div>
