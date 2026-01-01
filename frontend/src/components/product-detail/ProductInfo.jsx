@@ -1,3 +1,5 @@
+import { Editor } from "@tinymce/tinymce-react";
+
 export const ProductInfo = ({
   product,
   productStatus,
@@ -145,12 +147,29 @@ export const ProductInfo = ({
             <div className="text-sm font-semibold mb-2 text-blue-600">
               Bổ sung mô tả cho sản phẩm
             </div>
-            <textarea
+            {/* <textarea
               value={newDescription}
               onChange={(e) => setNewDescription(e.target.value)}
               placeholder="Nhập thông tin bổ sung..."
               className="w-full p-3 border border-gray-300 rounded-lg mb-2 text-sm"
               rows="4"
+            /> */}
+            <Editor
+              apiKey={import.meta.env.VITE_TINYMCE_API_KEY}
+              value={newDescription}
+              onEditorChange={(content) => {
+                setNewDescription(content);
+              }}
+              init={{
+                height: 300,
+                menubar: false,
+                plugins: ["lists", "link", "preview", "code", "autolink"],
+                toolbar:
+                  "undo redo | bold italic underline | bullist numlist | link | removeformat",
+                branding: false,
+              }}
+              placeholder="Nhập mô tả chi tiết về sản phẩm..."
+              // className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
             />
             <button
               onClick={onAppendDescription}

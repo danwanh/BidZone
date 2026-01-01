@@ -87,4 +87,7 @@ export const updateProductSchema = Joi.object({
     .messages({
       'array.min': 'Vui lòng tải lên ít nhất 3 hình ảnh',
     }),
+    ban_bidder_id: idSchema.optional().messages({
+      'any.invalid': 'ID người mua không hợp lệ',
+      }),
 });

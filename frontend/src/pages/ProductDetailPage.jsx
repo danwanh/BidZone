@@ -1,7 +1,8 @@
+"use client";
+
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import OrderCompletionModal from "../components/order/OrderCompletionModal";
-import { ProductHeader } from "../components/product-detail/ProductHeader";
 import { ProductImages } from "../components/product-detail/ProductImages";
 import { ProductInfo } from "../components/product-detail/ProductInfo";
 import { SellerInfo } from "../components/product-detail/SellerInfo";
@@ -52,6 +53,8 @@ export const ProductDetailPage = () => {
   const [showOrderModal, setShowOrderModal] = useState(false);
   const [buyer, setBuyer] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showBidModal, setShowBidModal] = useState(false);
+  const [pendingBidAmount, setPendingBidAmount] = useState(null);
 
   const { addToLikedList, removeFromLikedList, likedIds } = useLiked();
   const [isLiked, setIsLiked] = useState(likedIds.has(product?._id) || false);
@@ -259,8 +262,6 @@ export const ProductDetailPage = () => {
     [maskName, product, setWinnerFromProduct]
   );
 
-  
-
   const fetchQuestions = useCallback(async (productId) => {
     try {
       const res = await axios.get(`/api/questions/${productId}`);
@@ -348,9 +349,8 @@ export const ProductDetailPage = () => {
         "https://www.gravatar.com/avatar/3b3be63a4c2a439b013787725dfce802?d=identicon",
     });
 
-    
     product.is_autobid ? fetchAutoBid(id) : fetchBids(id);
-  
+
     fetchRelatedProducts(product.category_id);
     fetchQuestions(id);
 
@@ -414,6 +414,14 @@ export const ProductDetailPage = () => {
       return;
     }
 
+    setPendingBidAmount(newBid);
+    setShowBidModal(true);
+  }, [bidInput, currentBid, bidStep]);
+
+  const handleConfirmBid = useCallback(async () => {
+    setShowBidModal(false);
+    const newBid = pendingBidAmount;
+
     const bidderId = currentUserId;
     console.log(bidderId);
     try {
@@ -429,6 +437,7 @@ export const ProductDetailPage = () => {
       toast.success("Đặt giá thành công!");
       fetchProduct(id);
       setBidInput("");
+      setPendingBidAmount(null);
     } catch (error) {
       const errorMsg =
         error.response?.data?.message ||
@@ -436,7 +445,12 @@ export const ProductDetailPage = () => {
         "Không thể đặt giá";
       setBidError(errorMsg);
     }
-  }, [bidInput, currentBid, bidStep, currentUserId, product, id, fetchProduct]);
+  }, [pendingBidAmount, currentUserId, product, id, fetchProduct]);
+
+  const handleCancelBid = useCallback(() => {
+    setShowBidModal(false);
+    setPendingBidAmount(null);
+  }, []);
 
   const handleLike = async () => {
     if (!isLiked) {
@@ -680,6 +694,35 @@ export const ProductDetailPage = () => {
           seller={seller}
           buyer={buyer}
         />
+      )}
+
+      {showBidModal && (
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full mx-4">
+            <h2 className="text-xl font-bold mb-4">Xác nhận đặt giá</h2>
+            <p className="text-gray-700 mb-6">
+              Bạn chắc chắn muốn đặt giá{" "}
+              <span className="font-bold text-blue-600">
+                {pendingBidAmount?.toLocaleString()} VNĐ
+              </span>{" "}
+              không?
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={handleCancelBid}
+                className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition-colors"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={handleConfirmBid}
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+              >
+                Xác nhận
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       <div className="grid md:grid-cols-2 gap-8 bg-white p-8 rounded-xl shadow-2xl mb-6">

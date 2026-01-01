@@ -281,11 +281,11 @@ export const rejectBid = async (req, res) => {
       current_price: newPrice,
     });
 
-    appEvent.emit("BID_REJECTED", {
-      bidder,
-      product,
-      reason: "Lượt ra giá của bạn đã bị từ chối bời người bán",
-    });
+    // appEvent.emit("BID_REJECTED", {
+    //   bidder,
+    //   product,
+    //   reason: "Lượt ra giá của bạn đã bị từ chối bời người bán",
+    // });
 
     res.json({
       message: "Đã từ chối bid & cập nhật giá",
