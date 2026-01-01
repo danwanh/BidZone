@@ -228,9 +228,10 @@ const Navbar = () => {
               {user.role === "seller" && (
                 <Link
                   to="/products/new"
-                  className="flex items-center gap-1 bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
+                  className="flex items-center gap-1 text-white font-semibold rounded-xl px-4 hover:shadow bg-blue-600 hover:bg-blue-700"
                   title="Đăng sản phẩm"
                 >
+                  
                   <svg
                     width="17"
                     height="16"
