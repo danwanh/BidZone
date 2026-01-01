@@ -246,7 +246,7 @@ const ProductCard = ({ product }) => {
               {/* right */}
               <div className="flex flex-col text-right leading-[24px]">
                 <p className="text-sm text-[#666666] whitespace-nowrap">Lần ra giá</p>
-                <p className="text-[22px] font-bold text-orange-600">{product.total_bids ? product.total_bids : 0}</p>
+                <p className="text-[22px] font-bold text-orange-600">{product?.total_bids ? product.total_bids : 0}</p>
               </div>
             </div>
             <div className={`pl-3`}>

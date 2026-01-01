@@ -3,8 +3,11 @@ import { useSearchParams } from "react-router-dom";
 import api from "../../../api/axios";
 import UpgradeRow from "./UpgradeRow";
 import { ToastContainer, toast } from "react-toastify";
+import { useAuth } from "../../../context/AuthContext";
 
 const UpgradeList = () => {
+  const { loading: authLoading } = useAuth();
+
   const [upgrades, setUpgrades] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -44,19 +47,14 @@ const UpgradeList = () => {
   }, [searchTerm, setSearchParams, q]);
 
   useEffect(() => {
+    if (authLoading) return; 
     let isMounted = true;
     const loadUpgrades = async () => {
       try {
         setLoading(true);
         setError(null);
-        const token = localStorage.getItem("accessToken");
 
-        const config = {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        };
-        const res = await api.get(`/api/upgrade?${queryString}`, config);
+        const res = await api.get(`/api/upgrade?${queryString}`);
 
         if (isMounted) {
           setUpgrades(res.data);
@@ -70,7 +68,7 @@ const UpgradeList = () => {
       }
     };
     loadUpgrades();
-  }, [queryString, , status, action]);
+  }, [authLoading, queryString, status, action]);
 
   const handleReject = async (upgradeId) => {
     if (!window.confirm("Bạn có chắc chắn muốn từ chối yêu cầu này?")) return;

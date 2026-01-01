@@ -75,6 +75,7 @@ const ProductSchema = mongoose.Schema(
 
     total_bids: {
       type: Number,
+      default: 0,
     },
 
     banned_bidders: [
