@@ -1,8 +1,8 @@
 import express from "express";
 import {
   ratingIdParamSchema,
+  ratingUserIdParamSchema,
   ratingBodySchema,
-  ratingUserIdParamSchema
 } from "../schemas/RatingSchema.js";
 import {
   getAllRatings,

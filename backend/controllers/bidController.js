@@ -134,11 +134,11 @@ export const createBid = async (req, res) => {
       }
     }
 
-    // update product
-    product.current_price = price;
-    product.highest_bidder_id = bidder_id;
-    product.total_bids = (product.total_bids || 0) + 1;
-    await product.save();
+  // update product
+  product.current_price = price;
+  product.bidder_id = bidder_id;
+  product.total_bids = (product.total_bids || 0) + 1;
+  await product.save();
 
     const seller = await User.findById(product.seller_id);
 
