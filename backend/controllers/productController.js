@@ -316,7 +316,7 @@ export const getProductById = async (req, res) => {
 // GET /api/product/user/:id
 export const getBoughtByUserId = async (req, res) => {
   try {
-    const { id: id } = req.validated.params;
+    const { id } = req.validated.params;
 
     const products = await Product.find({
       bidder_id: id,

@@ -5,10 +5,23 @@ import mongoose from "mongoose";
 
 export const getAllRatings = async (req, res) => {
   try {
-    const ratings = await Rating.find();
+    const { product_id, from_user_id, to_user_id } = req.validated.query;
+
+    const query = {};
+
+    if (product_id) query.product_id = product_id;
+    if (from_user_id) query.from_user_id = from_user_id;
+    if (to_user_id) query.to_user_id = to_user_id;
+
+    const ratings = await Rating.find(query).populate("product_id from_user_id to_user_id");
+
+    if (ratings.length === 0) {
+      return res.status(404).json({ message: "Không tìm thấy đánh giá" });
+    }
+
     res.json(ratings);
   } catch (err) {
-    console.error("Error getting all ratings:", err);
+    console.error("Error getting ratings:", err);
     res.status(500).json({ message: err.message });
   }
 };

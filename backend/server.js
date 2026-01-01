@@ -28,6 +28,8 @@ import authRoutes from "./routes/authRoutes.js";
 import otpRoutes from "./routes/otpRoutes.js";
 import passport from "./config/passport.js";
 
+import auctionCronJob from "./config/autioncEndJob.js";
+
 dotenv.config();
 
 const app = express();
@@ -92,6 +94,7 @@ cron.schedule("0 * * * *", async () => {
   }
 });
 
+auctionCronJob.start();
 //authentication
 app.use("/api/auth", authRoutes);
 app.use("/api/otp", otpRoutes);

@@ -3,6 +3,7 @@ import {
   ratingIdParamSchema,
   ratingUserIdParamSchema,
   ratingBodySchema,
+  ratingQuerySchema,
 } from "../schemas/RatingSchema.js";
 import {
   getAllRatings,
@@ -18,7 +19,13 @@ import { validate } from "../middleware/validateMiddleware.js";
 
 const router = express.Router();
 
-router.get("", authenticate, getAllRatings);
+router.get(
+  "",
+  authenticate,
+  validate({ query: ratingQuerySchema }),
+  getAllRatings
+);
+
 router.get(
   "/each/:id",
   validate({ params: ratingIdParamSchema }),
