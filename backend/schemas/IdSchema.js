@@ -9,5 +9,5 @@ export const idSchema = Joi.string()
     return value;
   }, "ObjectId validation")
   .messages({
-    "any.invalid": "Invalid ObjectId",
+    "any.invalid": "ObjectId không hợp lệ",
   });

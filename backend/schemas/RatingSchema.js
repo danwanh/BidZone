@@ -9,6 +9,13 @@ export const ratingIdParamSchema = Joi.object({
   }),
 });
 
+export const ratingUserIdParamSchema = Joi.object({
+  userId: idSchema.required().messages({
+    "any.required": "ID người dùng là bắt buộc",
+    "any.invalid": "ID người dùng không hợp lệ",
+  }),
+});
+
 // Validation for the Rating body
 export const ratingBodySchema = Joi.object({
   product_id: idSchema.required().messages({
