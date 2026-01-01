@@ -47,16 +47,13 @@ const UpgradeList = () => {
   }, [searchTerm, setSearchParams, q]);
 
   useEffect(() => {
-    if (authLoading) return; 
+    if (authLoading) return;
     let isMounted = true;
-    const loadCategories = async () => {
+    const loadUpgrades = async () => {
       try {
         setLoading(true);
         setError(null);
-<<<<<<< HEAD
-=======
 
->>>>>>> 0d597b26dad3175f615b558eea13b3d11f5c75fc
         const res = await api.get(`/api/upgrade?${queryString}`);
 
         if (isMounted) {
@@ -70,13 +67,8 @@ const UpgradeList = () => {
         if (isMounted) setLoading(false);
       }
     };
-<<<<<<< HEAD
-    loadCategories();
-  }, [queryString, , status, action]);
-=======
     loadUpgrades();
   }, [authLoading, queryString, status, action]);
->>>>>>> 0d597b26dad3175f615b558eea13b3d11f5c75fc
 
   const handleReject = async (upgradeId) => {
     if (!window.confirm("Bạn có chắc chắn muốn từ chối yêu cầu này?")) return;
