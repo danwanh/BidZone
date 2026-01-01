@@ -118,9 +118,9 @@ export const updateQuestion = async (req, res) => {
 
     if (answer) {
       appEvent.emit("QUESTION_ANSWERED", {
-        buyer: await User.findById(bidder_id),
+        buyer: await User.findById(updated.bidder_id),
         question: updated,
-        product: await Product.findById(product_id),
+        product: await Product.findById(updated.product_id),
       });
     }
 
