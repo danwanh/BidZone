@@ -2,11 +2,13 @@ import { useEffect, useState } from "react";
 import api from "../../../api/axios";
 import { Trash2, Edit, Plus, X, Save } from "lucide-react";
 import { toast } from "react-toastify";
+import { useAuth } from "../../../context/AuthContext";
 
 const VariableList = () => {
   const [variables, setVariables] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { loading: authLoading } = useAuth();
 
   // State cho Modal
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -35,8 +37,9 @@ const VariableList = () => {
   };
 
   useEffect(() => {
+    if (authLoading) return;
     loadVariables();
-  }, []);
+  }, [authLoading]);
 
   // 2. Mở Modal (Tạo mới hoặc Sửa)
   const openModal = (variable = null) => {

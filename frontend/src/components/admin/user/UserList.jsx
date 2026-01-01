@@ -3,6 +3,7 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import AddUser from "./AddUser";
+import { useAuth } from "../../../context/AuthContext";
 
 import UserRow from "./UserRow";
 import api from "../../../api/axios";
@@ -12,6 +13,8 @@ import AdminEdit from "./AdminEdit";
 import AdminDelete from "./AdminDeleteNoti";
 
 const UserList = () => {
+  const { loading: authLoading } = useAuth();
+
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -53,6 +56,7 @@ const UserList = () => {
 
   // Load data
   useEffect(() => {
+    if (authLoading) return;
     let isMounted = true;
     const loadData = async () => {
       try {
@@ -75,7 +79,7 @@ const UserList = () => {
     return () => {
       isMounted = false;
     };
-  }, [queryString]);
+  }, [queryString, authLoading]);
 
   const handleRowContextMenu = (e, user) => {
     e.preventDefault();
