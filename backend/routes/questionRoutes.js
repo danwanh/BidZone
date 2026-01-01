@@ -31,7 +31,7 @@ router.post(
 router.patch(
   "/:id",
   authenticate,
-  validate({ params: questionIdParamSchema }),
+  validate({ params: questionIdParamSchema, body: questionBodySchema }),
   updateQuestion
 );
 router.delete(

@@ -2,9 +2,10 @@ import cron from "node-cron";
 import Product from "../models/Product.js";
 import Bid from "../models/Bid.js";
 import User from "../models/User.js";
-import appEvent from "../events/appEvent.js";
+import appEvent from "../services/mailSystem/mailEvents.js";
 
 cron.schedule("* * * * *", async () => {
+  console.log("Ended bid");
   const now = new Date();
 
   // Find auctions that should end
@@ -29,7 +30,9 @@ cron.schedule("* * * * *", async () => {
       .sort({ price: -1 })
       .populate("bidder_id");
 
-    const winner = winningBid?.bidder_id || null;
+    let winner = null;
+    if (winningBid.bidder_id)
+      winner = await User.findById(winningBid.bidder_id);
     
     // Emit event
     appEvent.emit("AUCTION_ENDED", {

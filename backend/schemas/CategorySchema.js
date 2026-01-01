@@ -4,44 +4,44 @@ import { idSchema } from "./IdSchema.js";
 // dùng cho :categoryId
 export const categoryIdParamSchema = Joi.object({
   categoryId: idSchema.required().messages({
-    "any.required": "Category ID is required",
-    "any.invalid": "Invalid Category ID",
+    "any.required": "Category ID là bắt buộc",
+    "any.invalid": "Category ID không hợp lệ",
   }),
 });
 
 // POST /api/category
 export const createCategorySchema = Joi.object({
   category_id: idSchema.allow(null, "").messages({
-    "any.invalid": "Invalid parent category ID",
+    "any.invalid": "ID danh mục cha không hợp lệ",
   }),
 
   name: Joi.string().trim().min(1).required().messages({
-    "string.base": "Category name must be a string",
-    "string.empty": "Category name cannot be empty",
-    "any.required": "Category name is required",
+    "string.base": "Tên danh mục phải là chuỗi",
+    "string.empty": "Tên danh mục không được để trống",
+    "any.required": "Tên danh mục là bắt buộc",
   }),
 
   slug: Joi.string().trim().optional().messages({
-    "string.base": "Slug must be a string",
+    "string.base": "Slug phải là chuỗi",
   }),
 });
 
 // PATCH /api/category/:categoryId
 export const updateCategorySchema = Joi.object({
   category_id: idSchema.allow(null).messages({
-    "any.invalid": "Invalid parent category ID",
+    "any.invalid": "ID danh mục cha không hợp lệ",
   }),
 
   name: Joi.string().trim().min(1).messages({
-    "string.base": "Category name must be a string",
-    "string.empty": "Category name cannot be empty",
+    "string.base": "Tên danh mục phải là chuỗi",
+    "string.empty": "Tên danh mục không được để trống",
   }),
 
   slug: Joi.string().trim().messages({
-    "string.base": "Slug must be a string",
+    "string.base": "Slug phải là chuỗi",
   }),
 })
   .min(1)
   .messages({
-    "object.min": "At least one field must be updated",
+    "object.min": "Cần cập nhật ít nhất một trường",
   });
