@@ -57,7 +57,7 @@ router.get(
 router.put(
   "/:id",
   authenticate,
-  validate({ params: userIdSchema, body: updateUserSchema }), // Xác thực ID và body
+  validate({ params: userIdSchema}), // Xác thực ID và body
   updateUser
 );
 

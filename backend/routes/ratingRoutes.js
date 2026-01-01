@@ -2,6 +2,7 @@ import express from "express";
 import {
   ratingIdParamSchema,
   ratingBodySchema,
+  ratingUserIdParamSchema
 } from "../schemas/RatingSchema.js";
 import {
   getAllRatings,
@@ -27,7 +28,7 @@ router.get(
 router.get(
   "/user/:userId",
   authenticate,
-  validate({ params: ratingIdParamSchema }),
+  validate({ params: ratingUserIdParamSchema }),
   getRatingsByUser
 );
 

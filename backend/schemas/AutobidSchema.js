@@ -6,7 +6,7 @@ export const idParamSchema = Joi.object({
   id: idSchema.required().messages({
     "any.required": "AutoBid ID is required",
     "any.invalid": "Invalid AutoBid ID",
-  }),
+  })
 });
 
 // For creating a new AutoBid

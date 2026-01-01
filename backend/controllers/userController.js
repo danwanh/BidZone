@@ -74,7 +74,7 @@ export const updateUser = async (req, res) => {
   try {
     const { id } = req.validated.params;
     const {
-      name = "",
+      fullname = "",
       email = "",
       phonenumber = "",
       address = "",
@@ -99,7 +99,7 @@ export const updateUser = async (req, res) => {
     }
 
     // Update fields
-    if (name) user.name = name;
+    if (fullname) user.name = fullname;
     if (email) {
       // Check if email is already taken
       const emailExists = await User.findOne({ email, _id: { $ne: id } });

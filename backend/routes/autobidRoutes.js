@@ -13,6 +13,7 @@ import {
   updateBidStatus,
   rejectAutoBid,
 } from "../controllers/autobidController.js";
+import { bidIdParamSchema, bidProductIdParamSchema } from "../schemas/BidSchema.js";
 import { authenticate } from "../middleware/authMiddleware.js";
 import { validate } from "../middleware/validateMiddleware.js";
 
@@ -30,21 +31,20 @@ router.get("/", authenticate, getAllAutoBids);
 router.get(
   "/:id",
   authenticate,
-  validate({ params: idParamSchema }),
   getAutoBidById
 );
 
 router.get(
   "/product/:product_id",
   authenticate,
-  validate({ params: idParamSchema }),
+  validate({ params: bidProductIdParamSchema }),
   getAutoBidsByProduct
 );
 
 router.delete(
   "/:id",
   authenticate,
-  validate({ params: idParamSchema }),
+  validate({ params: bidIdParamSchema }),
   deleteAutoBid
 );
 

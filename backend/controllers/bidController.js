@@ -212,7 +212,7 @@ export const getBiddingByUser = async (req, res) => {
     }
     const active = products.filter((p) => p?.product_id?.status !== "ended");
 
-    const { page = 1, per_page = 6, q = "" } = req.validated.query;
+    const { page = 1, per_page = 6, q = "" } = req.query;
     const page_num = Math.max(1, Number(page) || 1);
     const per_page_num = Math.max(1, Number(per_page) || 6);
     const filtered = active.filter((p) =>
