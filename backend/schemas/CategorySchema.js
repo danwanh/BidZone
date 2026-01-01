@@ -28,7 +28,7 @@ export const createCategorySchema = Joi.object({
 
 // PATCH /api/category/:categoryId
 export const updateCategorySchema = Joi.object({
-  category_id: idSchema.allow(null).messages({
+  category_id: idSchema.allow(null).allow("").messages({
     "any.invalid": "ID danh mục cha không hợp lệ",
   }),
 

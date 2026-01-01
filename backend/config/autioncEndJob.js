@@ -1,6 +1,7 @@
 import cron from "node-cron";
-import Product from "../models/product.model.js"
+import Product from "../models/product.model.js";
 import Bid from "../models/bid.model.js";
+import AutoBid from "../models/autobid.model.js";
 import User from "../models/user.model.js";
 import Order from "../models/order.model.js";
 import appEvent from "../services/mailSystem/mailEvents.js";
@@ -25,16 +26,28 @@ const auctionCronJob = cron.schedule("* * * * *", async () => {
       const seller = await User.findById(product.seller_id);
 
       // Get highest bid
-      const winningBid = await Bid.findOne({
+      let winningBid = await Bid.findOne({
         product_id: product._id,
         status: true,
       })
         .sort({ price: -1 })
         .populate("bidder_id");
 
+      if (!winningBid) {
+        winningBid = await AutoBid.findOne({
+          product_id: product._id,
+          status: true,
+        })
+          .sort({ price: -1 })
+          .populate("bidder_id");
+      }
+
       let winner = null;
       if (winningBid?.bidder_id)
         winner = await User.findById(winningBid.bidder_id);
+
+      console.log(product.name);
+      console.log(winningBid);
 
       // Create an order after auction ends
       const order = new Order({

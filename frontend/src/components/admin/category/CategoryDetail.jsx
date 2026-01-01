@@ -74,8 +74,8 @@ const CategoryDetail = ({
             `/api/category/${category.category_id}`
           );
           reset({
-            name: category.name,
-            category_id: category.category_id,
+            name: "",
+            category_id: "",
           });
           setParentName(response?.data?.name);
         };
@@ -136,6 +136,20 @@ const CategoryDetail = ({
     getSold();
   }, [category]);
 
+  const handleStartEditing = () => {
+    if (!category?._id) {
+      onUpdateNoCategory();
+      return;
+    }
+
+    reset({
+      name: category.name,
+      category_id: category.category_id || "",
+    });
+
+    setEditing(true);
+  };
+
   return (
     <div className="bg-white/80 backdrop-blur rounded-2xl p-6 shadow-lg transition-h duration-300 ease-in-out">
       <h3 className="text-lg font-semibold text-gray-800 mb-4">
@@ -163,7 +177,9 @@ const CategoryDetail = ({
       >
         <div className="flex justify-between items-center py-3 border-b">
           <span className="text-gray-600 font-medium">ID</span>
-          <span className="text-gray-800">{loading ? "" : category._id}</span>
+          <span className="text-gray-800 whitespace-normal w-full">
+            {loading ? "" : category._id}
+          </span>
         </div>
 
         {!isParent && (
@@ -244,11 +260,7 @@ const CategoryDetail = ({
             </button>
             <button
               type="button"
-              onClick={
-                category?._id
-                  ? () => setEditing(true)
-                  : () => onUpdateNoCategory()
-              }
+              onClick={handleStartEditing}
               className="w-full mt-4 px-4 py-3 ring ring-2 ring-inset ring-indigo-500 text-indigo-500 rounded-lg hover:ring-indigo-700 font-bold cursor-pointer"
             >
               Thay đổi

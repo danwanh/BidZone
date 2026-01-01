@@ -16,7 +16,7 @@ const UpgradeRow = ({ upgrade, updateList, status, onAccept, onReject }) => {
       </td>
 
       <td className="px-4 py-4 text-gray-600 text-center">
-        {upgrade.user_id.email || "Không có email"}
+        {upgrade?.user_id?.email || "Không có email"}
       </td>
 
       {status === "" && (
@@ -29,7 +29,7 @@ const UpgradeRow = ({ upgrade, updateList, status, onAccept, onReject }) => {
               : "text-yellow-600"
           } `}
         >
-          {upgrade.status || "Không có trạng thái"}
+          {upgrade?.status || "Không có trạng thái"}
         </td>
       )}
 

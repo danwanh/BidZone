@@ -47,7 +47,7 @@ router.patch(
   "/:categoryId",
   authenticate,
   isAdmin,
-  validate({ params: categoryIdParamSchema, doby: updateCategorySchema }),
+  validate({ params: categoryIdParamSchema, body: updateCategorySchema }),
   changeCategoryById
 );
 
