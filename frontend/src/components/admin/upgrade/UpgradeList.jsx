@@ -45,11 +45,18 @@ const UpgradeList = () => {
 
   useEffect(() => {
     let isMounted = true;
-    const loadCategories = async () => {
+    const loadUpgrades = async () => {
       try {
         setLoading(true);
         setError(null);
-        const res = await api.get(`/api/upgrade?${queryString}`);
+        const token = localStorage.getItem("accessToken");
+
+        const config = {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        };
+        const res = await api.get(`/api/upgrade?${queryString}`, config);
 
         if (isMounted) {
           setUpgrades(res.data);
@@ -62,7 +69,7 @@ const UpgradeList = () => {
         if (isMounted) setLoading(false);
       }
     };
-    loadCategories();
+    loadUpgrades();
   }, [queryString, , status, action]);
 
   const handleReject = async (upgradeId) => {

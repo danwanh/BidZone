@@ -112,7 +112,10 @@ export const changeCategoryById = async (req, res) => {
 
     const updates = {};
 
-    if (req.validated.body.category_id !== undefined) {
+    if (
+      req.validated.body.category_id !== undefined &&
+      req.validated.body.category_id !== ""
+    ) {
       const cat_id = req.validated.body.category_id;
       const parent = await Category.findById(cat_id);
       if (!parent)
@@ -121,8 +124,10 @@ export const changeCategoryById = async (req, res) => {
           .json({ message: `Can't find parent id: ${cat_id}` });
       updates.category_id = cat_id;
     }
-    if (req.validated.body.name !== undefined) updates.name = req.validated.body.name;
-    if (req.validated.body.slug !== undefined) updates.slug = req.validated.body.slug;
+    if (req.validated.body.name !== undefined)
+      updates.name = req.validated.body.name;
+    if (req.validated.body.slug !== undefined)
+      updates.slug = req.validated.body.slug;
 
     const updated_category = await Category.findByIdAndUpdate(
       c_i,
