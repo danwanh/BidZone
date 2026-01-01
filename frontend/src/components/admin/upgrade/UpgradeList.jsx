@@ -3,11 +3,8 @@ import { useSearchParams } from "react-router-dom";
 import api from "../../../api/axios";
 import UpgradeRow from "./UpgradeRow";
 import { ToastContainer, toast } from "react-toastify";
-import { useAuth } from "../../../context/AuthContext";
 
 const UpgradeList = () => {
-  const { loading: authLoading } = useAuth();
-
   const [upgrades, setUpgrades] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -47,13 +44,19 @@ const UpgradeList = () => {
   }, [searchTerm, setSearchParams, q]);
 
   useEffect(() => {
+<<<<<<< HEAD
     if (authLoading) return;
+=======
+>>>>>>> 224532600be7ac94352a5726386b5e11aab41d65
     let isMounted = true;
     const loadUpgrades = async () => {
       try {
         setLoading(true);
         setError(null);
+<<<<<<< HEAD
 
+=======
+>>>>>>> 224532600be7ac94352a5726386b5e11aab41d65
         const res = await api.get(`/api/upgrade?${queryString}`);
 
         if (isMounted) {
@@ -67,8 +70,13 @@ const UpgradeList = () => {
         if (isMounted) setLoading(false);
       }
     };
+<<<<<<< HEAD
     loadUpgrades();
   }, [authLoading, queryString, status, action]);
+=======
+    loadCategories();
+  }, [queryString, , status, action]);
+>>>>>>> 224532600be7ac94352a5726386b5e11aab41d65
 
   const handleReject = async (upgradeId) => {
     if (!window.confirm("Bạn có chắc chắn muốn từ chối yêu cầu này?")) return;
