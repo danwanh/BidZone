@@ -223,8 +223,14 @@ export const rejectAutoBid = async (req, res) => {
 
     const newPrice = highestValidBid ? highestValidBid.price : 0;
 
-    await Product.findByIdAndUpdate(bid.product_id, {
+    const product = await Product.findByIdAndUpdate(bid.product_id, {
       currentPrice: newPrice,
+    });
+
+    appEvent.emit("BID_REJECTED", {
+      bidder: await User.findById(bid.bidder_id),
+      product,
+      reason: "Lượt ra giá của bạn đã bị từ chối bời người bán",
     });
 
     res.json({
