@@ -68,13 +68,11 @@ appEvent.on("QUESTION_ASKED", async ({ seller, question, product }) => {
 });
 
 appEvent.on("QUESTION_ANSWERED", async ({ buyer, question, product }) => {
-  await Promise.all(
-    sendEmail(
+  await sendEmail(
       buyer.email,
       "Câu hỏi đã được trả lời",
       answerTemplate(question, product)
     )
-  );
 });
 
 export default appEvent;
