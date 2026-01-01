@@ -578,7 +578,7 @@ export const ProductDetailPage = () => {
       }
 
       try {
-        await axios.patch(`/api/questions/${questionId}`, {
+        await axios.patch(`/api/questions/update/${questionId}`, {
           answer: answer.trim(),
         });
 

@@ -4,9 +4,9 @@ import { idSchema } from "./IdSchema.js";
 // For routes that only need an ID in params
 export const idParamSchema = Joi.object({
   id: idSchema.required().messages({
-    "any.required": "AutoBid ID là bắt buộc",
-    "any.invalid": "AutoBid ID không hợp lệ",
-  }),
+    "any.required": "AutoBid ID is required",
+    "any.invalid": "Invalid AutoBid ID",
+  })
 });
 
 // For creating a new AutoBid

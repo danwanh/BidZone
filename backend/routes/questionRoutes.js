@@ -29,7 +29,7 @@ router.post(
   createQuestion
 );
 router.patch(
-  "/:id",
+  "/update/:id",
   authenticate,
   validate({ params: questionIdParamSchema, body: questionBodySchema }),
   updateQuestion

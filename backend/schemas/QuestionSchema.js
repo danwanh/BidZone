@@ -17,19 +17,19 @@ export const questionProductIdParamSchema = Joi.object({
 });
 
 export const questionBodySchema = Joi.object({
-  product_id: idSchema.required().messages({
+  product_id: idSchema.optional().messages({
     "any.required": "ID sản phẩm là bắt buộc",
     "any.invalid": "ID sản phẩm không hợp lệ",
   }),
-  seller_id: idSchema.required().messages({
+  seller_id: idSchema.optional().messages({
     "any.required": "ID người bán là bắt buộc",
     "any.invalid": "ID người bán không hợp lệ",
   }),
-  bidder_id: idSchema.required().messages({
+  bidder_id: idSchema.optional().messages({
     "any.required": "ID người mua là bắt buộc",
     "any.invalid": "ID người mua không hợp lệ",
   }),
-  question: Joi.string().required().messages({
+  question: Joi.string().optional().messages({
     "any.required": "Câu hỏi là bắt buộc",
   }),
   answer: Joi.string().allow("").optional(),

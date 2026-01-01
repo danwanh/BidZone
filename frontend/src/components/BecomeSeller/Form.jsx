@@ -10,8 +10,7 @@ import { toast } from "react-toastify";
 import { useAuth } from "../../context/AuthContext";
 
 const formSchema = z.object({
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().min(1, "Last name is required"),
+  name: z.string().min(1, "Name is required"),
   phoneNumber: z.string().min(1, "Phone number is required"),
   address: z.string().min(1, "Address is required"),
   city: z.string().min(1, "City is required"),
@@ -67,8 +66,7 @@ const Form = () => {
         user_id: user._id,
         admin_id: "",
         status: "pending",
-        first_name: values.firstName,
-        last_name: values.lastName,
+        name: values.name,
         email: user.email,
         phone_number: values.phoneNumber,
         address: values.address,
@@ -109,38 +107,21 @@ const Form = () => {
           className="max-w-3xl mx-auto p-6 bg-white rounded-xl shadow-lg"
         >
           <NavBar step={step} />
-          {/* First Name & Last Name */}
+          {/* Name */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 gap-x-15 mb-4">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Tên đầu <span className="text-red-500">*</span>
+                Tên người dùng <span className="text-red-500">*</span>
               </label>
               <input
-                {...register("firstName")}
+                {...register("name")}
                 className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-                  errors.firstName ? "border-red-500" : "border-gray-300"
+                  errors.name ? "border-red-500" : "border-gray-300"
                 }`}
               />
-              {errors.firstName && (
+              {errors.name && (
                 <p className="text-red-500 text-xs mt-1">
-                  {errors.firstName.message}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Tên gia đình <span className="text-red-500">*</span>
-              </label>
-              <input
-                {...register("lastName")}
-                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-                  errors.lastName ? "border-red-500" : "border-gray-300"
-                }`}
-              />
-              {errors.lastName && (
-                <p className="text-red-500 text-xs mt-1">
-                  {errors.lastName.message}
+                  {errors.name.message}
                 </p>
               )}
             </div>
@@ -300,13 +281,8 @@ const Form = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 gap-x-15">
             <div>
-              <p className="text-gray-500 font-semibold">Tên đầu:</p>
-              <p className="text-gray-800">{getValues("firstName")}</p>
-            </div>
-
-            <div>
-              <p className="text-gray-500 font-semibold">Tên cuối:</p>
-              <p className="text-gray-800">{getValues("lastName")}</p>
+              <p className="text-gray-500 font-semibold">Tên người dùng:</p>
+              <p className="text-gray-800">{getValues("name")}</p>
             </div>
 
             <div>

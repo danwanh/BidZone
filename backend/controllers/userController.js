@@ -72,6 +72,7 @@ export const getProfile = async (req, res) => {
 // UPDATE - Update user profile
 export const updateUser = async (req, res) => {
   try {
+    console.log(req.validated.body);
     const { id } = req.validated.params;
     const {
       name = "",

@@ -52,6 +52,15 @@ export const ProductInfo = ({
       <div className="text-indigo-500 font-semibold mb-4">
         {product.category_id?.name}
       </div>
+      {/* Ngày bắt đầu */}
+      <div className="text-gray-600 text-sm mb-4">
+        Ngày bắt đầu:{" "}
+        <span className="font-semibold">
+          {new Date(product.start_time).toLocaleString("vi-VN", {
+            hour12: false,
+          })}
+        </span>
+      </div>
 
       <div
         className={`p-4 rounded-lg text-center mb-4 ${

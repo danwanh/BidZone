@@ -322,7 +322,7 @@ export const getBoughtByUserId = async (req, res) => {
       bidder_id: id,
       status: "ended",
     }).populate("bidder_id");
-    const { page = 1, per_page = 6, q = "" } = req.validated.query;
+    const { page = 1, per_page = 6, q = "" } = req.query;
     const page_number = Math.max(1, Number(page) || 1);
     const per_page_number = Math.max(1, Number(per_page) || 1);
     const filtered = products.filter((p) =>
@@ -386,7 +386,7 @@ export const getBoughtByCategoryId = async (req, res) => {
 
 export const getProductByCategoryId = async (req, res) => {
   try {
-    const { categoryId = "" } = req.validated.query;
+    const { categoryId = "" } = req.validated.params;
 
     const category = await Category.findById(categoryId);
 
@@ -416,22 +416,22 @@ export const getProductByCategoryId = async (req, res) => {
 // GET /api/product/:id/seller
 export const getProductBySellerId = async (req, res) => {
   try {
-    const { id: p_i } = req.validated.params;
+    const { id } = req.validated.params;
     const {
       per_page = 1,
       page = 1,
       q = "",
       status = "active",
-    } = req.validated.query;
+    } = req.query;
 
     // Check if seller id is valid
-    const seller = await User.findById(p_i);
+    const seller = await User.findById(id);
     if (!seller)
       return res.status(400).json({ message: "No user with that id" });
     if (seller.role !== "seller")
       return res.status(403).json({ message: "User is not a seller" });
 
-    const products = await Product.find({ seller_id: p_i, status: status });
+    const products = await Product.find({ seller_id: id, status: status });
 
     if (products.length == 0)
       return res.json({ message: "No product found", products: [{}] });
@@ -651,7 +651,7 @@ export const getProductsByCategoryIdSimple = async (req, res) => {
       return res.status(404).json({ message: "Category not found" });
     }
 
-    const { status = "" } = req.validated.query;
+    const { status = "" } = req.query;
     const STATUS =
       status !== "" && status !== "active" && status !== "ended" ? "" : status;
 
@@ -682,8 +682,8 @@ export const getLikedProducts = (req, res) => {
 
 export const addDescriptionHistory = async (req, res) => {
   try {
-    const { id } = req.validated.params;
-    const { description } = req.validated.body;
+    const { id } = req.params;
+    const { description } = req.body;
 
     if (!description) {
       return res.status(400).json({
