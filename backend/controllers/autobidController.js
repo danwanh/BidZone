@@ -122,6 +122,9 @@ export const createAutoBid = async (req, res) => {
     // update product
     product.current_price = newPrice;
     product.highest_bidder_id = newHolder;
+
+    product.total_bids += 1;
+
     await product.save();
 
     let prevBidder;
