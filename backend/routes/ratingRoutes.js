@@ -32,7 +32,12 @@ router.get(
   getRatingsByUser
 );
 
-router.post("/", authenticate, createRating);
+router.post(
+  "/",
+  authenticate,
+  validate({ body: ratingBodySchema }),
+  createRating
+);
 
 router.patch(
   "/:id",

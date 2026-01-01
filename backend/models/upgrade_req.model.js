@@ -23,11 +23,7 @@ const UpgradeRequestSchema = mongoose.Schema(
       type: String,
     },
 
-    first_name: {
-      type: String,
-    },
-
-    last_name: {
+    name: {
       type: String,
     },
 

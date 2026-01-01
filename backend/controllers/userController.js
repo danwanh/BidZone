@@ -72,9 +72,10 @@ export const getProfile = async (req, res) => {
 // UPDATE - Update user profile
 export const updateUser = async (req, res) => {
   try {
+    console.log(req.validated.body);
     const { id } = req.validated.params;
     const {
-      fullname = "",
+      name = "",
       email = "",
       phonenumber = "",
       address = "",
@@ -99,7 +100,7 @@ export const updateUser = async (req, res) => {
     }
 
     // Update fields
-    if (fullname) user.name = fullname;
+    if (name) user.name = name;
     if (email) {
       // Check if email is already taken
       const emailExists = await User.findOne({ email, _id: { $ne: id } });

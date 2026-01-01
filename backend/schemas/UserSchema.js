@@ -43,46 +43,59 @@ export const createUserSchema = Joi.object({
   dob: Joi.date().optional().messages({
     "date.base": "Ngày sinh không hợp lệ",
   }),
-  gender: Joi.string().valid('Nam', 'Nữ', 'Khác').optional().messages({
+  gender: Joi.string().valid("Nam", "Nữ", "Khác").optional().messages({
     "string.base": "Giới tính phải là một chuỗi",
     "any.only": "Giới tính chỉ có thể là 'Nam', 'Nữ' hoặc 'Khác'",
   }),
-  role: Joi.string().valid('bidder', 'seller', 'admin').default('bidder').messages({
-    "string.base": "Vai trò phải là một chuỗi",
-    "any.only": "Vai trò chỉ có thể là 'bidder', 'seller' hoặc 'admin'",
-  }),
+  role: Joi.string()
+    .valid("bidder", "seller", "admin")
+    .default("bidder")
+    .messages({
+      "string.base": "Vai trò phải là một chuỗi",
+      "any.only": "Vai trò chỉ có thể là 'bidder', 'seller' hoặc 'admin'",
+    }),
 });
 
 // Schema cho việc cập nhật thông tin người dùng
 export const updateUserSchema = Joi.object({
-  name: Joi.string().min(2).max(100).optional().messages({
-    "string.base": "Họ và tên phải là một chuỗi",
-    "string.min": "Họ và tên phải có ít nhất 2 ký tự",
-    "string.max": "Họ và tên tối đa 100 ký tự",
-  }),
-  email: Joi.string().email().optional().messages({
+  name: Joi.string()
+    .min(2)
+    .max(100)
+    .optional()
+    .allow("", null)
+    .allow("", null)
+    .messages({
+      "string.base": "Họ và tên phải là một chuỗi",
+      "string.min": "Họ và tên phải có ít nhất 2 ký tự",
+      "string.max": "Họ và tên tối đa 100 ký tự",
+    }),
+  email: Joi.string().email().optional().allow("", null).messages({
     "string.base": "Email phải là một chuỗi",
     "string.email": "Email không hợp lệ",
   }),
-  phonenumber: Joi.string().optional().messages({
+  phonenumber: Joi.string().optional().allow("", null).messages({
     "string.base": "Số điện thoại phải là một chuỗi",
   }),
-  address: Joi.string().optional().messages({
+  address: Joi.string().optional().allow("", null).messages({
     "string.base": "Địa chỉ phải là một chuỗi",
   }),
   dob: Joi.date().optional().messages({
     "date.base": "Ngày sinh không hợp lệ",
   }),
-  password: Joi.string().min(6).max(100).optional().messages({
+  password: Joi.string().min(6).max(100).optional().allow("", null).messages({
     "string.base": "Mật khẩu phải là một chuỗi",
     "string.min": "Mật khẩu phải có ít nhất 6 ký tự",
     "string.max": "Mật khẩu tối đa 100 ký tự",
   }),
-  gender: Joi.string().valid('Nam', 'Nữ', 'Khác').optional().messages({
-    "string.base": "Giới tính phải là một chuỗi",
-    "any.only": "Giới tính chỉ có thể là 'Nam', 'Nữ' hoặc 'Khác'",
-  }),
-  username: Joi.string().min(3).max(30).optional().messages({
+  gender: Joi.string()
+    .valid("Nam", "Nữ", "Khác")
+    .optional()
+    .allow("", null)
+    .messages({
+      "string.base": "Giới tính phải là một chuỗi",
+      "any.only": "Giới tính chỉ có thể là 'Nam', 'Nữ' hoặc 'Khác'",
+    }),
+  username: Joi.string().min(3).max(30).optional().allow("", null).messages({
     "string.base": "Tên người dùng phải là một chuỗi",
     "string.min": "Tên người dùng phải có ít nhất 3 ký tự",
     "string.max": "Tên người dùng tối đa 30 ký tự",
@@ -107,7 +120,7 @@ export const changePasswordSchema = Joi.object({
 
 // Schema cho việc cập nhật vai trò người dùng
 export const updateUserRoleSchema = Joi.object({
-  role: Joi.string().valid('bidder', 'seller', 'admin').required().messages({
+  role: Joi.string().valid("bidder", "seller", "admin").required().messages({
     "string.base": "Vai trò phải là một chuỗi",
     "any.only": "Vai trò chỉ có thể là 'bidder', 'seller' hoặc 'admin'",
     "any.required": "Vai trò là bắt buộc",
@@ -124,7 +137,7 @@ export const toggleUserBanSchema = Joi.object({
 
 // Schema cho việc tìm kiếm người dùng (tùy chọn lọc theo role và từ khóa)
 export const getAllUsersSchema = Joi.object({
-  role: Joi.string().valid('bidder', 'seller', 'admin').optional().messages({
+  role: Joi.string().valid("bidder", "seller", "admin").optional().messages({
     "string.base": "Vai trò phải là một chuỗi",
     "any.only": "Vai trò chỉ có thể là 'bidder', 'seller' hoặc 'admin'",
   }),

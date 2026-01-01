@@ -57,7 +57,7 @@ router.get(
 router.put(
   "/:id",
   authenticate,
-  validate({ params: userIdSchema}), // Xác thực ID và body
+  validate({ params: userIdSchema, body: updateUserSchema }), // Xác thực ID và body
   updateUser
 );
 
@@ -131,6 +131,6 @@ router.post(
   createUser
 );
 
-router.delete("/soft/:id", softDeleteUser);
+router.delete("/soft/:id", isAdmin, softDeleteUser);
 
 export default router;

@@ -59,6 +59,7 @@ const ProductCard = ({ product }) => {
           id: product.seller_id,
         });
       }
+      toast.success("Đánh giá thành công!");
       setShowPopup(false);
     } catch (err) {
       toast.error(err.response?.data?.message || err);
@@ -234,7 +235,7 @@ const ProductCard = ({ product }) => {
           </svg>
         </div>
         <div className="px-[10px] flex flex-col">
-          <p className="font-bold">{product.name}</p>
+          <p className="font-bold max-h-18 overflow-hidden">{product.name}</p>
           {!is_profile && (
             <p className="text-[#666666] h-10 overflow-hidden line-clamp-2 text-sm">
               {product.description}
