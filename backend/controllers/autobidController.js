@@ -111,7 +111,7 @@ export const createAutoBid = async (req, res) => {
       const diffMinutes =
         (new Date(product.end_time).getTime() - now.getTime()) / 60000;
 
-      if (diffMinutes >= Number(config.value)) {
+      if (diffMinutes <= Number(config.value)) {
         product.end_time = new Date(
           new Date(product.end_time).getTime() +
             Number(config.extend) * 60000
