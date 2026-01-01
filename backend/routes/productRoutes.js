@@ -68,6 +68,6 @@ router.get(
 );
 router.get("/liked/:id", getLikedProducts);
 router.get("/:id", validate({ params: productIdParamSchema }), getProductById);
-router.patch("/des-history/:id/", addDescriptionHistory);
+router.patch("/des-history/:id", addDescriptionHistory);
 
 export default router;

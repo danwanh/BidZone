@@ -682,8 +682,8 @@ export const getLikedProducts = (req, res) => {
 
 export const addDescriptionHistory = async (req, res) => {
   try {
-    const { id } = req.validated.params;
-    const { description } = req.validated.body;
+    const { id } = req.params;
+    const { description } = req.body;
 
     if (!description) {
       return res.status(400).json({
