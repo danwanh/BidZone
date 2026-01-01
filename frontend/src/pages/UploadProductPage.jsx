@@ -129,7 +129,7 @@ export default function UploadProductPage() {
         status: "active",
       });
 
-      if (response.ok) {
+      if (response) {
         toast.success("Đăng sản phẩm thành công!");
         console.log(response);
         navigate(`products/${response.data._id}`);
@@ -323,18 +323,23 @@ export default function UploadProductPage() {
             </div>
             <div className="grid md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                  <label htmlFor="start_time" className="block font-bold text-gray-700">
-                    Thời gian bắt đầu <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    id="start_time"
-                    type="datetime-local"
-                    required
-                    value={formData.start_time}
-                    onChange={(e) => setFormData({ ...formData, start_time: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
+                <label
+                  htmlFor="start_time"
+                  className="block font-bold text-gray-700"
+                >
+                  Thời gian bắt đầu <span className="text-red-500">*</span>
+                </label>
+                <input
+                  id="start_time"
+                  type="datetime-local"
+                  required
+                  value={formData.start_time}
+                  onChange={(e) =>
+                    setFormData({ ...formData, start_time: e.target.value })
+                  }
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
 
               <div className="space-y-2">
                 <label
