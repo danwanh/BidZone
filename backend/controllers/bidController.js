@@ -3,7 +3,7 @@ import Product from "../models/product.model.js";
 import appEvent from "../services/mailSystem/mailEvents.js";
 import User from "../models/user.model.js";
 import SystemConfig from "../models/system_config.model.js";
-
+import mongoose from "mongoose";
 export const getBidById = async (req, res) => {
   try {
     const { id: bid_id } = req.validated.params;
@@ -200,40 +200,72 @@ export const getBidByUser = async (req, res) => {
 };
 
 // /api/bid/user/bidding/:id
+
 export const getBiddingByUser = async (req, res) => {
   try {
     const { id } = req.validated.params;
-    const products = await Bid.find({
-      bidder_id: id,
-    }).populate("product_id bidder_id");
-
-    if (products.length === 0) {
-      return [];
-    }
-    const active = products.filter((p) => p?.product_id?.status !== "ended");
-
     const { page = 1, per_page = 6, q = "" } = req.query;
-    const page_num = Math.max(1, Number(page) || 1);
-    const per_page_num = Math.max(1, Number(per_page) || 6);
-    const filtered = active.filter((p) =>
-      p.product_id?.name?.toLowerCase().includes(q.toLowerCase())
-    );
 
-    const result = filtered.slice(
-      (page_num - 1) * per_page_num,
-      (page_num - 1) * per_page_num + per_page_num
-    );
-    const total_page = Math.ceil(filtered.length / per_page_num);
+    const pageNum = Math.max(1, Number(page));
+    const perPageNum = Math.max(1, Number(per_page));
+
+    const pipeline = [
+      {
+        $match: {
+          bidder_id: new mongoose.Types.ObjectId(id),
+        },
+      },
+      {
+        $lookup: {
+          from: "products",
+          localField: "product_id",
+          foreignField: "_id",
+          as: "product_id",
+        },
+      },
+      { $unwind: "$product_id" },
+      {
+        $match: {
+          "product_id.status": { $ne: "ended" },
+          "product_id.name": { $regex: q, $options: "i" },
+        },
+      },
+      {
+        // mỗi product chỉ lấy 1 record
+        $group: {
+          _id: "$product_id._id",
+          product_id: { $first: "$product_id" },
+          bidder_id: { $first: "$bidder_id" },
+          price: { $max: "$price" }, // bid cao nhất của user
+        },
+      },
+      {
+        $facet: {
+          products: [
+            { $skip: (pageNum - 1) * perPageNum },
+            { $limit: perPageNum },
+          ],
+          total: [{ $count: "count" }],
+        },
+      },
+    ];
+
+    const aggResult = await Bid.aggregate(pipeline);
+
+    const products = aggResult[0].products;
+    const total = aggResult[0].total[0]?.count || 0;
+
     res.status(200).json({
       message: "Got bids by user id successfully!",
-      products: result,
-      total_page: total_page,
+      products,               // 👈 format như cũ
+      total_page: Math.ceil(total / perPageNum),
     });
   } catch (err) {
     console.log("error fetching bids:", err);
     res.status(500).json({ message: "Server error" });
   }
 };
+
 
 export const getAllBids = async (req, res) => {
   const bids = await Bid.find().populate("product_id bidder_id");

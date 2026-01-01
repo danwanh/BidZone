@@ -41,7 +41,7 @@ const SideBar = ({ user, isOwnProfile }) => {
         console.error("User not defined");
         return;
       }
-      const response = await api.put(`/api/users/${user._id}`, data);
+      const response = await api.put(`/api/users/update/${user._id}`, data);
       reset(data);
 
       setUserData((prev) => ({ ...prev, ...data }));

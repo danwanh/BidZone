@@ -53,9 +53,9 @@ router.get(
 );
 
 // UPDATE
-// PUT /api/users/:id - Update user profile
+// PUT /api/users/update/:id - Update user profile
 router.put(
-  "/:id",
+  "/update/:id",
   authenticate,
   validate({ params: userIdSchema, body: updateUserSchema }), // Xác thực ID và body
   updateUser

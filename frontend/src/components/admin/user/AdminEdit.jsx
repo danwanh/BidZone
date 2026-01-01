@@ -61,7 +61,7 @@ const AdminEdit = ({ user, onCancel }) => {
   const onSubmit = async (data) => {
     console.log(data);
     try {
-      const res = await api.put(`/api/users/${user._id}`, data);
+      const res = await api.put(`/api/users/update/${user._id}`, data);
       toast.success("Sửa đổi thông tin người dùng thành công");
       onCancel();
     } catch (err) {

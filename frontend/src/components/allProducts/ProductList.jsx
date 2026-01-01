@@ -107,7 +107,7 @@ const ProductList = () => {
             </div>
           ) : (
             <div className="w-full text-[25px] text-bold flex justify-center  mt-5">
-              NO ITEMS FOUND
+              Danh sách đang trống
             </div>
           )}
         </>
