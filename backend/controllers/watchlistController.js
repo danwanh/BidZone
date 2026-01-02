@@ -63,7 +63,7 @@ export const getWatchlistById = async (req, res) => {
     const { id } = req.validated.params;
     const watchlist = await Watchlist.findById(id);
     if (!watchlist) {
-      console.log(`No watchlist in database`);
+      console.log(`No watchlist found in database`);
       return res
         .status(404)
         .json({ message: `No watchlist found with id: ${id}` });

@@ -63,11 +63,11 @@ export const getAllConfigs = async (req, res) => {
 export const updateConfig = async (req, res) => {
   try {
     const key = req.params.key.toUpperCase();
-    const { value } = req.body;
+    const { value, extend } = req.body;
 
     const updatedConfig = await SystemConfig.findOneAndUpdate(
       { key },
-      { value },
+      { value, extend },
       { new: true } // Trả về data mới sau khi update
     );
 
