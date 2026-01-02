@@ -5,6 +5,7 @@ import { useSearchParams } from "react-router-dom";
 import api from "../../api/axios";
 import ProductCard from "../ProductCard";
 import Pagination from "../profile/Pagination";
+import { useLiked } from "../../context/LikedContext";
 
 const ProfileProductList = ({ baseURL, xtra, user }) => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -12,6 +13,7 @@ const ProfileProductList = ({ baseURL, xtra, user }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [totalPage, setTotalPage] = useState(1);
+  const { createWatchlist } = useLiked();
 
   const page = searchParams.get("page") || 1;
   const per_page = 6;
@@ -45,10 +47,13 @@ const ProfileProductList = ({ baseURL, xtra, user }) => {
           setProducts(res.data.products || res.data.filtered);
         }
       } catch (error) {
-        console.error(
-          "Error loading products",
-          error.response?.data?.message || error.message
-        );
+        const message = error.response?.data?.message || error.message;
+        if (message.includes("No watchlist found")) {
+          await createWatchlist();
+          setProducts([]);
+          return;
+        }
+        console.error("Error loading products", message);
         if (isMounted) setError(error.message || "Unable to load products");
       } finally {
         if (isMounted) setLoading(false);

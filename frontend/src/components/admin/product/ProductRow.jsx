@@ -26,7 +26,7 @@ const ProductRow = ({ product, onContextMenu }) => {
         {product?.category_id?.name || "Không có"}
       </td>
       <td className="px-4 py-4">
-        {product?.seller_id?.username || "Không có"}
+        {product?.seller_id?.username || product?.seller_id?.name || "Không có"}
       </td>
       <td
         className={`px-4 py-4 text-[14px] font-bold ${
