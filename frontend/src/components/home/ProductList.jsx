@@ -14,7 +14,7 @@ const ProductList = ({ title, baseURL, disablePagination = false }) => {
 
   const page = disablePagination ? 1 : searchParams.get("page") || 1;
   // const page = searchParams.get("page") || 1;
-  const per_page = 6;
+  const per_page = 10;
   const q = searchParams.get("q") || "";
 
   const categoryId = searchParams.get("categoryId") || "";

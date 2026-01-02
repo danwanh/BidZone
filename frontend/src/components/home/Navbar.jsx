@@ -154,6 +154,7 @@ const Navbar = () => {
             {isOpen && (
               <div
                 className="absolute top-full left-0 mt-2 flex gap-0 z-50"
+                onMouseEnter={() => setIsOpen(true)}
                 onMouseLeave={() => {
                   setIsOpen(false);
                   setHoveredCategory(null);
