@@ -112,17 +112,16 @@ export const changeCategoryById = async (req, res) => {
 
     const updates = {};
 
-    if (
-      req.validated.body.category_id !== undefined &&
-      req.validated.body.category_id !== ""
-    ) {
+    if (req.validated.body.category_id !== undefined) {
       const cat_id = req.validated.body.category_id;
-      const parent = await Category.findById(cat_id);
-      if (!parent)
-        return res
-          .status(400)
-          .json({ message: `Can't find parent id: ${cat_id}` });
-      updates.category_id = cat_id;
+      if (cat_id !== "" && mongoose.isValidObjectId(cat_id)) {
+        const parent = await Category.findById(cat_id);
+        if (!parent)
+          return res
+            .status(400)
+            .json({ message: `Can't find parent id: ${cat_id}` });
+      }
+      updates.category_id = cat_id === "" ? null : new ObjectId(cat_id);
     }
     if (req.validated.body.name !== undefined)
       updates.name = req.validated.body.name;

@@ -2,12 +2,11 @@ import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import api from "../../../api/axios";
 import UpgradeRow from "./UpgradeRow";
-import { ToastContainer, toast } from "react-toastify";
 import { useAuth } from "../../../context/AuthContext";
+import { ToastContainer, toast } from "react-toastify";
 
 const UpgradeList = () => {
   const { loading: authLoading } = useAuth();
-
   const [upgrades, setUpgrades] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -47,13 +46,12 @@ const UpgradeList = () => {
   }, [searchTerm, setSearchParams, q]);
 
   useEffect(() => {
-    if (authLoading) return; 
+    if (authLoading) return;
     let isMounted = true;
     const loadUpgrades = async () => {
       try {
         setLoading(true);
         setError(null);
-
         const res = await api.get(`/api/upgrade?${queryString}`);
 
         if (isMounted) {

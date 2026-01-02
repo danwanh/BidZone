@@ -52,7 +52,7 @@ export function LikedProvider({ children }) {
     } catch (err) {
       if (
         err.response &&
-        err.response.status === 404 &&
+        (err.response.status === 404 || err.response.status === 400) &&
         err.response.data.message.includes("No watchlist found")
       ) {
         await createWatchlist([]);

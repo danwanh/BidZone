@@ -25,6 +25,7 @@ import {
 import upload from "../config/multer.js";
 
 import { validate } from "../middleware/validateMiddleware.js";
+import { authenticate, isAdmin } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -55,7 +56,13 @@ router.get(
   validate({ params: productIdParamSchema }),
   getProductBySellerId
 );
-router.delete("/:id", deleteProductById);
+router.delete(
+  "/:id",
+  authenticate,
+  isAdmin,
+  validate({ params: productIdParamSchema }),
+  deleteProductById
+);
 router.patch(
   "/:id",
   validate({ params: productIdParamSchema, body: updateProductSchema }),

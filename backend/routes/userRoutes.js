@@ -131,6 +131,6 @@ router.post(
   createUser
 );
 
-router.delete("/soft/:id", isAdmin, softDeleteUser);
+router.delete("/soft/:id", authenticate, isAdmin, softDeleteUser);
 
 export default router;

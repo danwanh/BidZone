@@ -32,7 +32,7 @@ const CategoryDetail = ({
     console.log("Form submitted", data);
     try {
       const response = await api.patch(`api/category/${category._id}`, data);
-      toast.success("Success! Updated category.");
+      toast.success("Đã cập nhật danh mục!");
       setEditing(false);
       updateAction();
     } catch (err) {
@@ -54,9 +54,7 @@ const CategoryDetail = ({
     } catch (err) {
       const message = err.response?.data?.message || err.message;
       if (message === "Can't delete category with products") {
-        toast.error(
-          "That category already has products under it. Can't delete"
-        );
+        toast.error("Danh mục có sản phẩm, không thể xóa danh mục này!");
       }
       console.log(message);
     } finally {
@@ -208,12 +206,30 @@ const CategoryDetail = ({
           </div>
         )}
 
-        {isParent && (
+        {isParent && !editing && (
           <div className="flex justify-between items-center py-3 border-b">
             <span className="text-gray-600 font-medium">Số danh mục con</span>
             <span className="font-semibold text-gray-800">
               {loading ? "" : childCategory}
             </span>
+          </div>
+        )}
+
+        {isParent && editing && (
+          <div className="flex justify-between items-center py-3 border-b">
+            <span className="text-gray-600 font-medium">Danh mục</span>
+            <select
+              {...registerUpdate("category_id")}
+              className="font-semibold text-gray-800 !rounded-sm ring ring-inset ring-gray-500"
+            >
+              <option value="">---</option>
+
+              {parent.map((n, index) => (
+                <option key={index} value={n._id}>
+                  {n.name}
+                </option>
+              ))}
+            </select>
           </div>
         )}
 

@@ -2,11 +2,13 @@ import { useEffect, useState } from "react";
 import api from "../../../api/axios";
 import { Trash2, Edit, Plus, X, Save } from "lucide-react";
 import { toast } from "react-toastify";
+import { useAuth } from "../../../context/AuthContext";
 
 const VariableList = () => {
   const [variables, setVariables] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { loading: authLoading } = useAuth();
 
   // State cho Modal
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -14,6 +16,7 @@ const VariableList = () => {
   const [formData, setFormData] = useState({
     key: "",
     value: "",
+    extend: "",
     description: "",
   });
 
@@ -34,8 +37,9 @@ const VariableList = () => {
   };
 
   useEffect(() => {
+    if (authLoading) return;
     loadVariables();
-  }, []);
+  }, [authLoading]);
 
   // 2. Mở Modal (Tạo mới hoặc Sửa)
   const openModal = (variable = null) => {
@@ -44,11 +48,12 @@ const VariableList = () => {
       setFormData({
         key: variable.key,
         value: variable.value,
+        extend: variable.extend,
         description: variable.description || "",
       });
     } else {
       setIsEditing(false);
-      setFormData({ key: "", value: "", description: "" });
+      setFormData({ key: "", value: "", extend: "", description: "" });
     }
     setIsModalOpen(true);
   };
@@ -61,10 +66,12 @@ const VariableList = () => {
         // API Update: PUT /api/config/:key
         await api.put(`/api/config/${formData.key}`, {
           value: formData.value,
+          extend: formData.extend,
           description: formData.description,
         });
       } else {
         // API Create: POST /api/config
+        toast.success("Đã tạo biến cấu hình mới!");
         await api.post(`/api/config`, formData);
       }
 
@@ -133,6 +140,9 @@ const VariableList = () => {
                       Value (Giá trị)
                     </th>
                     <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Extend (Giá trị mở rộng)
+                    </th>
+                    <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Mô tả
                     </th>
                     <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-center">
@@ -154,6 +164,12 @@ const VariableList = () => {
                         title={item.value}
                       >
                         {String(item.value)}
+                      </td>
+                      <td
+                        className="py-4 px-6 max-w-xs truncate"
+                        title={item.extend}
+                      >
+                        {String(item.extend)}
                       </td>
                       <td className="py-4 px-6 text-slate-500">
                         {item.description || "---"}
@@ -249,6 +265,23 @@ const VariableList = () => {
                   value={formData.value}
                   onChange={(e) =>
                     setFormData({ ...formData, value: e.target.value })
+                  }
+                  placeholder="VD: 10"
+                  className="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                />
+              </div>
+
+              {/* Input Extend */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  Extend (Giá trị mở rộng)
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={formData.extend}
+                  onChange={(e) =>
+                    setFormData({ ...formData, extend: e.target.value })
                   }
                   placeholder="VD: 10"
                   className="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"

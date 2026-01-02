@@ -8,8 +8,14 @@ const UserRow = ({ user, onContextMenu }) => {
 
   if (user.is_deleted) {
     return (
-      <tr className="border-b border-gray-300 w-full bg-gray-200 cursor-not-allowed">
+      <tr className="border-b border-gray-300 w-full bg-gray-200 cursor-not-allowed whitespace-nowrap">
         <td className="px-4 py-4 font-medium">Người dùng đã bị xóa</td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
       </tr>
     );
   }
