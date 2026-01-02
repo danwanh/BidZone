@@ -93,7 +93,7 @@ export const getWatchlistByUserId = async (req, res) => {
       console.log("No watchlist");
       return res
         .status(400)
-        .json({ message: "No watchlist", products: watchlist });
+        .json({ message: "No watchlist found", products: watchlist });
     }
     const { page = 1, per_page = 6, q = "" } = req.query;
     const page_num = Math.max(1, Number(page) || 1);
