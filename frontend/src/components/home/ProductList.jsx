@@ -90,7 +90,7 @@ const ProductList = ({ title, baseURL, disablePagination = false }) => {
         <>
           {products?.length > 0 ? (
             <div className="flex flex-col items-center gap-10 -ml-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-col-3 xl:grid-cols-5 gap-12 mt-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-12 mt-5">
                 {products.map((p) =>
                   p.product_id?._id ? (
                     <ProductCard key={p._id} product={p.product_id} />

@@ -34,7 +34,11 @@ const TotalSubCategory = ({ totalCat, refreshTrigger }) => {
 
   return (
     <>
-      {loading && <div>Loading</div>}
+      {loading && (
+        <div className="flex justify-center mt-5">
+          <div className="rounded-full border border-[#5f27ce] w-12 h-12 animate-spin border-t-transparent border-4 "></div>
+        </div>
+      )}
       {error && <div className="text-red-500">Error</div>}
       {!loading && !error && (
         <div className="bg-white/80 rounded-xl px-4 py-2 w-full-1 h-full flex flex-col">

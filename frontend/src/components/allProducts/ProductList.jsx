@@ -79,11 +79,15 @@ const ProductList = () => {
 
   return (
     <>
-      <div className="flex gap-7">
+      <div className="flex gap-2 md:gap-7 md:flex-row flex-col">
         <Filter />
         <Sortbar />
       </div>
-      {loading && <div>Loading</div>}
+      {loading && (
+        <div className="flex justify-center mt-5">
+          <div className="rounded-full border border-[#5f27ce] w-12 h-12 animate-spin border-t-transparent border-4 "></div>
+        </div>
+      )}
       {error && (
         <div className="text-red-500">
           Error loading products:{" "}

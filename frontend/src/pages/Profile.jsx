@@ -49,9 +49,9 @@ export const ProfilePage = () => {
   const isOwnProfile =
     !userIdFromUrl || (currentUser && userIdFromUrl === currentUser._id);
   return (
-    <div className="flex gap-[30px]">
+    <div className="flex gap-[30px] sm:flex-row flex-col">
       {isOwnProfile && displayedUser.role === "bidder" && <BecomeSeller />}
-      <div className="w-1/3">
+      <div className="sm:w-1/3 w-full">
         <SideBar user={displayedUser} isOwnProfile={isOwnProfile} />
       </div>
 

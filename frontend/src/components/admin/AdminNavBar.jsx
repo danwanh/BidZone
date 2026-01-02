@@ -125,8 +125,8 @@ const AdminNavBar = () => {
   return (
     <div className="w-full flex md:flex-col md:w-53 h-100% bg-[rgba(154,66,66,0.65)] text-white shrink-0 overflow-x-scroll md:overflow-x-auto">
       {/* Header */}
-      <div className="px-3 py-2 md:py-4 md:px-6 ">
-        <div className="flex items-center gap-2">
+      <div className="md:py-4 md:px-6 ">
+        <div className="items-center gap-2 hidden md:flex">
           <svg
             width="40"
             height="40"
@@ -149,7 +149,7 @@ const AdminNavBar = () => {
             />
           </svg>
 
-          <h1 className="text-xl font-semibold hidden md:block">Bảng admin</h1>
+          <h1 className="text-xl font-semibold ">Bảng admin</h1>
         </div>
       </div>
 
