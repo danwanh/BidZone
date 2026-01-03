@@ -13,7 +13,9 @@ export const getAllRatings = async (req, res) => {
     if (from_user_id) query.from_user_id = from_user_id;
     if (to_user_id) query.to_user_id = to_user_id;
 
-    const ratings = await Rating.find(query).populate("product_id from_user_id to_user_id");
+    const ratings = await Rating.find(query).populate(
+      "product_id from_user_id to_user_id"
+    );
 
     if (ratings.length === 0) {
       return res.status(404).json({ message: "Không tìm thấy đánh giá" });

@@ -122,7 +122,7 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
   const handleSubmitRating = useCallback(
     async (points) => {
       try {
-        const res = await axios.patch("/api/ratings", {
+        const res = await axios.post("/api/ratings", {
           product_id: product._id,
           from_user_id: currentUserId,
           to_user_id: isBuyer ? orderData.seller_id._id : orderData.buyer_id._id,
