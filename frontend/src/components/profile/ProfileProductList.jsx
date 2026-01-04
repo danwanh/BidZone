@@ -81,11 +81,11 @@ const ProfileProductList = ({ baseURL, xtra, user }) => {
           {products.length > 0 ? (
             <div className="flex flex-col items-center gap-6 sm:gap-8 flex-1">
               <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 w-full auto-rows-fr">
-                {products.map((p) =>
+                {products.map((p, index) =>
                   p.product_id?._id ? (
-                    <ProductCard key={p._id} product={p.product_id} />
+                    <ProductCard key={index} product={p.product_id} />
                   ) : (
-                    <ProductCard key={p._id} product={p} />
+                    <ProductCard key={index} product={p} />
                   )
                 )}
               </div>

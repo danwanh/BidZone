@@ -1,7 +1,7 @@
 "use client";
 
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import ProductTimer from "./ProductTimer";
 import { useLiked } from "../context/LikedContext";
@@ -12,19 +12,16 @@ import axios from "../api/axios";
 const ProductCard = ({ product }) => {
   const [showPopup, setShowPopup] = useState(false);
   const { addToLikedList, removeFromLikedList, likedIds } = useLiked();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
   const [isLiked, setIsLiked] = useState(likedIds.has(product._id));
 
-  const location = useLocation();
-  const is_profile = location.pathname.endsWith("/profile");
-  // console.log(product?.bidder_id?._id || product);
   const is_bought =
     (product.status === "ended" && product?.bidder_id?._id == user._id) ||
     false;
 
-  const is_new = new Date() - new Date(product.createdAt) <= 90 * 60 * 1000;
+  const is_new = new Date() - new Date(product.createdAt) <= 120 * 60 * 1000;
 
   const has_user_name =
     product?.bidder_id?.username || product?.bidder_id?.name;
@@ -103,10 +100,14 @@ const ProductCard = ({ product }) => {
   const toUserProfile = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log("123456");
-    console.log(product);
-    navigate(`/profile?tab=Đang+đấu+giá&page=1&id=${product.bidder_id._id}`);
+    navigate(
+      `/profile?tab=Đang+đấu+giá&page=1&id=${
+        product.bidder_id?._id || product.bidder_id
+      }`
+    );
   };
+
+  if (authLoading) return;
 
   return (
     <div className="relative">
@@ -191,19 +192,25 @@ const ProductCard = ({ product }) => {
         className={`w-[225px] h-fit flex flex-col bg-[#ffffff] rounded-[0.6rem] gap-[2px] overflow-hidden shadow-lg relative hover:-translate-y-2 transition-transform duration-150 ease-in-out hover:cursor-pointer`}
       >
         {is_bought && (
-          <div className="absolute bg-[#011876] text-[14px] font-bold text-white -rotate-45 pt-10 px-10 pb-3 -left-13 -top-5">
+          <div className="absolute bg-[#011876] text-[14px] font-bold text-white -rotate-45 pt-10 px-10 pb-3 -left-13 -top-5 z-5">
             ĐÃ MUA
           </div>
         )}
 
+        {!is_bought && user._id === product?.bidder_id?._id && (
+          <div className="absolute bg-linear-to-b from-[#045e1a] via-[#1da328b0] to-[#24ff1871] text-[14px] font-bold text-white rotate-45 pt-10 px-10 pb-3 -right-11 -top-6 z-5">
+            TOP
+          </div>
+        )}
+
         {is_new && (
-          <div className="absolute bg-linear-to-b from-[#ff7b00] via-[#ff7b00] to-[#ffb71c9a] text-[14px] font-bold text-white -rotate-45 pt-10 px-10 pb-3 -left-13 -top-5">
+          <div className="absolute bg-linear-to-b from-[#ff7b00] via-[#ff7b00] to-[#ffb71c9a] text-[14px] font-bold text-white -rotate-45 pt-10 px-10 pb-3 -left-13 -top-5 z-5">
             MỚI MỞ
           </div>
         )}
 
         <img
-          className="w-full h-[180px] object-cover object-center"
+          className="w-full h-[180px] object-cover object-center z-0"
           src={
             product.image_url != null && product.image_url.length > 0
               ? product.image_url[0]
@@ -239,11 +246,6 @@ const ProductCard = ({ product }) => {
 
         <div className="px-[10px] flex flex-col">
           <p className="font-bold line-clamp-2 truncate">{product.name}</p>
-          {/* {!is_profile && (
-            <p className="text-[#666666] h-10 overflow-hidden line-clamp-2 text-sm">
-              {product.description}
-            </p>
-          )} */}
         </div>
         {/* Gia and Lan ra gia */}
         {!is_bought && (

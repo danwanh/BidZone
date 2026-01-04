@@ -1,6 +1,7 @@
 import Bid from "../models/bid.model.js";
 import Product from "../models/product.model.js";
 import appEvent from "../services/mailSystem/mailEvents.js";
+import AutoBid from "../models/autobid.model.js";
 import User from "../models/user.model.js";
 import SystemConfig from "../models/system_config.model.js";
 import mongoose from "mongoose";
@@ -37,7 +38,7 @@ export const getBidById = async (req, res) => {
 
 //   // update product
 //   product.current_price = price;
-//   product.highest_bidder_id = bidder_id;
+//   product.bidder_id = bidder_id;
 //   product.total_bids = (product.total_bids || 0) + 1;
 //   await product.save();
 
@@ -57,8 +58,7 @@ export const createBid = async (req, res) => {
     const { product_id, bidder_id, price } = req.validated.body;
 
     const product = await Product.findById(product_id);
-    if (!product)
-      return res.status(404).json({ message: "Product not found" });
+    if (!product) return res.status(404).json({ message: "Product not found" });
 
     if (product.status !== "active")
       return res
@@ -77,8 +77,7 @@ export const createBid = async (req, res) => {
     }
 
     const bidder = await User.findById(bidder_id);
-    if (!bidder)
-      return res.status(404).json({ message: "Bidder not found" });
+    if (!bidder) return res.status(404).json({ message: "Bidder not found" });
 
     // check bidder rating
     const pos = bidder.rating_pos || 0;
@@ -99,8 +98,7 @@ export const createBid = async (req, res) => {
     }
 
     //check min price
-    const minPrice =
-      product.current_price + (product.bid_step || 0);
+    const minPrice = product.current_price + (product.bid_step || 0);
 
     if (price < minPrice) {
       return res.status(400).json({
@@ -113,13 +111,12 @@ export const createBid = async (req, res) => {
     await bid.save();
 
     let prevBidder = null;
-    if (product.highest_bidder_id) {
-      prevBidder = await User.findById(product.highest_bidder_id);
+    if (product.bidder_id) {
+      prevBidder = await User.findById(product.bidder_id);
     }
 
     // extend auction time if needed
-    const config = await SystemConfig.findOne()
-      .sort({ createdAt: -1 });
+    const config = await SystemConfig.findOne().sort({ createdAt: -1 });
 
     if (config && product.end_time) {
       const now = new Date();
@@ -128,17 +125,16 @@ export const createBid = async (req, res) => {
 
       if (diffMinutes <= Number(config.value)) {
         product.end_time = new Date(
-          new Date(product.end_time).getTime() +
-            Number(config.extend) * 60000
+          new Date(product.end_time).getTime() + Number(config.extend) * 60000
         );
       }
     }
 
-  // update product
-  product.current_price = price;
-  product.bidder_id = bidder_id;
-  product.total_bids = (product.total_bids || 0) + 1;
-  await product.save();
+    // update product
+    product.current_price = price;
+    product.bidder_id = bidder_id;
+    product.total_bids = (product.total_bids || 0) + 1;
+    await product.save();
 
     const seller = await User.findById(product.seller_id);
 
@@ -208,13 +204,29 @@ export const getBiddingByUser = async (req, res) => {
 
     const pageNum = Math.max(1, Number(page));
     const perPageNum = Math.max(1, Number(per_page));
+    const userId = new mongoose.Types.ObjectId(id);
 
     const pipeline = [
+      // 1. Start with Manual Bids for this user
       {
         $match: {
-          bidder_id: new mongoose.Types.ObjectId(id),
+          bidder_id: userId,
         },
       },
+      // 2. Merge with Auto Bids for this user
+      {
+        $unionWith: {
+          coll: "autobids", // The MongoDB collection name for AutoBid model
+          pipeline: [
+            {
+              $match: {
+                bidder_id: userId,
+              },
+            },
+          ],
+        },
+      },
+      // 3. Lookup Product info
       {
         $lookup: {
           from: "products",
@@ -224,21 +236,34 @@ export const getBiddingByUser = async (req, res) => {
         },
       },
       { $unwind: "$product_id" },
+
       {
         $match: {
           "product_id.status": { $ne: "ended" },
           "product_id.name": { $regex: q, $options: "i" },
         },
       },
+      // 5. Group by Product to remove duplicates (if user bid manually AND auto on same item)
       {
-        // mỗi product chỉ lấy 1 record
         $group: {
           _id: "$product_id._id",
           product_id: { $first: "$product_id" },
           bidder_id: { $first: "$bidder_id" },
-          price: { $max: "$price" }, // bid cao nhất của user
+          // Get the highest price recorded (whether from manual bid or auto bid current price)
+          price: { $max: "$price" },
         },
       },
+
+      {
+        $lookup: {
+          from: "users",
+          localField: "product_id.bidder_id",
+          foreignField: "_id",
+          as: "product_id.bidder_id",
+        },
+      },
+      { $unwind: "$product_id.bidder_id" },
+      // 6. Pagination
       {
         $facet: {
           products: [
@@ -252,20 +277,18 @@ export const getBiddingByUser = async (req, res) => {
 
     const aggResult = await Bid.aggregate(pipeline);
 
-    const products = aggResult[0].products;
-    const total = aggResult[0].total[0]?.count || 0;
-
+    const products = aggResult[0]?.products || [];
+    const total = aggResult[0]?.total[0]?.count || 0;
     res.status(200).json({
-      message: "Got bids by user id successfully!",
-      products,               // 👈 format như cũ
+      message: "Got combined bids by user id successfully!",
+      products,
       total_page: Math.ceil(total / perPageNum),
     });
   } catch (err) {
-    console.log("error fetching bids:", err);
+    console.error("error fetching combined bids:", err);
     res.status(500).json({ message: "Server error" });
   }
 };
-
 
 export const getAllBids = async (req, res) => {
   const bids = await Bid.find().populate("product_id bidder_id");
@@ -309,7 +332,9 @@ export const rejectBid = async (req, res) => {
 
     let product = await Product.findById(bid.product_id);
 
-    const newPrice = highestValidBid ? highestValidBid.price : product.start_price;
+    const newPrice = highestValidBid
+      ? highestValidBid.price
+      : product.start_price;
     product.current_price = newPrice;
     await product.save();
 
