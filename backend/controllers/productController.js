@@ -1,12 +1,16 @@
 import Product from "../models/product.model.js";
 import User from "../models/user.model.js";
 import Category from "../models/category.model.js";
+import Description from "../models/description_list.model.js";
 import cloudinary from "../config/cloudinary.js";
 import multer from "multer";
 import fs from "fs";
 import Watchlist from "../models/watchlist.model.js";
 import Order from "../models/order.model.js";
+import AutoBid from "../models/autobid.model.js";
+import Bid from "../models/bid.model.js";
 import { sanitizeDescription } from "../utils/sanitizeHtml.js";
+import appEvent from "../services/mailSystem/mailEvents.js";
 
 // POST /api/product
 export const addProduct = async (req, res) => {
@@ -677,14 +681,8 @@ export const getLikedProducts = (req, res) => {
 
 export const addDescriptionHistory = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { description } = req.body;
-
-    if (!description) {
-      return res.status(400).json({
-        message: "Description is required",
-      });
-    }
+    const { id } = req.validated.params;
+    const { description } = req.validated.body;
 
     const product = await Product.findByIdAndUpdate(
       id,
@@ -705,6 +703,18 @@ export const addDescriptionHistory = async (req, res) => {
       });
     }
 
+    if (product.description_history.length >= 1) {
+      const bidders = await getBiddersByProductId(product);
+
+      if (bidders.length > 0) {
+        appEvent.emit("DESCRIPTION_CHANGE", {
+          bidders,
+          product,
+          description,
+        });
+      }
+    }
+
     res.status(200).json({
       message: "Description history added successfully",
       description_history: product.description_history,
@@ -715,4 +725,31 @@ export const addDescriptionHistory = async (req, res) => {
       error: error.message,
     });
   }
+};
+
+export const getBiddersByProductId = async (product) => {
+  let bidderIds = [];
+
+  if (product.is_autobid) {
+    const autoBids = await AutoBid.find({
+      product_id: product._id,
+      status: true,
+    }).select("bidder_id");
+
+    bidderIds = autoBids.map((b) => b.bidder_id);
+  } else {
+    const bids = await Bid.find({
+      product_id: product._id,
+      status: true,
+    }).select("bidder_id");
+
+    bidderIds = bids.map((b) => b.bidder_id);
+  }
+
+  bidderIds = [...new Set(bidderIds.map((id) => id.toString()))];
+
+  return User.find({
+    _id: { $in: bidderIds },
+    is_deleted: false,
+  }).select("email name");
 };

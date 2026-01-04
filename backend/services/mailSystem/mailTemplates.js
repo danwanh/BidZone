@@ -323,3 +323,55 @@ export const answerTemplate = (question, product) => `
   </div>
 </div>
 `;
+
+export const descriptionChangeTemplate = (product, description) => `
+<div style="font-family:Arial; background:#f4f6f8; padding:20px">
+  <div style="max-width:600px; margin:auto; background:#fff; padding:24px; border-radius:8px">
+
+    <h2 style="text-align:center; color:#38a169">
+      Mô tả của sản phẩm bạn tham gia đấu giá vừa được cập nhật
+    </h2>
+
+    <!-- Thông tin sản phẩm -->
+    <div style="margin:16px 0">
+      <img 
+        src="${product.image_url?.[0] || ""}" 
+        style="width:100%; border-radius:6px"
+      />
+
+      <table style="width:100%; margin-top:12px">
+        <tr>
+          <td style="color:#4a5568">Tên sản phẩm:</td>
+          <td><strong>${product.name}</strong></td>
+        </tr>
+        <tr>
+          <td style="color:#4a5568">Giá hiện tại:</td>
+          <td style="color:#e53e3e;font-weight:bold">
+            ${product.current_price.toLocaleString("vi-VN")} ₫
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <div style="text-align:center">
+      <h4>Mô tả mới:</h4>
+      <p>${description}</p>
+    </div>
+
+    <div style="text-align:center">
+      <a href="${process.env.FRONTEND_URL}/products/${product._id}"
+         style="
+           display:inline-block;
+           padding:12px 20px;
+           background:#3182ce;
+           color:#fff;
+           border-radius:6px;
+           text-decoration:none;
+           font-weight:bold
+         ">
+        Xem sản phẩm
+      </a>
+    </div>
+  </div>
+</div>
+`;

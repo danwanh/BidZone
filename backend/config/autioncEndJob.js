@@ -8,7 +8,7 @@ import appEvent from "../services/mailSystem/mailEvents.js";
 
 const auctionCronJob = cron.schedule("* * * * *", async () => {
   try {
-    console.log("Ended bid");
+    console.log("Scan ended bid");
     const now = new Date();
 
     // Find auctions that should end

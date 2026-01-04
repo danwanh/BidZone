@@ -7,6 +7,7 @@ import {
   auctionEndedTemplate,
   questionTemplate,
   answerTemplate,
+  descriptionChangeTemplate,
 } from "./mailTemplates.js";
 
 appEvent.on("BID_SUCCESS", async ({ product, bidder, seller, prevBidder }) => {
@@ -69,10 +70,24 @@ appEvent.on("QUESTION_ASKED", async ({ seller, question, product }) => {
 
 appEvent.on("QUESTION_ANSWERED", async ({ buyer, question, product }) => {
   await sendEmail(
-      buyer.email,
-      "Câu hỏi đã được trả lời",
-      answerTemplate(question, product)
+    buyer.email,
+    "Câu hỏi đã được trả lời",
+    answerTemplate(question, product)
+  );
+});
+
+appEvent.on("DESCRIPTION_CHANGE", async ({ bidders, product, description }) => {
+  const subject = `Sản phẩm "${product.name}" có cập nhật mô tả mới`;
+
+  await Promise.all(
+    bidders.map((bidder) =>
+      sendEmail(
+        bidder.email,
+        subject,
+        descriptionChangeTemplate(product, description)
+      )
     )
+  );
 });
 
 export default appEvent;

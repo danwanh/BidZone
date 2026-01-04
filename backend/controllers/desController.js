@@ -21,13 +21,10 @@ export const createDescription = async (req, res) => {
   try {
     const { product_id, description } = req.validated.body;
 
-    // if(!mongoose.Types.ObjectId.isValid(product_id)){
-    //     return res.status(400).json({ message: "Invalid product_id ObjectId format" });
-    // }
-
-    // if (!product_id || !description){
-    //     return res.status(400).json({ message: "Missing required fields" });
-    // }
+    const product = await Product.findById(product_id);
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
 
     const newDescription = new Description({ product_id, description });
     const save = await newDescription.save();

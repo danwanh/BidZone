@@ -3,6 +3,7 @@ import {
   createProductSchema,
   productIdParamSchema,
   updateProductSchema,
+  addDescriptionSchema,
 } from "../schemas/ProductSchema.js";
 import {
   getProductsByCategory,
@@ -75,6 +76,10 @@ router.get(
 );
 router.get("/liked/:id", getLikedProducts);
 router.get("/:id", validate({ params: productIdParamSchema }), getProductById);
-router.patch("/des-history/:id", addDescriptionHistory);
+router.patch(
+  "/des-history/:id",
+  validate({ params: productIdParamSchema, body: addDescriptionSchema }),
+  addDescriptionHistory
+);
 
 export default router;

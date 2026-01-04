@@ -91,3 +91,9 @@ export const updateProductSchema = Joi.object({
       'any.invalid': 'ID người mua không hợp lệ',
       }),
 });
+
+export const addDescriptionSchema = Joi.object({
+  description: Joi.string().required().messages({
+    'any.required': 'Cần phải có nội dung mô tả',
+  })
+})
