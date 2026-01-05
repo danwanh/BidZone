@@ -40,7 +40,7 @@ export const SellerInfo = ({ seller, highestBidder, currentBid }) => {
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-2xl font-bold">Người đặt giá cao nhất hiện tại</h3>
           </div>
-          {highestBidder && (
+          {highestBidder ? (
             <div className="flex items-center gap-6 mb-4">
               <img
                 src={
@@ -71,6 +71,11 @@ export const SellerInfo = ({ seller, highestBidder, currentBid }) => {
                 <div className="text-3xl font-bold text-green-600">{currentBid?.toLocaleString()}</div>
                 <div className="text-xs text-gray-500 mt-1">VNĐ</div>
               </div>
+            </div>
+          ): (
+            // Căn giữa
+            <div className="flex justify-center items-center">
+            <div className="text-gray-600 text-center">Chưa có người đặt giá nào.</div>
             </div>
           )}
         </div>

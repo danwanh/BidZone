@@ -102,8 +102,8 @@ const ProductList = ({ title, baseURL, disablePagination = false }) => {
                 )}
               </div>
               {title === "Khám phá" && (
-                <div className="text-center border border-blue-400 border-2 rounded-2xl">
-                  <Link to="/products" className="px-2 py-3 text-xl font-bold rounded-2xl hover:text-purple-500 transition-colors">
+                <div className="text-center border border-[#667ACA] border-2 rounded-2xl p-1">
+                  <Link to="/products" className="px-2 py-3 text-xl font-bold rounded-2xl hover:text-[#667ACA] transition-colors">
                     Xem thêm
                   </Link>
                 </div>

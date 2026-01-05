@@ -6,7 +6,7 @@ const Header = () => {
       <div className="h-full justify-center text-white flex items-center gap-4 mb-4 pr-[40vw]">
         <div className="mr-25 md:mr-50 lg:mr-90">
           <h1 className="text-6xl font-bold">BidZone</h1>
-          <p className="text-xl mt-2">Trang chủ</p>
+          <p className="text-xl mt-2">Uy tín, minh bạch và an toàn.</p>
         </div>
       </div>
     </header>
