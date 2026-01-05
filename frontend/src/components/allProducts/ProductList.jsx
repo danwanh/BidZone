@@ -3,8 +3,7 @@ import { useParams, useSearchParams } from "react-router-dom";
 import api from "../../api/axios";
 import ProductCard from "../ProductCard";
 import Pagination from "../profile/Pagination";
-import Filter from "./Filter";
-import Sortbar from "./Sorbar";
+import AdvancedSearch from "./AdvancedSearch";
 
 const ProductList = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -40,7 +39,17 @@ const ProductList = () => {
     if (sortBy) p.set("sortBy", sortBy); // price/endtime
     if (order) p.set("order", order); // asc/desc
     return p.toString();
-  }, [page, q, categoryId, minPrice, maxPrice, fromDate, toDate, sortBy, order]);
+  }, [
+    page,
+    q,
+    categoryId,
+    minPrice,
+    maxPrice,
+    fromDate,
+    toDate,
+    sortBy,
+    order,
+  ]);
 
   useEffect(() => {
     const next = new URLSearchParams(searchParams);
@@ -59,7 +68,7 @@ const ProductList = () => {
         const res = await api.get(`/api/product/?${queryString}`);
 
         setTotalPage(res.data.total_page);
-        console.log(res.data);
+        // console.log(res.data);
 
         if (isMounted) {
           setProducts(res.data.products);
@@ -84,8 +93,7 @@ const ProductList = () => {
   return (
     <>
       <div className="flex gap-2 md:gap-7 md:flex-row flex-col">
-        <Filter />
-        <Sortbar />
+        <AdvancedSearch />
       </div>
       {loading && (
         <div className="flex justify-center mt-5">

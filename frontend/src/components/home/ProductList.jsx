@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
-import { useParams, useSearchParams } from "react-router-dom";
+import { Link, useParams, useSearchParams } from "react-router-dom";
+import { toast } from "react-toastify";
 import api from "../../api/axios";
 import ProductCard from "../ProductCard";
 import Pagination from "../profile/Pagination";
@@ -55,6 +56,7 @@ const ProductList = ({ title, baseURL, disablePagination = false }) => {
           "Error loading products",
           error.response?.data?.message || error.message
         );
+        toast.error(error.response?.data?.message || "Lỗi khi lấy danh sách sản phẩm\n");
         if (isMounted) setError(error.message || "Unable to load products");
       } finally {
         if (isMounted) setLoading(false);
@@ -99,6 +101,13 @@ const ProductList = ({ title, baseURL, disablePagination = false }) => {
                   )
                 )}
               </div>
+              {title === "Khám phá" && (
+                <div className="text-center border border-blue-400 border-2 rounded-2xl">
+                  <Link to="/products" className="px-2 py-3 text-xl font-bold rounded-2xl hover:text-purple-500 transition-colors">
+                    Xem thêm
+                  </Link>
+                </div>
+              )}
               <Pagination totalPage={totalPage} />
             </div>
           ) : (
