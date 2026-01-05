@@ -6,12 +6,21 @@ const Filter = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [isOpen, setIsOpen] = useState(false);
 
-  const { register, handleSubmit } = useForm({
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm({
     defaultValues: {
       minPrice: searchParams.get("minPrice") || "",
       maxPrice: searchParams.get("maxPrice") || "",
+      fromDate: searchParams.get("fromDate") || "",
+      toDate: searchParams.get("toDate") || "",
     },
   });
+
+  const fromDate = watch("fromDate");
 
   const onApply = (data) => {
     const next = new URLSearchParams(searchParams);
@@ -41,9 +50,7 @@ const Filter = () => {
           className="absolute z-10 mt-2 p-4 bg-[#E8E8F8] border rounded-lg shadow-xl w-72 flex flex-col gap-4"
         >
           <div>
-            <label className="block text-sm font-medium mb-1">
-              Khoảng giá
-            </label>
+            <label className="block text-sm font-medium mb-1">Khoảng giá</label>
             <div className="flex gap-2">
               <input
                 type="number"
@@ -60,6 +67,36 @@ const Filter = () => {
                 {...register("maxPrice")}
               />
             </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              Khoảng thời gian hết hạn
+            </label>
+            <div className="flex gap-2">
+              <input
+                type="date"
+                placeholder="Từ"
+                className="w-full border p-1 rounded"
+                {...register("fromDate")}
+              />
+              <input
+                type="date"
+                placeholder="Đến"
+                className="w-full border p-1 rounded"
+                {...register("toDate", {
+                  validate: (value) =>
+                    !fromDate ||
+                    value >= fromDate ||
+                    "Ngày đến không được trước ngày từ",
+                })}
+              />
+            </div>
+            {errors.toDate && (
+              <p className="text-red-500 text-xs mt-1">
+                {errors.toDate.message}
+              </p>
+            )}
           </div>
 
           <button

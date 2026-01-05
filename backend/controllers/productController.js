@@ -100,6 +100,8 @@ export const getAllProducts = async (req, res) => {
       categoryId,
       minPrice,
       maxPrice,
+      fromDate,
+      toDate,
       sortBy,
       order,
       status = "active",
@@ -166,6 +168,16 @@ export const getAllProducts = async (req, res) => {
       filter.current_price = {};
       if (minPrice) filter.current_price.$gte = Number(minPrice);
       if (maxPrice) filter.current_price.$lte = Number(maxPrice);
+    }
+
+    if (fromDate || toDate) {
+      filter.end_time = {};
+      if (fromDate) filter.end_time.$gte = Date(fromDate);
+      if (toDate){
+        const end = Date(toDate);
+        end.setHours(23, 59, 59, 999);
+        filter.end_time.$lte = end;
+      } 
     }
 
     // Sort
