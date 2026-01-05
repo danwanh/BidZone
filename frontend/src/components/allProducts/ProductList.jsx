@@ -25,6 +25,7 @@ const ProductList = () => {
   const toDate = searchParams.get("toDate") || "";
   const sortBy = searchParams.get("sortBy") || "";
   const order = searchParams.get("order") || "";
+  const justPosted = searchParams.get("justPosted") || "";
 
   const queryString = useMemo(() => {
     const p = new URLSearchParams();
@@ -38,6 +39,7 @@ const ProductList = () => {
     if (toDate) p.set("toDate", toDate);
     if (sortBy) p.set("sortBy", sortBy); // price/endtime
     if (order) p.set("order", order); // asc/desc
+    if (justPosted) p.set("justPosted", justPosted);
     return p.toString();
   }, [
     page,
@@ -49,6 +51,7 @@ const ProductList = () => {
     toDate,
     sortBy,
     order,
+    justPosted
   ]);
 
   useEffect(() => {
@@ -56,7 +59,7 @@ const ProductList = () => {
     if (!page) next.delete("page");
     else next.set("page", 1);
     setSearchParams(next);
-  }, [q, categoryId, minPrice, maxPrice, fromDate, toDate, sortBy, order]);
+  }, [q, categoryId, minPrice, maxPrice, fromDate, toDate, sortBy, order, justPosted]);
 
   useEffect(() => {
     let isMounted = true;
