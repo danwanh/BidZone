@@ -106,6 +106,7 @@ export const getAllProducts = async (req, res) => {
       sortBy,
       order,
       status = "active",
+      justPosted,
     } = req.query;
 
     const pageNum = Math.max(1, Number(page));
@@ -174,11 +175,17 @@ export const getAllProducts = async (req, res) => {
     if (fromDate || toDate) {
       filter.end_time = {};
       if (fromDate) filter.end_time.$gte = new Date(fromDate);
-      if (toDate){
+      if (toDate) {
         const end = new Date(toDate);
         end.setHours(23, 59, 59, 999);
         filter.end_time.$lte = end;
-      } 
+      }
+    }
+
+    if (justPosted === "true") {
+      const twoHoursAgo = new Date();
+      twoHoursAgo.setHours(twoHoursAgo.getHours() - 2);
+      filter.start_time = { $gte: twoHoursAgo };
     }
 
     // Sort
@@ -312,7 +319,7 @@ export const getAllProducts = async (req, res) => {
     });
   } catch (error) {
     console.error("Error getting all products:", error);
-    res.status(500).json({ message: "Can't get all products" + error});
+    res.status(500).json({ message: "Can't get all products" + error });
   }
 };
 
