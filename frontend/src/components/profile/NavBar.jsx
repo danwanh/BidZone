@@ -118,7 +118,7 @@ const NavBar = ({ labels }) => {
 
   return (
     <>
-      <div className="flex gap-[30px]">
+      <div className="flex md:gap-[30px] md:flex-row flex-col">
         {labels.map((label, i) => (
           <Link
             key={i}

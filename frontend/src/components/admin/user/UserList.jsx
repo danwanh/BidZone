@@ -3,6 +3,7 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import AddUser from "./AddUser";
+import AdminResetPassword from "./PasswordResetNoti";
 import { useAuth } from "../../../context/AuthContext";
 
 import UserRow from "./UserRow";
@@ -25,6 +26,8 @@ const UserList = () => {
   const [searchTerm, setSearchTerm] = useState(q);
 
   const [menu, setMenu] = useState({ visible: false, x: 0, y: 0, user: null });
+  const [resettingUser, setResettingUser] = useState(null);
+  const [isResetting, setIsResetting] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   const [deletingUser, setDeletingUser] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -137,6 +140,32 @@ const UserList = () => {
     } catch (error) {
       console.error(error);
       toast.error("Lỗi khi cập nhật!");
+    }
+  };
+
+  const handleOpenResetPassword = () => {
+    setResettingUser(menu.user);
+    setMenu({ ...menu, visible: false });
+  };
+
+  const handleConfirmReset = async (user) => {
+    if (!user) return;
+
+    try {
+      setIsResetting(true);
+      await api.post("/api/auth/reset-password", {
+        email: user.email,
+      });
+
+      toast.success(`Đã cấp lại mật khẩu và gửi email tới ${user.email}`);
+
+      // Close the modal
+      setResettingUser(null);
+    } catch (error) {
+      console.error(error);
+      toast.error(error.response?.data?.message || "Lỗi khi cấp lại mật khẩu");
+    } finally {
+      setIsResetting(false);
     }
   };
 
@@ -317,6 +346,7 @@ const UserList = () => {
         onEdit={handleOpenEdit}
         onDelete={handleOpenDelete}
         onView={handleOnView}
+        onResetPassword={handleOpenResetPassword}
       />
 
       {editingUser && (
@@ -338,6 +368,15 @@ const UserList = () => {
 
       {isAdding && (
         <AddUser onSave={handleAddUser} onCancel={() => setIsAdding(false)} />
+      )}
+
+      {resettingUser && (
+        <AdminResetPassword
+          user={resettingUser}
+          isResetting={isResetting}
+          onConfirm={handleConfirmReset}
+          onCancel={() => setResettingUser(null)}
+        />
       )}
     </div>
   );

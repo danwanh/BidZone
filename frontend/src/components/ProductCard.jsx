@@ -14,24 +14,23 @@ const ProductCard = ({ product }) => {
   const { addToLikedList, removeFromLikedList, likedIds } = useLiked();
   const { user, loading: authLoading } = useAuth();
   const [isLiked, setIsLiked] = useState(likedIds.has(product._id));
+  const [isSendingRating, setIsSendingRating] = useState(false);
   const navigate = useNavigate();
 
-  const [userId, setUserId] = useState("123");
-  useEffect(() => {
-    if (authLoading) setUserId("123");
-    else setUserId(user?._id);
-    setIsLiked(likedIds.has(product._id));
-  }, [authLoading, likedIds]);
+  const userId = authLoading ? "123" : user?._id;
 
   const is_bought =
-    (product.status === "ended" && product?.bidder_id?._id == userId) || false;
-
+    (product.status === "ended" && product?.bidder_id?._id === userId) || false;
   const is_new = new Date() - new Date(product.createdAt) <= 120 * 60 * 1000;
-
+  const is_seller =
+    product?.seller_id?._id === userId && user.role === "seller";
   const has_user_name =
     product?.bidder_id?.username || product?.bidder_id?.name;
 
-  const { register, handleSubmit, watch, setValue } = useForm({
+  useEffect(() => {
+    setIsLiked(likedIds.has(product._id));
+  }, [likedIds]);
+  const { register, handleSubmit, watch, setValue, reset } = useForm({
     defaultValues: {
       vote: null,
       review: "",
@@ -41,32 +40,43 @@ const ProductCard = ({ product }) => {
   const vote = watch("vote");
 
   const onSubmit = async (data) => {
+    const target_user_id = is_seller
+      ? product?.bidder_id?._id || product?.bidder_id
+      : product?.seller_id?._id || product?.seller_id;
+
+    const finalVote = data?.vote || vote;
+    setIsSendingRating(true);
+
     const body = {
       product_id: product._id,
       from_user_id: userId,
-      to_user_id: product?.seller_id?._id || product.seller_id,
+      to_user_id: target_user_id,
       comment: data.review,
-      points: vote === "up" ? 1 : -1,
+      points: finalVote === "down" ? -1 : 1,
     };
 
     try {
       const response = await axios.post(`/api/ratings/`, body);
 
-      if (data?.vote == "up") {
-        setShowPopup(false);
+      if (finalVote == "up") {
         const up = await axios.patch(`/api/users/rateup`, {
-          id: product.seller_id,
+          id: target_user_id,
         });
-      } else if (data?.vote == "down") {
-        setShowPopup(false);
+        console.log(up.data.message || up.data);
+      } else if (finalVote == "down") {
         const down = await axios.patch(`/api/users/ratedown`, {
-          id: product.seller_id,
+          id: target_user_id,
         });
       }
-      toast.success("Đánh giá thành công!");
       setShowPopup(false);
+      toast.success("Đánh giá thành công!");
+
+      reset();
     } catch (err) {
+      console.log(err.message);
       toast.error(err.response?.data?.message || err);
+    } finally {
+      setIsSendingRating(false);
     }
   };
 
@@ -76,10 +86,13 @@ const ProductCard = ({ product }) => {
     setShowPopup(true);
   };
 
-  const handleHuyBan = () => {
-    setValue("vote", "down");
-    setValue("review", "Người thắng không thanh toán");
-    handleSubmit(onSubmit)();
+  const handleHuyBan = async () => {
+    const hardcodedData = {
+      vote: "down",
+      review: "Người thắng không thanh toán",
+    };
+
+    await onSubmit(hardcodedData);
     setShowPopup(false);
   };
 
@@ -116,39 +129,46 @@ const ProductCard = ({ product }) => {
     <div className="relative">
       {/* REVIEW POP UP */}
       {showPopup && (
-        <div className="flex flex-col gap-2 absolute -inset-y-2 -inset-x-5 bg-white py-6 px-2 rounded-lg h-10shadow-lg border border-black border-[2px] z-50">
+        <div className="flex flex-col absolute -inset-y-2 -inset-x-5 bg-white py-6 px-2 rounded-lg w-[105%] shadow-lg border border-black border-[2px] z-50">
           {/* Upvote + Downvote */}
-          <div className="flex gap-2">
-            {/* UPVOTE */}
-            <svg
-              onClick={() => setValue("vote", vote === "up" ? null : "up")}
-              className={`w-5 h-5 cursor-pointer transition stroke-[#667EEA] overflow-visible
+          <div className="flex justify-between items-center px-2">
+            <div className="flex gap-2 ">
+              {/* UPVOTE */}
+              <svg
+                onClick={() => setValue("vote", vote === "up" ? null : "up")}
+                className={`w-5 h-5 cursor-pointer transition stroke-[#667EEA] overflow-visible
                 ${vote === "up" ? "fill-[#667EEA]" : ""}`}
-              viewBox="0 0 16 19"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M6.35956 1.77149C6.44297 0.641453 7.58117 -0.23236 8.80792 0.0552852L9.14283 0.135052C9.73696 0.275249 10.2644 0.686171 10.4414 1.30135C10.7237 2.28756 11.1254 4.33613 10.521 6.75211C10.71 6.72758 10.8995 6.70703 11.0895 6.69047C12.0044 6.61191 13.2311 6.60345 14.318 6.94427C14.9827 7.15336 15.5935 7.76732 15.8578 8.48281C16.094 9.12578 16.0632 9.8872 15.5576 10.5773C15.6311 10.7223 15.6902 10.8686 15.7347 11.016C15.8335 11.3423 15.8797 11.7013 15.8797 12.0506C15.8797 12.3999 15.8335 12.7588 15.7347 13.0851C15.6846 13.2483 15.6192 13.4151 15.5293 13.5734C15.7462 14.0411 15.6666 14.5632 15.5255 14.9609C15.3802 15.3532 15.1688 15.7209 14.8993 16.0498C14.9686 16.2335 14.9968 16.4269 14.9968 16.6118C14.9968 16.9804 14.8826 17.3672 14.6722 17.7141C14.2436 18.4223 13.3928 19 12.1904 19H7.69923C6.92289 19 6.3262 18.9021 5.81805 18.7365C5.38103 18.5864 4.96346 18.3902 4.57334 18.1516L4.51175 18.1153C3.86501 17.7443 3.22983 17.3793 1.85808 17.2427C0.875146 17.1436 0 16.3967 0 15.3742V10.5398C0 9.51253 0.878995 8.80913 1.74131 8.58796C2.83075 8.30757 3.76107 7.6368 4.4771 6.88384C5.1957 6.12605 5.64995 5.33684 5.81035 4.90296C6.06571 4.20801 6.26717 3.04293 6.35956 1.7727V1.77149Z"
-                strokeWidth={2}
-              />
-            </svg>
+                viewBox="0 0 16 19"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M6.35956 1.77149C6.44297 0.641453 7.58117 -0.23236 8.80792 0.0552852L9.14283 0.135052C9.73696 0.275249 10.2644 0.686171 10.4414 1.30135C10.7237 2.28756 11.1254 4.33613 10.521 6.75211C10.71 6.72758 10.8995 6.70703 11.0895 6.69047C12.0044 6.61191 13.2311 6.60345 14.318 6.94427C14.9827 7.15336 15.5935 7.76732 15.8578 8.48281C16.094 9.12578 16.0632 9.8872 15.5576 10.5773C15.6311 10.7223 15.6902 10.8686 15.7347 11.016C15.8335 11.3423 15.8797 11.7013 15.8797 12.0506C15.8797 12.3999 15.8335 12.7588 15.7347 13.0851C15.6846 13.2483 15.6192 13.4151 15.5293 13.5734C15.7462 14.0411 15.6666 14.5632 15.5255 14.9609C15.3802 15.3532 15.1688 15.7209 14.8993 16.0498C14.9686 16.2335 14.9968 16.4269 14.9968 16.6118C14.9968 16.9804 14.8826 17.3672 14.6722 17.7141C14.2436 18.4223 13.3928 19 12.1904 19H7.69923C6.92289 19 6.3262 18.9021 5.81805 18.7365C5.38103 18.5864 4.96346 18.3902 4.57334 18.1516L4.51175 18.1153C3.86501 17.7443 3.22983 17.3793 1.85808 17.2427C0.875146 17.1436 0 16.3967 0 15.3742V10.5398C0 9.51253 0.878995 8.80913 1.74131 8.58796C2.83075 8.30757 3.76107 7.6368 4.4771 6.88384C5.1957 6.12605 5.64995 5.33684 5.81035 4.90296C6.06571 4.20801 6.26717 3.04293 6.35956 1.7727V1.77149Z"
+                  strokeWidth={2}
+                />
+              </svg>
 
-            {/* DOWNVOTE (same svg for example) */}
-            <svg
-              onClick={() => setValue("vote", vote === "down" ? null : "down")}
-              className={`w-5 h-5 cursor-pointer transition stroke-[#667EEA] overflow-visible
+              {/* DOWNVOTE (same svg for example) */}
+              <svg
+                onClick={() =>
+                  setValue("vote", vote === "down" ? null : "down")
+                }
+                className={`w-5 h-5 cursor-pointer transition stroke-[#667EEA] overflow-visible
                 ${vote === "down" ? "fill-[#667EEA]" : ""}`}
-              viewBox="0 0 16 19"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              style={{ transform: "rotate(180deg)" }} // flipped for downvote
-            >
-              <path
-                d="M6.35956 1.77149C6.44297 0.641453 7.58117 -0.23236 8.80792 0.0552852L9.14283 0.135052C9.73696 0.275249 10.2644 0.686171 10.4414 1.30135C10.7237 2.28756 11.1254 4.33613 10.521 6.75211C10.71 6.72758 10.8995 6.70703 11.0895 6.69047C12.0044 6.61191 13.2311 6.60345 14.318 6.94427C14.9827 7.15336 15.5935 7.76732 15.8578 8.48281C16.094 9.12578 16.0632 9.8872 15.5576 10.5773C15.6311 10.7223 15.6902 10.8686 15.7347 11.016C15.8335 11.3423 15.8797 11.7013 15.8797 12.0506C15.8797 12.3999 15.8335 12.7588 15.7347 13.0851C15.6846 13.2483 15.6192 13.4151 15.5293 13.5734C15.7462 14.0411 15.6666 14.5632 15.5255 14.9609C15.3802 15.3532 15.1688 15.7209 14.8993 16.0498C14.9686 16.2335 14.9968 16.4269 14.9968 16.6118C14.9968 16.9804 14.8826 17.3672 14.6722 17.7141C14.2436 18.4223 13.3928 19 12.1904 19H7.69923C6.92289 19 6.3262 18.9021 5.81805 18.7365C5.38103 18.5864 4.96346 18.3902 4.57334 18.1516L4.51175 18.1153C3.86501 17.7443 3.22983 17.3793 1.85808 17.2427C0.875146 17.1436 0 16.3967 0 15.3742V10.5398C0 9.51253 0.878995 8.80913 1.74131 8.58796C2.83075 8.30757 3.76107 7.6368 4.4771 6.88384C5.1957 6.12605 5.64995 5.33684 5.81035 4.90296C6.06571 4.20801 6.26717 3.04293 6.35956 1.7727V1.77149Z"
-                strokeWidth={2}
-              />
-            </svg>
+                viewBox="0 0 16 19"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                style={{ transform: "rotate(180deg)" }} // flipped for downvote
+              >
+                <path
+                  d="M6.35956 1.77149C6.44297 0.641453 7.58117 -0.23236 8.80792 0.0552852L9.14283 0.135052C9.73696 0.275249 10.2644 0.686171 10.4414 1.30135C10.7237 2.28756 11.1254 4.33613 10.521 6.75211C10.71 6.72758 10.8995 6.70703 11.0895 6.69047C12.0044 6.61191 13.2311 6.60345 14.318 6.94427C14.9827 7.15336 15.5935 7.76732 15.8578 8.48281C16.094 9.12578 16.0632 9.8872 15.5576 10.5773C15.6311 10.7223 15.6902 10.8686 15.7347 11.016C15.8335 11.3423 15.8797 11.7013 15.8797 12.0506C15.8797 12.3999 15.8335 12.7588 15.7347 13.0851C15.6846 13.2483 15.6192 13.4151 15.5293 13.5734C15.7462 14.0411 15.6666 14.5632 15.5255 14.9609C15.3802 15.3532 15.1688 15.7209 14.8993 16.0498C14.9686 16.2335 14.9968 16.4269 14.9968 16.6118C14.9968 16.9804 14.8826 17.3672 14.6722 17.7141C14.2436 18.4223 13.3928 19 12.1904 19H7.69923C6.92289 19 6.3262 18.9021 5.81805 18.7365C5.38103 18.5864 4.96346 18.3902 4.57334 18.1516L4.51175 18.1153C3.86501 17.7443 3.22983 17.3793 1.85808 17.2427C0.875146 17.1436 0 16.3967 0 15.3742V10.5398C0 9.51253 0.878995 8.80913 1.74131 8.58796C2.83075 8.30757 3.76107 7.6368 4.4771 6.88384C5.1957 6.12605 5.64995 5.33684 5.81035 4.90296C6.06571 4.20801 6.26717 3.04293 6.35956 1.7727V1.77149Z"
+                  strokeWidth={2}
+                />
+              </svg>
+            </div>
+            <p className="font-bold text-[#667EEA] text-[16px] ">
+              {is_seller ? "Đánh giá người mua" : "Đánh giá người bán"}
+            </p>
           </div>
 
           {/* Review Form */}
@@ -159,7 +179,7 @@ const ProductCard = ({ product }) => {
             <textarea
               {...register("review")}
               className="w-full rounded-lg p-2 h-full mt-4 bg-[#f0f0f0]"
-              placeholder="Write your review..."
+              placeholder="Viết nội dung..."
             ></textarea>
 
             <div className="flex justify-end gap-4 mt-4">
@@ -171,7 +191,7 @@ const ProductCard = ({ product }) => {
                 Hủy
               </button>
 
-              {product.seller_id == userId && user.role === "seller" && (
+              {is_seller && (
                 <button
                   type="button"
                   className="px-4 bg-gray-300 rounded-[100px] font-bold cursor-pointer"
@@ -180,12 +200,22 @@ const ProductCard = ({ product }) => {
                   Hủy bán
                 </button>
               )}
-              <button
-                type="submit"
-                className="px-4 bg-blue-600 text-white font-bold rounded-[100px] cursor-pointer"
-              >
-                Đăng
-              </button>
+              {isSendingRating ? (
+                <button
+                  type="button"
+                  className="px-4 bg-blue-600 text-white font-bold rounded-[100px] cursor-pointer"
+                  disabled
+                >
+                  <div className="w-4 h-4 border-3 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+                </button>
+              ) : (
+                <button
+                  type="submit"
+                  className="px-4 bg-blue-600 text-white font-bold rounded-[100px] cursor-pointer"
+                >
+                  Đăng
+                </button>
+              )}
             </div>
           </form>
         </div>
@@ -269,7 +299,7 @@ const ProductCard = ({ product }) => {
         </div>
 
         <div className="px-[10px] flex flex-col">
-          <p className="font-bold line-clamp-2 truncate">{product.name}</p>
+          <p className="font-bold truncate w-50">{product.name}</p>
         </div>
         {/* Gia and Lan ra gia */}
         {!is_bought && (

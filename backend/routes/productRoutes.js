@@ -30,8 +30,6 @@ import { authenticate, isAdmin } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-const MAXIMUM_PICTURE_SENT = 25;
-
 router.post("/", validate({ body: createProductSchema }), addProduct);
 router.get("/", getAllProducts);
 router.get(

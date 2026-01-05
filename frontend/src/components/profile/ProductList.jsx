@@ -38,7 +38,7 @@ const ProductList = ({ user }) => {
       {tab == "Đã bán" && (
         <ProfileProductList
           baseURL={`/api/product/seller/${user._id}`}
-          xtra={"status=ended"}
+          xtra={"status=ended&bidder_id_exists=true"}
         />
       )}
     </div>

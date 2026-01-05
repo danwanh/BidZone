@@ -228,6 +228,7 @@ export const rateUp = async (req, res) => {
 
     user.rating_pos = user.rating_pos + 1;
     await user.save();
+    return res.status(200).json({ message: "User rated up successfully" });
   } catch (err) {
     console.log(err);
     res.status(400).json({ message: "Server error" });
@@ -248,6 +249,7 @@ export const rateDown = async (req, res) => {
 
     user.rating_neg = user.rating_neg + 1;
     await user.save();
+    return res.status(200).json({ message: "User rated down successfully" });
   } catch (err) {
     console.log(err);
     res.status(400).json({ message: "Server error" });

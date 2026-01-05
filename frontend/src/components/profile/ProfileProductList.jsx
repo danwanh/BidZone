@@ -40,7 +40,6 @@ const ProfileProductList = ({ baseURL, xtra, user }) => {
         setError(null);
 
         const res = await api.get(`${apiURL}?${queryString}`);
-
         setTotalPage(res.data.total_page);
 
         if (isMounted) {

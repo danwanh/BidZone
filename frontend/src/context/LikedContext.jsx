@@ -20,13 +20,9 @@ export function LikedProvider({ children }) {
         product_id: initialProducts,
       });
 
-      console.log("Đã tự động tạo watchlist mới cho user");
-
-      // Nếu tạo kèm sản phẩm (trường hợp addToLikedList), cập nhật lại state để UI hiển thị ngay
       if (initialProducts.length > 0) {
         setChange((prev) => !prev);
       } else {
-        // Nếu tạo rỗng (trường hợp getLikedList), set state rỗng
         setLikedList([]);
         setLikedIds(new Set());
       }
@@ -42,7 +38,6 @@ export function LikedProvider({ children }) {
     if (!user || !user._id) return;
 
     try {
-      console.log(user);
       const response = await api.get(`/api/watchlist/user/${user._id}`);
 
       const list = response.data.watchlist?.product_id || [];
@@ -78,13 +73,12 @@ export function LikedProvider({ children }) {
     }
     try {
       const body = { product_id: id };
-      console.log("abc" + body);
       const res = await api.patch(`/api/watchlist/${user._id}`, body);
       setChange((prev) => !prev); // Best practice: use callback for toggle
     } catch (err) {
       if (
         err.response &&
-        err.response.status === 404 &&
+        (err.response.status === 404 || err.response.status === 400) &&
         err.response.data.message.includes("No watchlist found")
       ) {
         await createWatchlist([]);
@@ -103,7 +97,7 @@ export function LikedProvider({ children }) {
     } catch (err) {
       if (
         err.response &&
-        err.response.status === 404 &&
+        (err.response.status === 404 || err.response.status === 400) &&
         err.response.data.message.includes("No watchlist found")
       ) {
         await createWatchlist([]);

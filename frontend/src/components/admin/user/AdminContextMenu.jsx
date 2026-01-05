@@ -1,7 +1,15 @@
 import { useLayoutEffect, useRef, useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 
-const AdminContextMenu = ({ visible, x, y, onEdit, onDelete, onView }) => {
+const AdminContextMenu = ({
+  visible,
+  x,
+  y,
+  onEdit,
+  onDelete,
+  onView,
+  onResetPassword,
+}) => {
   const menuRef = useRef(null);
   const [style, setStyle] = useState({ top: y, left: x });
   const [mounted, setMounted] = useState(false);
@@ -37,6 +45,14 @@ const AdminContextMenu = ({ visible, x, y, onEdit, onDelete, onView }) => {
       >
         Cập nhật
       </button>
+
+      <button
+        onClick={onResetPassword}
+        className="w-full text-left px-4 py-2 text-sm hover:bg-yellow-50"
+      >
+        Cấp lại mật khẩu
+      </button>
+
       <button
         onClick={onDelete}
         className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"

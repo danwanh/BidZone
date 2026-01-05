@@ -174,11 +174,11 @@ export const getAllProducts = async (req, res) => {
     if (fromDate || toDate) {
       filter.end_time = {};
       if (fromDate) filter.end_time.$gte = new Date(fromDate);
-      if (toDate){
+      if (toDate) {
         const end = new Date(toDate);
         end.setHours(23, 59, 59, 999);
         filter.end_time.$lte = end;
-      } 
+      }
     }
 
     // Sort
@@ -312,7 +312,7 @@ export const getAllProducts = async (req, res) => {
     });
   } catch (error) {
     console.error("Error getting all products:", error);
-    res.status(500).json({ message: "Can't get all products" + error});
+    res.status(500).json({ message: "Can't get all products" + error });
   }
 };
 
@@ -455,8 +455,14 @@ export const getProductByCategoryId = async (req, res) => {
 export const getProductBySellerId = async (req, res) => {
   try {
     const { id } = req.validated.params;
-    const { per_page = 1, page = 1, q = "", status = "active" } = req.query;
-
+    const {
+      per_page = 1,
+      page = 1,
+      q = "",
+      status = "active",
+      bidder_id_exists = "false",
+    } = req.query;
+    const bidder_exists = bidder_id_exists.toLowerCase() === "true";
     // Check if seller id is valid
     const seller = await User.findById(id);
     if (!seller)
@@ -464,13 +470,17 @@ export const getProductBySellerId = async (req, res) => {
     if (seller.role !== "seller")
       return res.status(403).json({ message: "User is not a seller" });
 
-    const products = await Product.find({
-      seller_id: id,
-      status: status,
-    }).populate("bidder_id");
+    const filter = { seller_id: id, status: status };
+
+    if (bidder_exists) {
+      filter.bidder_id = { $exists: true };
+    }
+    const products = await Product.find(filter).populate("bidder_id");
 
     if (products.length == 0)
-      return res.json({ message: "No product found", products: [{}] });
+      return res
+        .status(200)
+        .json({ message: "No product found", products: [] });
 
     const page_number = Math.max(1, Number(page) || 1);
     const per_page_number = Math.max(1, Number(per_page) || 1);
@@ -620,8 +630,6 @@ export const getProductsByCategory = async (req, res) => {
   try {
     const categoryId = req.validated.params.id;
     const LIMIT = 5;
-
-    console.log("ASDLJKASD " + typeof categoryId);
 
     const currentCategory = await Category.findById(categoryId);
 
