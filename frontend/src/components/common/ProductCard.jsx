@@ -4,12 +4,15 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState, useMemo, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import ProductTimer from "./ProductTimer";
-import { useLiked } from "../context/LikedContext";
-import { useAuth } from "../context/AuthContext";
+import { useLiked } from "../../context/LikedContext";
+import { useAuth } from "../../context/AuthContext";
 import { toast } from "react-toastify";
-import axios from "../api/axios";
+import axios from "../../api/axios";
+import { UserProfilePopup } from "./UserProfilePopup";
+import ProductSummaryPopup from "./ProductSummaryPopup";
 
 const ProductCard = ({ product }) => {
+  const [showInfoPopup, setShowInfoPopup] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const { addToLikedList, removeFromLikedList, likedIds } = useLiked();
   const { user, loading: authLoading } = useAuth();
@@ -19,6 +22,8 @@ const ProductCard = ({ product }) => {
 
   const userId = authLoading ? "123" : user?._id;
 
+  const [showUserPopup, setShowUserPopup] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
   const is_bought =
     (product.status === "ended" && product?.bidder_id?._id === userId) || false;
   const is_new = new Date() - new Date(product.createdAt) <= 120 * 60 * 1000;
@@ -118,15 +123,43 @@ const ProductCard = ({ product }) => {
   const toUserProfile = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    navigate(
-      `/profile?tab=Đang+đấu+giá&page=1&id=${
-        product.bidder_id?._id || product.bidder_id
-      }`
-    );
+    // navigate(
+    //   `/profile?tab=Đang+đấu+giá&page=1&id=${
+    //     product.bidder_id?._id || product.bidder_id
+    //   }`
+    // );
+    // console.log("123456");
+    // console.log(product);
+    // navigate(`/profile?tab=Đang+đấu+giá&page=1&id=${product.bidder_id._id}`);
+    setSelectedUser(product.bidder_id);
+    setShowUserPopup(true);
   };
 
   return (
     <div className="relative">
+      {showUserPopup && selectedUser && (
+        <UserProfilePopup
+          user={selectedUser}
+          isOpen={showUserPopup}
+          onClose={() => setShowUserPopup(false)}
+        />
+      )}
+      {/* --- RENDER INFO POPUP --- */}
+      {showInfoPopup && (
+        <ProductSummaryPopup
+          product={product}
+          onClose={() => setShowInfoPopup(false)}
+        />
+      )}
+
+      {showUserPopup && selectedUser && (
+        <UserProfilePopup
+          user={selectedUser}
+          isOpen={showUserPopup}
+          onClose={() => setShowUserPopup(false)}
+        />
+      )}
+
       {/* REVIEW POP UP */}
       {showPopup && (
         <div className="flex flex-col absolute -inset-y-2 -inset-x-5 bg-white py-6 px-2 rounded-lg w-[105%] shadow-lg border border-black border-[2px] z-50">
@@ -252,13 +285,39 @@ const ProductCard = ({ product }) => {
           </p>
 
           <div className="flex gap-1 items-center">
+            {/* INFO ICON - Added Here */}
+            <div
+              className="cursor-pointer text-gray-500 hover:text-blue-600 flex-shrink-0"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setShowInfoPopup(true);
+              }}
+              title="Xem thông tin"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="17"
+                height="17"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="17" x2="12" y2="11"></line>
+                <line x1="11.98" y1="8" x2="12.02" y2="8"></line>
+              </svg>
+            </div>
             {/* Crown */}
             <div
               className={`${
                 !is_bought && userId === product?.bidder_id?._id
                   ? "inline"
                   : "hidden"
-              } flex-shrink-0`}
+              } flex-shrink-0 mb-[1px]`}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -330,7 +389,7 @@ const ProductCard = ({ product }) => {
                 <div className="flex gap-2">
                   <p
                     onClick={toUserProfile}
-                    className={`whitespace-nowrap truncate overflow-hidden underline cursor-pointer hover:text-blue-600 ${
+                    className={`whitespace-nowrap truncate overflow-hidden  cursor-pointer text-bold  text-[#667ACA] hover:text-blue-600 ${
                       !is_bought && userId === product?.bidder_id?._id
                         ? "text-[#f57200]"
                         : ""
@@ -368,7 +427,7 @@ const ProductCard = ({ product }) => {
 
               {!product?.bidder_id?.is_deleted &&
                 !has_user_name &&
-                "Không có bidder"}
+                "Chưa được ra giá"}
             </div>
             <ProductTimer end_time={product.end_time} />
           </>

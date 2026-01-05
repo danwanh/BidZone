@@ -5,7 +5,7 @@ import "react-toastify/dist/ReactToastify.css";
 
 import Navbar from "../components/home/Navbar";
 import Footer from "../components/home/Footer";
-import Back from "../components/Back";
+import Back from "../components/common/Back";
 
 export default function MainLayout() {
   return (

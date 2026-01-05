@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react"
+import { toast } from "react-toastify";
 import axios from "../../api/axios";
 
 const UserProfileModal = ({ isOpen, onClose, user }) => {
@@ -14,7 +15,8 @@ const UserProfileModal = ({ isOpen, onClose, user }) => {
         const res = await axios.get(`/api/ratings?to_user_id=${user._id}`)
         setRatings(res.data || [])
       } catch (error) {
-        console.error("Failed to fetch ratings:", error)
+        console.error("Failed to fetch ratings:", error);
+        toast.error( error.response?.data?.message || "Không lấy được dữ liệu đánh giá: ");
         setRatings([])
       } finally {
         setLoading(false)

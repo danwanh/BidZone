@@ -12,13 +12,13 @@ const Footer = () => {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="text-black-300 pt-12 pb-6">
+    <footer className="bg-white text-black-300 pt-12 pb-6">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Logo & Giới thiệu */}
           <div className="col-span-1 md:col-span-1">
             <Link to="/" className="text-2xl font-bold text-purple-600">
-              <svg
+              {/* <svg
                 width="134"
                 height="41"
                 viewBox="0 0 134 41"
@@ -50,7 +50,13 @@ const Footer = () => {
                     <stop offset="1" stop-color="#764BA2" />
                   </linearGradient>
                 </defs>
-              </svg>
+              </svg> */}
+              {/* Logo */}
+              <img
+                src="/bidzone_logo.png"
+                alt="BidZone Logo"
+                className="w-32 h-auto mb-2"
+              />
             </Link>
             <p className="text-sm leading-relaxed">
               Sàn đấu giá trực tuyến uy tín, minh bạch và an toàn. Nơi kết nối
@@ -63,7 +69,7 @@ const Footer = () => {
             <h3 className="font-bold mb-4 uppercase">Khám phá</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link to="/products" className="hover:text-white transition">
+                <Link to="/products" className="hover:text-[#667ACA] transition">
                   Danh sách sản phẩm
                 </Link>
               </li>
@@ -123,7 +129,7 @@ const Footer = () => {
           <div className="flex space-x-4 mt-4 md:mt-0">
             <a
               href="#"
-              className="flex items-center gap-2 hover:text-white transition-colors"
+              className="flex items-center gap-2 hover:text-blue-700 transition-colors"
             >
               <FaFacebook size={20} />
               <span>Facebook</span>

@@ -106,6 +106,7 @@ export const getAllProducts = async (req, res) => {
       sortBy,
       order,
       status = "active",
+      justPosted,
     } = req.query;
 
     const pageNum = Math.max(1, Number(page));
@@ -179,6 +180,12 @@ export const getAllProducts = async (req, res) => {
         end.setHours(23, 59, 59, 999);
         filter.end_time.$lte = end;
       }
+    }
+
+    if (justPosted === "true") {
+      const twoHoursAgo = new Date();
+      twoHoursAgo.setHours(twoHoursAgo.getHours() - 2);
+      filter.start_time = { $gte: twoHoursAgo };
     }
 
     // Sort
@@ -320,6 +327,7 @@ export const getAllProducts = async (req, res) => {
 export const getProductById = async (req, res) => {
   const product = await Product.findById(req.validated.params.id)
     .populate("seller_id")
+    .populate("category_id")
     .populate("bidder_id");
 
   if (!product) {
@@ -357,7 +365,9 @@ export const getBoughtByUserId = async (req, res) => {
     const products = await Product.find({
       bidder_id: id,
       status: "ended",
-    }).populate("bidder_id");
+    })
+      .populate("bidder_id seller_id")
+      .populate("category_id", "name");
     const { page = 1, per_page = 6, q = "" } = req.query;
     const page_number = Math.max(1, Number(page) || 1);
     const per_page_number = Math.max(1, Number(per_page) || 1);
@@ -395,7 +405,9 @@ export const getBoughtByCategoryId = async (req, res) => {
     const products = await Product.find({
       category_id: { $in: categories },
       status: "ended",
-    }).populate("bidder_id");
+    })
+      .populate("bidder_id seller_id")
+      .populate("category_id", "name");
     const { page = 1, per_page = 10000, q = "" } = req.validated.query;
     const page_number = Math.max(1, Number(page) || 1);
     const per_page_number = Math.max(1, Number(per_page) || 1);
@@ -429,7 +441,9 @@ export const getProductByCategoryId = async (req, res) => {
     if (!category)
       return res.status(400).json({ message: "No category found" });
 
-    let products = await Product.find().populate("bidder_id");
+    let products = await Product.find()
+      .populate("bidder_id")
+      .populate("category_id", "name");
 
     // Tim vategory con
     if (category.category_id == null) {
@@ -475,7 +489,9 @@ export const getProductBySellerId = async (req, res) => {
     if (bidder_exists) {
       filter.bidder_id = { $exists: true };
     }
-    const products = await Product.find(filter).populate("bidder_id");
+    const products = await Product.find(filter)
+      .populate("bidder_id")
+      .populate("category_id", "name");
 
     if (products.length == 0)
       return res
@@ -582,6 +598,7 @@ export const getTop5Ending = async (req, res) => {
       end_time: { $exists: true, $gt: new Date() },
     })
       .populate("bidder_id")
+      .populate("category_id", "name")
       .sort({ end_time: 1 })
       .limit(5);
     return res.status(200).json({ products: products });
@@ -599,6 +616,7 @@ export const getTop5Bid = async (req, res) => {
       total_bids: { $exists: true },
     })
       .populate("bidder_id")
+      .populate("category_id", "name")
       .sort({ total_bids: -1 })
       .limit(5);
     return res.status(200).json({ products: products });
@@ -616,6 +634,7 @@ export const getTop5Price = async (req, res) => {
       current_price: { $exists: true },
     })
       .populate("bidder_id")
+      .populate("category_id", "name")
       .sort({ current_price: -1 })
       .limit(5);
     return res.status(200).json({ products: products });

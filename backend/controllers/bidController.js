@@ -238,6 +238,21 @@ export const getBiddingByUser = async (req, res) => {
       { $unwind: "$product_id" },
 
       {
+        $lookup: {
+          from: "categories",
+          localField: "product_id.category_id",
+          foreignField: "_id",
+          as: "product_id.category_id",
+        },
+      },
+      {
+        $unwind: {
+          path: "$product_id.category_id",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+
+      {
         $match: {
           "product_id.status": { $ne: "ended" },
           "product_id.name": { $regex: q, $options: "i" },

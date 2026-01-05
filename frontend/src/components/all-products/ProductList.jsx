@@ -1,10 +1,9 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import api from "../../api/axios";
-import ProductCard from "../ProductCard";
+import ProductCard from "../common/ProductCard";
 import Pagination from "../profile/Pagination";
-import Filter from "./Filter";
-import Sortbar from "./Sorbar";
+import AdvancedSearch from "./AdvancedSearch";
 
 const ProductList = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -26,6 +25,7 @@ const ProductList = () => {
   const toDate = searchParams.get("toDate") || "";
   const sortBy = searchParams.get("sortBy") || "";
   const order = searchParams.get("order") || "";
+  const justPosted = searchParams.get("justPosted") || "";
 
   const queryString = useMemo(() => {
     const p = new URLSearchParams();
@@ -39,15 +39,37 @@ const ProductList = () => {
     if (toDate) p.set("toDate", toDate);
     if (sortBy) p.set("sortBy", sortBy); // price/endtime
     if (order) p.set("order", order); // asc/desc
+    if (justPosted) p.set("justPosted", justPosted);
     return p.toString();
-  }, [page, q, categoryId, minPrice, maxPrice, fromDate, toDate, sortBy, order]);
+  }, [
+    page,
+    q,
+    categoryId,
+    minPrice,
+    maxPrice,
+    fromDate,
+    toDate,
+    sortBy,
+    order,
+    justPosted,
+  ]);
 
   useEffect(() => {
     const next = new URLSearchParams(searchParams);
     if (!page) next.delete("page");
     else next.set("page", 1);
     setSearchParams(next);
-  }, [q, categoryId, minPrice, maxPrice, fromDate, toDate, sortBy, order]);
+  }, [
+    q,
+    categoryId,
+    minPrice,
+    maxPrice,
+    fromDate,
+    toDate,
+    sortBy,
+    order,
+    justPosted,
+  ]);
 
   useEffect(() => {
     let isMounted = true;
@@ -59,10 +81,11 @@ const ProductList = () => {
         const res = await api.get(`/api/product/?${queryString}`);
 
         setTotalPage(res.data.total_page);
-        console.log(res.data);
+        // console.log(res.data);
 
         if (isMounted) {
           setProducts(res.data.products);
+          console.log(res.data.products);
         }
       } catch (error) {
         console.error(
@@ -84,8 +107,7 @@ const ProductList = () => {
   return (
     <>
       <div className="flex gap-2 md:gap-7 md:flex-row flex-col">
-        <Filter />
-        <Sortbar />
+        <AdvancedSearch />
       </div>
       {loading && (
         <div className="flex justify-center mt-5">
