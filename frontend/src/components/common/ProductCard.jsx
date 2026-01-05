@@ -1,7 +1,7 @@
 "use client";
 
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import ProductTimer from "./ProductTimer";
 import { useLiked } from "../../context/LikedContext";
@@ -13,8 +13,15 @@ import { UserProfilePopup } from "./UserProfilePopup";
 const ProductCard = ({ product }) => {
   const [showPopup, setShowPopup] = useState(false);
   const { addToLikedList, removeFromLikedList, likedIds } = useLiked();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+
+  const [userId, setUserId] = useState("123");
+  useEffect(() => {
+    if (authLoading) setUserId("123");
+    else setUserId(user?._id);
+    setIsLiked(likedIds.has(product._id));
+  }, [authLoading, likedIds]);
 
   const [isLiked, setIsLiked] = useState(likedIds.has(product._id));
 const [showUserPopup, setShowUserPopup] = useState(false);
@@ -24,10 +31,9 @@ const [selectedUser, setSelectedUser] = useState(null);
   const is_profile = location.pathname.endsWith("/profile");
   // console.log(product?.bidder_id?._id || product);
   const is_bought =
-    (product.status === "ended" && product?.bidder_id?._id == user._id) ||
-    false;
+    (product.status === "ended" && product?.bidder_id?._id == userId) || false;
 
-  const is_new = new Date() - new Date(product.createdAt) <= 90 * 60 * 1000;
+  const is_new = new Date() - new Date(product.createdAt) <= 120 * 60 * 1000;
 
   const has_user_name =
     product?.bidder_id?.username || product?.bidder_id?.name;
@@ -44,7 +50,7 @@ const [selectedUser, setSelectedUser] = useState(null);
   const onSubmit = async (data) => {
     const body = {
       product_id: product._id,
-      from_user_id: user._id,
+      from_user_id: userId,
       to_user_id: product?.seller_id?._id || product.seller_id,
       comment: data.review,
       points: vote === "up" ? 1 : -1,
@@ -106,6 +112,11 @@ const [selectedUser, setSelectedUser] = useState(null);
   const toUserProfile = (e) => {
     e.preventDefault();
     e.stopPropagation();
+    navigate(
+      `/profile?tab=Đang+đấu+giá&page=1&id=${
+        product.bidder_id?._id || product.bidder_id
+      }`
+    );
     // console.log("123456");
     // console.log(product);
     // navigate(`/profile?tab=Đang+đấu+giá&page=1&id=${product.bidder_id._id}`);
@@ -179,7 +190,7 @@ const [selectedUser, setSelectedUser] = useState(null);
                 Hủy
               </button>
 
-              {product.seller_id == user._id && user.role === "seller" && (
+              {product.seller_id == userId && user.role === "seller" && (
                 <button
                   type="button"
                   className="px-4 bg-gray-300 rounded-[100px] font-bold cursor-pointer"
@@ -203,19 +214,19 @@ const [selectedUser, setSelectedUser] = useState(null);
         className={`w-[225px] h-fit flex flex-col bg-[#ffffff] rounded-[0.6rem] gap-[2px] overflow-hidden shadow-lg relative hover:-translate-y-2 transition-transform duration-150 ease-in-out hover:cursor-pointer`}
       >
         {is_bought && (
-          <div className="absolute bg-[#011876] text-[14px] font-bold text-white -rotate-45 pt-10 px-10 pb-3 -left-13 -top-5">
+          <div className="absolute bg-[#011876] text-[14px] font-bold text-white -rotate-45 pt-10 px-10 pb-3 -left-13 -top-5 z-5">
             ĐÃ MUA
           </div>
         )}
 
         {is_new && (
-          <div className="absolute bg-linear-to-b from-[#ff7b00] via-[#ff7b00] to-[#ffb71c9a] text-[14px] font-bold text-white -rotate-45 pt-10 px-10 pb-3 -left-13 -top-5">
+          <div className="absolute bg-linear-to-b from-[#ff7b00] via-[#ff7b00] to-[#ffb71c9a] text-[14px] font-bold text-white -rotate-45 pt-10 px-10 pb-3 -left-13 -top-5 z-5">
             MỚI MỞ
           </div>
         )}
 
         <img
-          className="w-full h-[180px] object-cover object-center"
+          className="w-full h-[180px] object-cover object-center z-0"
           src={
             product.image_url != null && product.image_url.length > 0
               ? product.image_url[0]
@@ -228,34 +239,56 @@ const [selectedUser, setSelectedUser] = useState(null);
           <p className="mt-[2px] -mb-[1px]">
             {new Date(product.start_time).toLocaleDateString("en-GB")}
           </p>
-          <svg
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              handleLike(isLiked ? false : true);
-            }}
-            width="19"
-            height="17"
-            viewBox="0 0 22 20"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M20.75 6.56387C20.75 13.1279 11.483 18.441 11.0884 18.6605C10.9844 18.7192 10.8681 18.75 10.75 18.75C10.6319 18.75 10.5156 18.7192 10.4116 18.6605C10.017 18.441 0.75 13.1279 0.75 6.56387C0.751654 5.02247 1.33541 3.5447 2.3732 2.45476C3.41099 1.36483 4.81806 0.751737 6.28571 0.75C8.12946 0.75 9.74375 2.64152 10.75 4.04904C11.7563 2.64152 13.3705 0.75 15.2143 0.75C16.6819 0.751737 18.089 1.36483 19.1268 2.45476C20.1646 3.5447 20.7483 5.02247 20.75 6.56387Z"
-              stroke="#E91C1E"
-              strokeWidth="1.5"
-              fill={isLiked ? "#E91C1E" : "none"}
-            />
-          </svg>
+
+          <div className="flex gap-1 items-center">
+            {/* Crown */}
+            <div
+              className={`${
+                !is_bought && userId === product?.bidder_id?._id
+                  ? "inline"
+                  : "hidden"
+              } flex-shrink-0`}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width={19}
+                height={19}
+                viewBox="0 0 24 24"
+              >
+                <path
+                  fill="#f57200"
+                  fillRule="evenodd"
+                  d="m21.838 11.126l-.229 2.436c-.378 4.012-.567 6.019-1.75 7.228C18.678 22 16.906 22 13.36 22h-2.72c-3.545 0-5.317 0-6.5-1.21s-1.371-3.216-1.749-7.228l-.23-2.436c-.18-1.912-.27-2.869.058-3.264a1 1 0 0 1 .675-.367c.476-.042 1.073.638 2.268 1.998c.618.704.927 1.055 1.271 1.11a.92.92 0 0 0 .562-.09c.319-.16.53-.595.955-1.464l2.237-4.584C10.989 2.822 11.39 2 12 2s1.011.822 1.813 2.465l2.237 4.584c.424.87.636 1.304.955 1.464c.176.089.37.12.562.09c.344-.055.653-.406 1.271-1.11c1.195-1.36 1.792-2.04 2.268-1.998a1 1 0 0 1 .675.367c.327.395.237 1.352.057 3.264M12.952 12.7l-.098-.176c-.38-.682-.57-1.023-.854-1.023s-.474.341-.854 1.023l-.098.176c-.108.194-.162.29-.246.354c-.085.064-.19.088-.4.136l-.19.043c-.738.167-1.107.25-1.195.533c-.088.282.164.576.667 1.164l.13.152c.143.168.215.251.247.354c.032.104.021.215 0 .438l-.02.204c-.076.784-.114 1.177.115 1.351c.23.175.576.016 1.267-.303l.178-.082c.197-.09.295-.135.399-.135s.202.045.399.135l.178.082c.691.319 1.037.478 1.267.303c.23-.174.191-.567.115-1.352l-.02-.203c-.021-.223-.032-.334 0-.437c.032-.104.104-.187.247-.355l.13-.152c.503-.588.755-.882.667-1.165c-.088-.282-.457-.365-1.195-.532l-.19-.043c-.21-.048-.315-.072-.4-.136c-.084-.063-.138-.16-.246-.354"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </div>
+
+            {/* Heart */}
+            <svg
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleLike(isLiked ? false : true);
+              }}
+              width="19"
+              height="17"
+              viewBox="0 0 22 20"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M20.75 6.56387C20.75 13.1279 11.483 18.441 11.0884 18.6605C10.9844 18.7192 10.8681 18.75 10.75 18.75C10.6319 18.75 10.5156 18.7192 10.4116 18.6605C10.017 18.441 0.75 13.1279 0.75 6.56387C0.751654 5.02247 1.33541 3.5447 2.3732 2.45476C3.41099 1.36483 4.81806 0.751737 6.28571 0.75C8.12946 0.75 9.74375 2.64152 10.75 4.04904C11.7563 2.64152 13.3705 0.75 15.2143 0.75C16.6819 0.751737 18.089 1.36483 19.1268 2.45476C20.1646 3.5447 20.7483 5.02247 20.75 6.56387Z"
+                stroke="#E91C1E"
+                strokeWidth="1.5"
+                fill={isLiked ? "#E91C1E" : "none"}
+              />
+            </svg>
+          </div>
         </div>
 
         <div className="px-[10px] flex flex-col">
           <p className="font-bold line-clamp-2 truncate">{product.name}</p>
-          {/* {!is_profile && (
-            <p className="text-[#666666] h-10 overflow-hidden line-clamp-2 text-sm">
-              {product.description}
-            </p>
-          )} */}
         </div>
         {/* Gia and Lan ra gia */}
         {!is_bought && (
@@ -286,7 +319,12 @@ const [selectedUser, setSelectedUser] = useState(null);
                 <div className="flex gap-2">
                   <p
                     onClick={toUserProfile}
-                    className="whitespace-nowrap truncate overflow-hidden  cursor-pointer text-bold  text-[#667ACA] hover:text-blue-600"
+                    className={`whitespace-nowrap truncate overflow-hidden  cursor-pointer text-bold  text-[#667ACA] hover:text-blue-600 ${
+                      !is_bought && userId === product?.bidder_id?._id
+                        ? "text-[#f57200]"
+                        : ""
+                    }`}
+                    
                   >
                     {product?.bidder_id?.username
                       ? product?.bidder_id?.username

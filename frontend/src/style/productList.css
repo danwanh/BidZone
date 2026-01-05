@@ -9,12 +9,11 @@
 .title::after {
   content: "";
   position: absolute;
-  left: -1%;
+  left: -1.4%;
   bottom: -5px;
   width: 102%;
-  height: 5px; /* Độ dày */
+  height: 5px;
   background-color: #e15910;
 
-  /* HÌNH THANG CÂN: Đáy trên nhỏ hơn đáy dưới */
   clip-path: polygon(0.5% 0%, 99.5% 0%, 100% 100%, 0% 100%);
 }

@@ -9,8 +9,7 @@ export const createAutoBid = async (req, res) => {
     const { product_id, bidder_id, max_price } = req.validated.body;
 
     const product = await Product.findById(product_id);
-    if (!product)
-      return res.status(404).json({ error: "Product not found" });
+    if (!product) return res.status(404).json({ error: "Product not found" });
 
     if (product.status !== "active")
       return res.status(400).json({ error: "Autobid out of date" });
@@ -30,8 +29,7 @@ export const createAutoBid = async (req, res) => {
     }
 
     const bidder = await User.findById(bidder_id);
-    if (!bidder)
-      return res.status(404).json({ error: "Bidder not found" });
+    if (!bidder) return res.status(404).json({ error: "Bidder not found" });
 
     // check bidder rating
     const pos = bidder.rating_pos || 0;
@@ -58,9 +56,7 @@ export const createAutoBid = async (req, res) => {
 
     if (userBid) {
       if (userBid.max_price >= max_price)
-        return res
-          .status(400)
-          .json({ error: "Max price need to be larger" });
+        return res.status(400).json({ error: "Max price need to be larger" });
 
       userBid.max_price = max_price;
       await userBid.save();
@@ -90,10 +86,7 @@ export const createAutoBid = async (req, res) => {
     if (!secondBid) {
       newPrice = product.start_price;
     } else {
-      newPrice = Math.min(
-        topBid.max_price,
-        secondBid.max_price + bidStep
-      );
+      newPrice = Math.min(topBid.max_price, secondBid.max_price + bidStep);
       newHolder = topBid.bidder_id;
     }
 
@@ -113,15 +106,14 @@ export const createAutoBid = async (req, res) => {
 
       if (diffMinutes <= Number(config.value)) {
         product.end_time = new Date(
-          new Date(product.end_time).getTime() +
-            Number(config.extend) * 60000
+          new Date(product.end_time).getTime() + Number(config.extend) * 60000
         );
       }
     }
 
     // update product
     product.current_price = newPrice;
-    product.highest_bidder_id = newHolder;
+    product.bidder_id = newHolder;
 
     product.total_bids += 1;
 

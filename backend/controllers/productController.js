@@ -11,6 +11,7 @@ import AutoBid from "../models/autobid.model.js";
 import Bid from "../models/bid.model.js";
 import { sanitizeDescription } from "../utils/sanitizeHtml.js";
 import appEvent from "../services/mailSystem/mailEvents.js";
+import { errorMonitor } from "events";
 
 // POST /api/product
 export const addProduct = async (req, res) => {
@@ -100,6 +101,8 @@ export const getAllProducts = async (req, res) => {
       categoryId,
       minPrice,
       maxPrice,
+      fromDate,
+      toDate,
       sortBy,
       order,
       status = "active",
@@ -168,6 +171,16 @@ export const getAllProducts = async (req, res) => {
       if (maxPrice) filter.current_price.$lte = Number(maxPrice);
     }
 
+    if (fromDate || toDate) {
+      filter.end_time = {};
+      if (fromDate) filter.end_time.$gte = new Date(fromDate);
+      if (toDate){
+        const end = new Date(toDate);
+        end.setHours(23, 59, 59, 999);
+        filter.end_time.$lte = end;
+      } 
+    }
+
     // Sort
     if (sortBy && order) {
       const dir = order === "asc" ? 1 : -1;
@@ -234,6 +247,16 @@ export const getAllProducts = async (req, res) => {
               { $unwind: "$seller" },
 
               {
+                $lookup: {
+                  from: "users",
+                  localField: "bidder_id",
+                  foreignField: "_id",
+                  as: "bidder_id",
+                },
+              },
+              { $unwind: "$bidder_id" },
+
+              {
                 $addFields: {
                   // category fields
                   category: {
@@ -247,6 +270,12 @@ export const getAllProducts = async (req, res) => {
                     email: "$seller.email",
                   },
 
+                  bidder_id: {
+                    _id: "$bidder_id._id",
+                    username: "$bidder_id.username",
+                    name: "$bidder_id.name",
+                  },
+
                   score: { $meta: "searchScore" },
                 },
               },
@@ -258,12 +287,15 @@ export const getAllProducts = async (req, res) => {
 
       const result = await Product.aggregate(pipeline);
 
+      console.log(result[0].data);
+
       products = result[0].data;
       totalDocs = result[0].total[0]?.count || 0;
     } else {
       [products, totalDocs] = await Promise.all([
         Product.find(filter)
           .populate("category_id", "name")
+          .populate("bidder_id")
           .populate("seller_id", "username email")
           .sort(sort)
           .skip(skip)
@@ -280,7 +312,7 @@ export const getAllProducts = async (req, res) => {
     });
   } catch (error) {
     console.error("Error getting all products:", error);
-    res.status(500).json({ message: "Can't get all products" });
+    res.status(500).json({ message: "Can't get all products" + error});
   }
 };
 
@@ -407,7 +439,9 @@ export const getProductByCategoryId = async (req, res) => {
 
       products.filter((p) => sub_category_ids.includes(p.category_id));
     } else {
-      products = await Product.find({ category_id: category._id });
+      products = await Product.find({ category_id: category._id }).populate(
+        "bidder_id"
+      );
     }
 
     return res.status(200).json(products);
@@ -430,7 +464,10 @@ export const getProductBySellerId = async (req, res) => {
     if (seller.role !== "seller")
       return res.status(403).json({ message: "User is not a seller" });
 
-    const products = await Product.find({ seller_id: id, status: status });
+    const products = await Product.find({
+      seller_id: id,
+      status: status,
+    }).populate("bidder_id");
 
     if (products.length == 0)
       return res.json({ message: "No product found", products: [{}] });
@@ -551,6 +588,7 @@ export const getTop5Bid = async (req, res) => {
       status: "active",
       total_bids: { $exists: true },
     })
+      .populate("bidder_id")
       .sort({ total_bids: -1 })
       .limit(5);
     return res.status(200).json({ products: products });
@@ -624,6 +662,7 @@ export const getProductsByCategory = async (req, res) => {
       const need = LIMIT - products.length;
 
       const extraProducts = await Product.find({ category_id: cat._id })
+        .populate("bidder_id")
         .limit(need)
         .lean();
 

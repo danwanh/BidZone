@@ -118,19 +118,19 @@ const NavBar = ({ labels }) => {
 
   return (
     <>
-      <div className="lg:flex gap-[30px]">
+      <div className="flex gap-[30px]">
         {labels.map((label, i) => (
           <Link
             key={i}
             to={getTabLink(label)}
             replace={true}
-            className={`navi_label_container ${
+            className={`flex gap-[5px] items-center px-[7px] py-[8px] rounded-[10px] cursor-pointer hover:-translate-y-[5px] transition-all duration-150 ease-in-out ${
               currentTab == label ? `bg-[#667EEA]` : ``
             }`}
           >
             <div>{icons[i]}</div>
             <p
-              className={`navi_text ${
+              className={`text-[18px] font-bold text-[#888888] ${
                 label == currentTab ? `!text-white` : ``
               }`}
             >
