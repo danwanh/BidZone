@@ -68,10 +68,20 @@ export const ProductDetailPage = () => {
 
   const maskName = useCallback((name) => {
     if (!name) return "Ẩn danh";
-    if (name.length <= 5) return name;
-    const visible = name.slice(-5);
-    const masked = "*".repeat(name.length - 5);
-    return masked + visible;
+    let toggle = true;
+    return name
+      .split("")
+      .map((char) => {
+        if (char === " ") return char;
+        if (toggle) {
+          toggle = false;
+          return char;
+        } else {
+          toggle = true;
+          return "*";
+        }
+      })
+      .join("");
   }, []);
 
   const formatRelativeTime = useCallback((date) => {
