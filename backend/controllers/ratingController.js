@@ -205,7 +205,7 @@ export const getRatingsByUser = async (req, res) => {
     const ratings = await Rating.find({
       to_user_id: req.validated.params.userId,
     })
-      .populate("from_user_id")
+      .populate("from_user_id product_id")
       .sort({ createdAt: -1 });
 
     res.json(ratings);

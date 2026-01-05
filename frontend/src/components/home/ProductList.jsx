@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import api from "../../api/axios";
-import ProductCard from "../ProductCard";
+import ProductCard from "../common/ProductCard";
 import Pagination from "../profile/Pagination";
 import "../../style/productList.css";
 

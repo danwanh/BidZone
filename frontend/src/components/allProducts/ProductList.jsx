@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import api from "../../api/axios";
-import ProductCard from "../ProductCard";
+import ProductCard from "../common/ProductCard";
 import Pagination from "../profile/Pagination";
 import AdvancedSearch from "./AdvancedSearch";
 

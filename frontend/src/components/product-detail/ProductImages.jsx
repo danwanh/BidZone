@@ -1,4 +1,4 @@
-"use client";
+import { useState, useEffect } from "react";
 
 export const ProductImages = ({
   mainImage,
@@ -10,15 +10,33 @@ export const ProductImages = ({
   onToggleWatchlist,
   userRole,
 }) => {
+  const [displayImage, setDisplayImage] = useState(mainImage);
+  const [fade, setFade] = useState(true);
+
+  useEffect(() => {
+    setFade(false);
+    const timer = setTimeout(() => {
+      setDisplayImage(mainImage);
+      setFade(true);
+    }, 150);
+
+    return () => clearTimeout(timer);
+  }, [mainImage]);
+
   return (
     <div>
       <div className="relative mb-4">
         <div className="flex items-center justify-center overflow-hidden">
           <img
-            src={mainImage || "/placeholder.svg?height=480&width=480"}
+            src={displayImage || "/placeholder.svg?height=480&width=480"}
             alt={product.name}
-            className="w-full h-full aspect-square object-cover rounded-xl border-2 border-gray-200"
+            className={`
+              w-full h-full aspect-square object-cover rounded-xl border-2 border-gray-200
+              transition-opacity duration-500
+              ${fade ? "opacity-100" : "opacity-0"}
+            `}
           />
+
           {userRole === "bidder" && (
             <button
               onClick={onToggleWatchlist}
@@ -36,7 +54,7 @@ export const ProductImages = ({
                   isLiked ? "text-red-500" : "text-gray-400 hover:text-red-500"
                 }`}
               >
-                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
               </svg>
             </button>
           )}
