@@ -43,7 +43,6 @@ export const BidHistory = ({
                     : "bg-red-50 opacity-60"
                 }`}
               >
-                {/* USER INFO */}
                 <div className="flex-1">
                   <button
                     onClick={() => handleOpenProfile(b)}
@@ -61,7 +60,6 @@ export const BidHistory = ({
                   <div className="text-gray-500 text-xs">{b.time}</div>
                 </div>
 
-                {/* PRICE INFO */}
                 {isAutobid ? (
                   <div className="text-right mr-4">
                     <div className="text-gray-500 text-sm">Giá vào</div>
@@ -86,7 +84,6 @@ export const BidHistory = ({
                   </div>
                 )}
 
-                {/* ACTION */}
                 {b.status && userRole === "seller" && (
                   <button
                     onClick={() => onRejectBid(b.id, b.userId)}
@@ -100,7 +97,6 @@ export const BidHistory = ({
         </div>
       </div>
 
-      {/* USER PROFILE POPUP */}
       <UserProfilePopup
         user={selectedUser}
         isOpen={isProfileOpen}

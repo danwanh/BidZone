@@ -69,7 +69,7 @@ const Footer = () => {
             <h3 className="font-bold mb-4 uppercase">Khám phá</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link to="/products" className="hover:text-white transition">
+                <Link to="/products" className="hover:text-[#667ACA] transition">
                   Danh sách sản phẩm
                 </Link>
               </li>
@@ -129,7 +129,7 @@ const Footer = () => {
           <div className="flex space-x-4 mt-4 md:mt-0">
             <a
               href="#"
-              className="flex items-center gap-2 hover:text-white transition-colors"
+              className="flex items-center gap-2 hover:text-blue-700 transition-colors"
             >
               <FaFacebook size={20} />
               <span>Facebook</span>
