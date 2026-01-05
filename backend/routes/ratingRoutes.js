@@ -34,7 +34,7 @@ router.get(
 
 router.get(
   "/user/:userId",
-  authenticate,
+ // authenticate,
   validate({ params: ratingUserIdParamSchema }),
   getRatingsByUser
 );

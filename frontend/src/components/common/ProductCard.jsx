@@ -4,10 +4,11 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import ProductTimer from "./ProductTimer";
-import { useLiked } from "../context/LikedContext";
-import { useAuth } from "../context/AuthContext";
+import { useLiked } from "../../context/LikedContext";
+import { useAuth } from "../../context/AuthContext";
 import { toast } from "react-toastify";
-import axios from "../api/axios";
+import axios from "../../api/axios";
+import { UserProfilePopup } from "./UserProfilePopup";
 
 const ProductCard = ({ product }) => {
   const [showPopup, setShowPopup] = useState(false);
@@ -16,6 +17,8 @@ const ProductCard = ({ product }) => {
   const navigate = useNavigate();
 
   const [isLiked, setIsLiked] = useState(likedIds.has(product._id));
+const [showUserPopup, setShowUserPopup] = useState(false);
+const [selectedUser, setSelectedUser] = useState(null);
 
   const location = useLocation();
   const is_profile = location.pathname.endsWith("/profile");
@@ -103,13 +106,22 @@ const ProductCard = ({ product }) => {
   const toUserProfile = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log("123456");
-    console.log(product);
-    navigate(`/profile?tab=Đang+đấu+giá&page=1&id=${product.bidder_id._id}`);
+    // console.log("123456");
+    // console.log(product);
+    // navigate(`/profile?tab=Đang+đấu+giá&page=1&id=${product.bidder_id._id}`);
+        setSelectedUser(product.bidder_id);
+    setShowUserPopup(true);
   };
 
   return (
     <div className="relative">
+      {showUserPopup && selectedUser && (
+        <UserProfilePopup
+          user={selectedUser}
+          isOpen={showUserPopup}
+          onClose={() => setShowUserPopup(false)}
+        />
+      )}
       {/* REVIEW POP UP */}
       {showPopup && (
         <div className="flex flex-col gap-2 absolute -inset-y-2 -inset-x-5 bg-white py-6 px-2 rounded-lg h-10shadow-lg border border-black border-[2px] z-50">
@@ -274,7 +286,7 @@ const ProductCard = ({ product }) => {
                 <div className="flex gap-2">
                   <p
                     onClick={toUserProfile}
-                    className="whitespace-nowrap truncate overflow-hidden underline cursor-pointer hover:text-blue-600"
+                    className="whitespace-nowrap truncate overflow-hidden  cursor-pointer text-bold  text-[#667ACA] hover:text-blue-600"
                   >
                     {product?.bidder_id?.username
                       ? product?.bidder_id?.username
@@ -308,7 +320,7 @@ const ProductCard = ({ product }) => {
 
               {!product?.bidder_id?.is_deleted &&
                 !has_user_name &&
-                "Không có bidder"}
+                "Chưa được ra giá"}
             </div>
             <ProductTimer end_time={product.end_time} />
           </>

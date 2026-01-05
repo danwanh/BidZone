@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import ProductCard from "../components/ProductCard";
+import ProductCard from "../components/common/ProductCard";
 import SideBar from "../components/profile/SideBar";
 import ProductList from "../components/profile/ProductList";
 import axios from "../api/axios";
