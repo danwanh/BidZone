@@ -6,6 +6,7 @@ import sellIcon from "../../assets/icons/gavel-solid-full.svg";
 import adminIcon from "../../assets/icons/admin.svg";
 import { useAuth } from "../../context/AuthContext";
 import { ClipLoader } from "react-spinners";
+import { toast } from "react-toastify";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -25,11 +26,10 @@ const Navbar = () => {
         const data = res.data;
         setCategories(data);
       } catch (error) {
-        console.log(error);
-        console.error(error.response.data?.message || error.message);
+        console.error(error);
+        toast.error(error.response?.data?.message || "Lỗi khi lấy dữ liệu danh mục");
       }
     };
-
     fetchCategories();
   }, []);
 
@@ -143,7 +143,7 @@ const Navbar = () => {
               onClick={() => setIsOpen(!isOpen)}
               onMouseEnter={() => setIsOpen(true)}
             >
-              Category
+              Danh mục
               <span
                 className={`transition-transform ${isOpen ? "rotate-180" : ""}`}
               >

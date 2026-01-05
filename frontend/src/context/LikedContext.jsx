@@ -42,7 +42,6 @@ export function LikedProvider({ children }) {
     if (!user || !user._id) return;
 
     try {
-      console.log(user);
       const response = await api.get(`/api/watchlist/user/${user._id}`);
 
       const list = response.data.watchlist?.product_id || [];

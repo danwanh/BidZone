@@ -6,6 +6,7 @@ import api from "../../api/axios";
 import ProductCard from "../common/ProductCard";
 import Pagination from "../profile/Pagination";
 import { useLiked } from "../../context/LikedContext";
+import { toast } from "react-toastify";
 
 const ProfileProductList = ({ baseURL, xtra, user }) => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -54,6 +55,7 @@ const ProfileProductList = ({ baseURL, xtra, user }) => {
           return;
         }
         console.error("Error loading products", message);
+        toast.error("Không lấy được dữ liệu danh sách: " + error?.message);
         if (isMounted) setError(error.message || "Unable to load products");
       } finally {
         if (isMounted) setLoading(false);

@@ -29,6 +29,7 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
       console.log("Reloaded order data:", response.data)
     } catch (err) {
       console.error("Failed to load order data:", err)
+      toast.error(error.response?.data?.message || "Không lấy được dữ liệu đơn hàng");
     }
   }, [order._id])
 
