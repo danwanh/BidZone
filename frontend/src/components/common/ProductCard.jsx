@@ -24,8 +24,8 @@ const ProductCard = ({ product }) => {
   }, [authLoading, likedIds]);
 
   const [isLiked, setIsLiked] = useState(likedIds.has(product._id));
-const [showUserPopup, setShowUserPopup] = useState(false);
-const [selectedUser, setSelectedUser] = useState(null);
+  const [showUserPopup, setShowUserPopup] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
 
   const location = useLocation();
   const is_profile = location.pathname.endsWith("/profile");
@@ -112,15 +112,15 @@ const [selectedUser, setSelectedUser] = useState(null);
   const toUserProfile = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    navigate(
-      `/profile?tab=Đang+đấu+giá&page=1&id=${
-        product.bidder_id?._id || product.bidder_id
-      }`
-    );
+    // navigate(
+    //   `/profile?tab=Đang+đấu+giá&page=1&id=${
+    //     product.bidder_id?._id || product.bidder_id
+    //   }`
+    // );
     // console.log("123456");
     // console.log(product);
     // navigate(`/profile?tab=Đang+đấu+giá&page=1&id=${product.bidder_id._id}`);
-        setSelectedUser(product.bidder_id);
+    setSelectedUser(product.bidder_id);
     setShowUserPopup(true);
   };
 
@@ -324,7 +324,6 @@ const [selectedUser, setSelectedUser] = useState(null);
                         ? "text-[#f57200]"
                         : ""
                     }`}
-                    
                   >
                     {product?.bidder_id?.username
                       ? product?.bidder_id?.username
