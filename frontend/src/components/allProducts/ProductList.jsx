@@ -22,6 +22,8 @@ const ProductList = () => {
   // Lấy thêm các params mới từ URL
   const minPrice = searchParams.get("minPrice") || "";
   const maxPrice = searchParams.get("maxPrice") || "";
+  const fromDate = searchParams.get("fromDate") || "";
+  const toDate = searchParams.get("toDate") || "";
   const sortBy = searchParams.get("sortBy") || "";
   const order = searchParams.get("order") || "";
 
@@ -33,17 +35,19 @@ const ProductList = () => {
     if (categoryId) p.set("categoryId", categoryId);
     if (minPrice) p.set("minPrice", minPrice);
     if (maxPrice) p.set("maxPrice", maxPrice);
+    if (fromDate) p.set("fromDate", fromDate);
+    if (toDate) p.set("toDate", toDate);
     if (sortBy) p.set("sortBy", sortBy); // price/endtime
     if (order) p.set("order", order); // asc/desc
     return p.toString();
-  }, [page, q, categoryId, minPrice, maxPrice, sortBy, order]);
+  }, [page, q, categoryId, minPrice, maxPrice, fromDate, toDate, sortBy, order]);
 
   useEffect(() => {
     const next = new URLSearchParams(searchParams);
     if (!page) next.delete("page");
     else next.set("page", 1);
     setSearchParams(next);
-  }, [q, categoryId, minPrice, maxPrice, sortBy, order]);
+  }, [q, categoryId, minPrice, maxPrice, fromDate, toDate, sortBy, order]);
 
   useEffect(() => {
     let isMounted = true;

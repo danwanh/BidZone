@@ -11,6 +11,7 @@ import AutoBid from "../models/autobid.model.js";
 import Bid from "../models/bid.model.js";
 import { sanitizeDescription } from "../utils/sanitizeHtml.js";
 import appEvent from "../services/mailSystem/mailEvents.js";
+import { errorMonitor } from "events";
 
 // POST /api/product
 export const addProduct = async (req, res) => {
@@ -172,9 +173,9 @@ export const getAllProducts = async (req, res) => {
 
     if (fromDate || toDate) {
       filter.end_time = {};
-      if (fromDate) filter.end_time.$gte = Date(fromDate);
+      if (fromDate) filter.end_time.$gte = new Date(fromDate);
       if (toDate){
-        const end = Date(toDate);
+        const end = new Date(toDate);
         end.setHours(23, 59, 59, 999);
         filter.end_time.$lte = end;
       } 
@@ -311,7 +312,7 @@ export const getAllProducts = async (req, res) => {
     });
   } catch (error) {
     console.error("Error getting all products:", error);
-    res.status(500).json({ message: "Can't get all products" });
+    res.status(500).json({ message: "Can't get all products" + error});
   }
 };
 

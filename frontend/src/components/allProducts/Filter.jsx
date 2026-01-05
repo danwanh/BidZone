@@ -23,6 +23,7 @@ const Filter = () => {
   const fromDate = watch("fromDate");
 
   const onApply = (data) => {
+    console.log(data);
     const next = new URLSearchParams(searchParams);
 
     Object.entries(data).forEach(([key, value]) => {
@@ -47,7 +48,7 @@ const Filter = () => {
       {isOpen && (
         <form
           onSubmit={handleSubmit(onApply)}
-          className="absolute z-10 mt-2 p-4 bg-[#E8E8F8] border rounded-lg shadow-xl w-72 flex flex-col gap-4"
+          className="absolute z-10 mt-2 p-4 bg-[#E8E8F8] border rounded-lg shadow-xl w-80 flex flex-col gap-4"
         >
           <div>
             <label className="block text-sm font-medium mb-1">Khoảng giá</label>
