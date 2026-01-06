@@ -220,9 +220,14 @@ export const getAllProducts = async (req, res) => {
           $match: filter,
         },
         {
+          $addFields: {
+            score: { $meta: "searchScore" },
+          },
+        },
+        {
           $facet: {
             data: [
-              { $sort: Object.keys(sort).length ? sort : { score: -1 } },
+              { $sort: sortBy && order ? sort : { score: -1 } },
               { $skip: skip },
               { $limit: limit },
 
@@ -261,7 +266,12 @@ export const getAllProducts = async (req, res) => {
                   as: "bidder_id",
                 },
               },
-              { $unwind: "$bidder_id" },
+              {
+                $unwind: {
+                  path: "$bidder_id",
+                  preserveNullAndEmptyArrays: true,
+                },
+              },
 
               {
                 $addFields: {
@@ -282,8 +292,6 @@ export const getAllProducts = async (req, res) => {
                     username: "$bidder_id.username",
                     name: "$bidder_id.name",
                   },
-
-                  score: { $meta: "searchScore" },
                 },
               },
             ],
@@ -293,8 +301,9 @@ export const getAllProducts = async (req, res) => {
       ];
 
       const result = await Product.aggregate(pipeline);
+      // console.log(JSON.stringify(pipeline, null, 2));
 
-      console.log(result[0].data);
+      // console.log(result[0].data);
 
       products = result[0].data;
       totalDocs = result[0].total[0]?.count || 0;
@@ -509,9 +518,11 @@ export const getProductBySellerId = async (req, res) => {
     );
     const total_page = Math.ceil(filtered.length / per_page_number);
 
-    return res
-      .status(200)
-      .json({ message: "Thành công ", total_page: total_page, products: result });
+    return res.status(200).json({
+      message: "Thành công ",
+      total_page: total_page,
+      products: result,
+    });
   } catch (error) {
     console.error("Error getting seller's product: ", error);
     res.status(500).json({ message: "Không thể lấy sản phẩm" });
