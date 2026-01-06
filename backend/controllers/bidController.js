@@ -9,7 +9,7 @@ export const getBidById = async (req, res) => {
   try {
     const { id: bid_id } = req.validated.params;
 
-    const bid = await Product.findById(bid_id);
+    const bid = await Product.findById(bid_id).populate("bidder_id");
 
     if (!bid) return res.status(400).json({ message: "No bid found" });
     else return res.status(200).json(bid);
@@ -156,7 +156,7 @@ export const getBidsByProduct = async (req, res) => {
     const { product_id } = req.validated.params;
     const bids = await Bid.find({ product_id }).populate(
       "bidder_id",
-      "name email"
+      "name email rating_pos rating_neg"
     );
     res.json(bids);
   } catch (err) {

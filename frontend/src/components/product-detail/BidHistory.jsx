@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { UserProfilePopup } from "../common/UserProfilePopup";
+import {formatPostedTime} from "../../utils/TimeFormat.js"
 
 export const BidHistory = ({
   bidHistory,
@@ -16,8 +17,10 @@ export const BidHistory = ({
     if (!bid?.userId) return;
 
     setSelectedUser({
-      _id: bid.userId, // QUAN TRỌNG: popup fetch theo _id
+      _id: bid.userId, 
       name: bid.user,
+      rating_pos: bid.rating_pos,
+      rating_neg: bid.rating_neg,
     });
     setIsProfileOpen(true);
   };
@@ -57,7 +60,7 @@ export const BidHistory = ({
                     </span>
                   )}
 
-                  <div className="text-gray-500 text-xs">{b.time}</div>
+                  <div className="text-gray-500 text-xs">{formatPostedTime(b.time)}</div>
                 </div>
 
                 {isAutobid ? (
