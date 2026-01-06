@@ -278,7 +278,13 @@ const SideBar = ({ user, isOwnProfile }) => {
   outline-none"
                   />
                 </div>
-                <Link to="/profile" className="text-[#a2a2a2] mt-[-14px]">
+
+                <Link
+                  to="/auth"
+                  state={{ page: "FORGETPASS" }}
+                  type="button"
+                  className="text-[#a2a2a2] mt-[-14px]"
+                >
                   Quên mật khẩu?
                 </Link>
                 <div className="w-full h-fit flex flex-col justify-center gap-[5px]">
@@ -523,11 +529,11 @@ const SideBar = ({ user, isOwnProfile }) => {
                   {...registerPersonalInfo("dob")}
                   type="date"
                   className="bg-[#f8f9fa]
-  border-2 border-[#e0e0e0]
-  rounded-[8px]
-  px-[15px] py-[5px]
-  placeholder:text-[rgb(106,106,106)]
-  outline-none"
+                              border-2 border-[#e0e0e0]
+                              rounded-[8px]
+                              px-[15px] py-[5px]
+                            placeholder:text-[rgb(106,106,106)]
+                              outline-none"
                   defaultValue={userData?.dob ? userData.dob.slice(0, 10) : ""}
                 />
               ) : (
