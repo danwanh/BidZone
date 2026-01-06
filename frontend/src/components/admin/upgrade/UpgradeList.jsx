@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import api from "../../../api/axios";
 import UpgradeRow from "./UpgradeRow";
+import UpgradeConfirmNoti from "./UpgradeConfirmNoti";
 import { useAuth } from "../../../context/AuthContext";
 import { ToastContainer, toast } from "react-toastify";
 
@@ -11,6 +12,14 @@ const UpgradeList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [action, setAction] = useState(0);
+
+  const [confirmModal, setConfirmModal] = useState({
+    isOpen: false,
+    data: null,
+    type: null,
+  });
+  const [isProcessing, setIsProcessing] = useState(false);
+
   const updateList = () => {
     setAction(action + 1);
   };
@@ -68,41 +77,61 @@ const UpgradeList = () => {
     loadUpgrades();
   }, [authLoading, queryString, status, action]);
 
-  const handleReject = async (upgradeId) => {
-    if (!window.confirm("Bạn có chắc chắn muốn từ chối yêu cầu này?")) return;
-
-    try {
-      await api.put(`/api/upgrade/${upgradeId}/review`, {
-        user_id: upgradeId,
-        status: "rejected",
-      });
-      toast.success("Đã từ chối request");
-      updateList();
-    } catch (err) {
-      console.log(err.response?.data?.message || err.message);
-      toast.error("Không thể từ chối request");
-    }
+  // Hàm mở modal khi bấm Duyệt/Loại
+  const openConfirm = (upgrade, type) => {
+    setConfirmModal({
+      isOpen: true,
+      data: upgrade,
+      type: type,
+    });
   };
 
-  const handleAccept = async (upgrade) => {
-    if (!window.confirm("Bạn có chắc chắn muốn duyệt yêu cầu này?")) return;
+  const closeConfirm = () => {
+    setConfirmModal({ isOpen: false, data: null, type: null });
+    setIsProcessing(false);
+  };
 
+  // Hàm xử lý chính khi nhấn "Xác nhận" trong Modal
+  const handleFinalAction = async () => {
+    const { data, type } = confirmModal;
+    if (!data) return;
+
+    setIsProcessing(true);
     try {
-      await api.put(`/api/upgrade/${upgrade._id}/review`, {
-        status: "accepted",
+      const targetStatus = type === "accept" ? "accepted" : "rejected";
+      await api.put(`/api/upgrade/${data._id}/review`, {
+        status: targetStatus,
+        user_id: data._id,
       });
 
-      toast.success("Đã duyệt request thành công");
+      toast.success(
+        type === "accept"
+          ? "Đã duyệt nâng cấp thành công!"
+          : "Đã từ chối yêu cầu."
+      );
       updateList();
+      closeConfirm();
     } catch (err) {
-      console.log(err.response?.data?.message || err.message);
-      toast.error("Lỗi khi duyệt request");
+      toast.error(err.response?.data?.message || "Thao tác thất bại");
+    } finally {
+      setIsProcessing(false);
     }
   };
 
   return (
     <div className="flex-1 min-h-screen bg-gradient-to-r from-[#ffffff80] to-[#B9C2E780] p-6 ">
       <ToastContainer position="top-right" autoClose={3000} theme="light" />
+
+      {confirmModal.isOpen && (
+        <UpgradeConfirmNoti
+          upgrade={confirmModal.data}
+          onConfirm={handleFinalAction}
+          onCancel={closeConfirm}
+          isLoading={isProcessing}
+          isRejectMode={confirmModal.type === "reject"}
+        />
+      )}
+
       <div className="">
         <div className="">
           {error && (
@@ -221,8 +250,8 @@ const UpgradeList = () => {
                             upgrade={upgrade}
                             updateList={updateList}
                             status={status}
-                            onAccept={handleAccept}
-                            onReject={handleReject}
+                            onAccept={() => openConfirm(upgrade, "accept")}
+                            onReject={() => openConfirm(upgrade, "reject")}
                           />
                         ))
                       ) : (

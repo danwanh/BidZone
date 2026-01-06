@@ -504,9 +504,9 @@ export const ProductDetailPage = () => {
 
   const handleRejectBid = useCallback(
     async (bidId, bidderId) => {
-      if (!window.confirm("Bạn chắc chắn muốn từ chối người đấu giá này?")) {
-        return;
-      }
+      // if (!window.confirm("Bạn chắc chắn muốn từ chối người đấu giá này?")) {
+      //   return;
+      // }
       console.log(bidId, bidderId);
       try {
         const endpoint =

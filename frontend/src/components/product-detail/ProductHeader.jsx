@@ -1,5 +1,3 @@
-"use client"
-
 export const ProductHeader = () => {
   return (
     <button
