@@ -73,67 +73,69 @@ export const getProfile = async (req, res) => {
 // UPDATE - Update user profile
 export const updateUser = async (req, res) => {
   try {
-    console.log(req.validated.body);
-    const { id } = req.validated.params;
+    console.log("Update user body:", req.validated.body)
+
+    const { id } = req.validated.params
     const {
-      name = "",
-      email = "",
-      phonenumber = "",
-      address = "",
+      name,
+      email,
+      phonenumber,
+      address,
       dob,
-      password = "",
-      gender = "",
-      username = "",
-    } = req.validated.body;
+      password,
+      gender,
+      username,
+      $inc, 
+    } = req.validated.body
 
-    // if (!mongoose.Types.ObjectId.isValid(id)) {
-    //   return res.status(400).json({ message: "Invalid user ID" });
-    // }
-
-    // Check authorization (user can only update their own profile, unless admin)
-    if (req.user._id.toString() !== id && req.user.role !== "admin") {
-      return res.status(403).json({ message: "Access denied" });
-    }
-
-    const user = await User.findById(id);
+    const user = await User.findById(id)
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({ message: "User not found" })
     }
 
-    // Update fields
-    if (name) user.name = name;
+
+    if (name) user.name = name
+
     if (email) {
-      // Check if email is already taken
-      const emailExists = await User.findOne({ email, _id: { $ne: id } });
+      const emailExists = await User.findOne({ email, _id: { $ne: id } })
       if (emailExists) {
-        return res.status(400).json({ message: "Email already in use" });
+        return res.status(400).json({ message: "Email already in use" })
       }
-
-      user.email = email;
+      user.email = email
     }
-    if (phonenumber) user.phone = phonenumber;
-    if (address) user.address = address;
-    if (dob) user.dob = dob;
-    if (gender) user.gender = gender;
-    if (username) user.username = username;
 
-    // Update password if provided
+    if (phonenumber) user.phone = phonenumber
+    if (address) user.address = address
+    if (dob) user.dob = dob
+    if (gender) user.gender = gender
+    if (username) user.username = username
+
     if (password) {
-      const salt = await bcrypt.genSalt(10);
-      user.password_hash = await bcrypt.hash(password, salt);
+      const salt = await bcrypt.genSalt(10)
+      user.password_hash = await bcrypt.hash(password, salt)
     }
 
-    await user.save();
+    await user.save()
+
+
+    if ($inc && Object.keys($inc).length > 0) {
+      await User.findByIdAndUpdate(id, { $inc })
+    }
 
     const updatedUser = await User.findById(id).select(
       "-password_hash -reset_password_token"
-    );
-    res.json({ message: "User updated successfully", user: updatedUser });
+    )
+
+    res.json({
+      message: "User updated successfully",
+      user: updatedUser,
+    })
   } catch (err) {
-    console.error("Error updating user:", err);
-    res.status(500).json({ message: err.message });
+    console.error("Error updating user:", err)
+    res.status(500).json({ message: err.message })
   }
-};
+}
+
 
 // UPDATE - Update user role (Admin only)
 export const updateUserRole = async (req, res) => {

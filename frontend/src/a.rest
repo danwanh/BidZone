@@ -1,4 +1,0 @@
-GET http://localhost:3000/api/category/subcategories/691158f1635fde90d067cb48
-
-###
-GET http://localhost:3000/api/product/seller/6912e02b70323bdb4045f327/

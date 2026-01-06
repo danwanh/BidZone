@@ -100,6 +100,14 @@ export const updateUserSchema = Joi.object({
     "string.min": "Tên người dùng phải có ít nhất 3 ký tự",
     "string.max": "Tên người dùng tối đa 30 ký tự",
   }),
+  $inc: Joi.object({
+    rating_pos: Joi.number().integer().optional(),
+    rating_neg: Joi.number().integer().optional(),
+  })
+    .optional()
+    .messages({
+      "object.base": "$inc phải là object",
+    }),
 });
 
 // Schema cho việc thay đổi mật khẩu

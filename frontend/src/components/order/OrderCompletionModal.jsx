@@ -4,45 +4,61 @@ import { toast } from "react-toastify";
 import ChatInterface from "./ChatInterface";
 import UserProfileModal from "./UserProfileModal";
 
-export default function OrderCompletionModal({ isOpen, onClose, order, currentUserId, product, seller, buyer }) {
-  const [orderData, setOrderData] = useState(order)
-  const [paymentInvoice, setPaymentInvoice] = useState("")
-  const [deliveryAddress, setDeliveryAddress] = useState("")
-  const [shippingInvoice, setShippingInvoice] = useState("")
-  const [cancelReason, setCancelReason] = useState("")
-  const [pendingRating, setPendingRating] = useState(null)
-  const [userRating, setUserRating] = useState(null)
-  const [ratingComment, setRatingComment] = useState("")
-  const [activeTab, setActiveTab] = useState("process")
-  const [showCancelDialog, setShowCancelDialog] = useState(false)
-  const [showUserProfile, setShowUserProfile] = useState(false)
-  const [selectedUser, setSelectedUser] = useState(null)
-  const [isMinimized, setIsMinimized] = useState(false)
+export default function OrderCompletionModal({
+  isOpen,
+  onClose,
+  order,
+  currentUserId,
+  product,
+  seller,
+  buyer,
+}) {
+  const [orderData, setOrderData] = useState(order);
+  const [paymentInvoice, setPaymentInvoice] = useState("");
+  const [deliveryAddress, setDeliveryAddress] = useState("");
+  const [shippingInvoice, setShippingInvoice] = useState("");
+  const [cancelReason, setCancelReason] = useState("");
+  const [pendingRating, setPendingRating] = useState(null);
+  const [userRating, setUserRating] = useState(null);
+  const [ratingComment, setRatingComment] = useState("");
+  const [activeTab, setActiveTab] = useState("process");
+  const [showCancelDialog, setShowCancelDialog] = useState(false);
+  const [showUserProfile, setShowUserProfile] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [isMinimized, setIsMinimized] = useState(false);
 
-  const isSeller = useMemo(() => currentUserId === orderData?.seller_id._id, [currentUserId, orderData?.seller_id._id])
-  const isBuyer = useMemo(() => currentUserId === orderData?.buyer_id._id, [currentUserId, orderData?.buyer_id._id])
+  const isSeller = useMemo(
+    () => currentUserId === orderData?.seller_id._id,
+    [currentUserId, orderData?.seller_id._id]
+  );
+  const isBuyer = useMemo(
+    () => currentUserId === orderData?.buyer_id._id,
+    [currentUserId, orderData?.buyer_id._id]
+  );
 
   const loadOrderData = useCallback(async () => {
     try {
-      const response = await axios.get(`/api/orders/${order._id}`)
-      setOrderData(response.data)
-      console.log("Reloaded order data:", response.data)
+      const response = await axios.get(`/api/orders/${order._id}`);
+      setOrderData(response.data);
+      console.log("Reloaded order data:", response.data);
     } catch (err) {
-      console.error("Failed to load order data:", err)
-      toast.error(error.response?.data?.message || "Không lấy được dữ liệu đơn hàng");
+      console.error("Failed to load order data:", err);
+      toast.error(
+        error.response?.data?.message || "Không lấy được dữ liệu đơn hàng"
+      );
     }
-  }, [order._id])
+  }, [order._id]);
 
   useEffect(() => {
     if (isOpen && order?._id) {
-      loadOrderData()
+      loadOrderData();
     }
-  }, [isOpen, order?._id, loadOrderData])
+  }, [isOpen, order?._id, loadOrderData]);
 
   const handleSubmitPayment = useCallback(async () => {
     if (!paymentInvoice.trim() || !deliveryAddress.trim()) {
-      toast.error("Vui lòng nhập đầy đủ thông tin")
-      return
+      toast.error("Vui lòng nhập đầy đủ thông tin");
+      return;
     }
 
     try {
@@ -50,57 +66,59 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
         invoice_info: paymentInvoice,
         address: deliveryAddress,
         status: "pending_shipping",
-      })
+      });
 
-      toast.success("Đã gửi thông tin thanh toán!")
-      setPaymentInvoice("")
-      setDeliveryAddress("")
-      loadOrderData()
+      toast.success("Đã gửi thông tin thanh toán!");
+      setPaymentInvoice("");
+      setDeliveryAddress("");
+      loadOrderData();
     } catch (err) {
-      console.error("Payment submission failed:", err)
-      toast.error(err.response?.data?.message || "Lỗi khi gửi thông tin thanh toán")
+      console.error("Payment submission failed:", err);
+      toast.error(
+        err.response?.data?.message || "Lỗi khi gửi thông tin thanh toán"
+      );
     }
-  }, [paymentInvoice, deliveryAddress, orderData._id, loadOrderData])
+  }, [paymentInvoice, deliveryAddress, orderData._id, loadOrderData]);
 
   const handleConfirmPayment = useCallback(async () => {
     if (!shippingInvoice.trim()) {
-      toast.error("Vui lòng nhập mã vận đơn")
-      return
+      toast.error("Vui lòng nhập mã vận đơn");
+      return;
     }
 
     try {
       await axios.put(`/api/orders/${orderData._id}`, {
         delivery_info: shippingInvoice,
         status: "pending_delivery",
-      })
+      });
 
-      toast.success("Đã xác nhận và gửi hàng!")
-      setShippingInvoice("")
-      loadOrderData()
+      toast.success("Đã xác nhận và gửi hàng!");
+      setShippingInvoice("");
+      loadOrderData();
     } catch (err) {
-      console.error("Confirm payment failed:", err)
-      toast.error(err.response?.data?.message || "Lỗi khi xác nhận thanh toán")
+      console.error("Confirm payment failed:", err);
+      toast.error(err.response?.data?.message || "Lỗi khi xác nhận thanh toán");
     }
-  }, [shippingInvoice, orderData._id, loadOrderData])
+  }, [shippingInvoice, orderData._id, loadOrderData]);
 
   const handleConfirmDelivery = useCallback(async () => {
     try {
       await axios.put(`/api/orders/${orderData._id}`, {
         status: "completed",
-      })
+      });
 
-      toast.success("Đã xác nhận nhận hàng!")
-      loadOrderData()
+      toast.success("Đã xác nhận nhận hàng!");
+      loadOrderData();
     } catch (err) {
-      console.error("Confirm delivery failed:", err)
-      toast.error(err.response?.data?.message || "Lỗi khi xác nhận nhận hàng")
+      console.error("Confirm delivery failed:", err);
+      toast.error(err.response?.data?.message || "Lỗi khi xác nhận nhận hàng");
     }
-  }, [orderData._id, loadOrderData])
+  }, [orderData._id, loadOrderData]);
 
   const handleCancelOrder = useCallback(async () => {
     if (!cancelReason.trim()) {
-      toast.error("Vui lòng nhập lý do hủy")
-      return
+      toast.error("Vui lòng nhập lý do hủy");
+      return;
     }
 
     try {
@@ -108,101 +126,144 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
         status: "cancelled",
         cancelled_by: currentUserId,
         cancellation_reason: cancelReason,
-      })
+      });
 
-      toast.success("Đã hủy giao dịch")
-      setCancelReason("")
-      setShowCancelDialog(false)
-      loadOrderData()
+      toast.success("Đã hủy giao dịch");
+      setCancelReason("");
+      setShowCancelDialog(false);
+      loadOrderData();
     } catch (err) {
-      console.error("Cancel order failed:", err)
-      toast.error(err.response?.data?.message || "Lỗi khi hủy giao dịch")
+      console.error("Cancel order failed:", err);
+      toast.error(err.response?.data?.message || "Lỗi khi hủy giao dịch");
     }
-  }, [cancelReason, orderData._id, currentUserId, loadOrderData])
+  }, [cancelReason, orderData._id, currentUserId, loadOrderData]);
 
   const handleSubmitRating = useCallback(
     async (points) => {
       try {
+        const ratedUserId = isBuyer
+          ? orderData.seller_id._id
+          : orderData.buyer_id._id;
         const res = await axios.post("/api/ratings", {
           product_id: product._id,
           from_user_id: currentUserId,
-          to_user_id: isBuyer ? orderData.seller_id._id : orderData.buyer_id._id,
+          to_user_id: ratedUserId,
           points,
           comment: ratingComment,
-        })
+        });
 
-        setUserRating(res.data)
-        setPendingRating(null)
-        setRatingComment("")
+        setUserRating(res.data);
+        setPendingRating(null);
+        setRatingComment("");
 
         await axios.put(`/api/orders/${orderData._id}`, {
           status: "completed",
-        })
+        });
+        // chỉnh rating_pos rating_neg của user được đánh giá
 
-        toast.success("Đánh giá thành công!")
-        loadOrderData()
+        await axios.put(`/api/users/update/${ratedUserId}`, {
+          $inc: points === 1 ? { rating_pos: 1 } : { rating_neg: 1 },
+        });
+
+        toast.success("Đánh giá thành công!");
+        loadOrderData();
       } catch (err) {
-        console.error("Submit rating failed:", err)
-        toast.error(err.response?.data?.message || "Lỗi khi gửi đánh giá")
+        console.error("Submit rating failed:", err);
+        toast.error(err.response?.data?.message || "Lỗi khi gửi đánh giá");
       }
     },
-    [userRating, ratingComment, isBuyer, orderData, product._id, currentUserId, loadOrderData],
-  )
+    [
+      userRating,
+      ratingComment,
+      isBuyer,
+      orderData,
+      product._id,
+      currentUserId,
+      loadOrderData,
+    ]
+  );
 
-  const handleUpdateRating = useCallback(
-    async (points) => {
-      if (!userRating?._id) {
-        toast.error("Không tìm thấy đánh giá để cập nhật")
-        return
-      }
+const handleUpdateRating = useCallback(
+  async (points) => {
+    if (!userRating?._id) {
+      toast.error("Không tìm thấy đánh giá để cập nhật")
+      return
+    }
 
-      try {
-        const res = await axios.patch(`/api/ratings/${userRating._id}`, {
-          product_id: product._id,
-          from_user_id: currentUserId,
-          to_user_id: isBuyer ? orderData.seller_id._id : orderData.buyer_id._id,
-          points,
-          comment: ratingComment,
-        })
+    const oldPoints = userRating.points
 
-        setUserRating(res.data)
-        setPendingRating(null)
-        setRatingComment("")
-        toast.success("Cập nhật đánh giá thành công!")
-        loadOrderData()
-      } catch (err) {
-        console.error("Update rating failed:", err)
-        toast.error(err.response?.data?.message || "Lỗi khi cập nhật đánh giá")
-      }
-    },
-    [userRating, ratingComment, isBuyer, orderData, product._id, currentUserId, loadOrderData],
-  )
+    const ratedUserId = isBuyer
+      ? orderData.seller_id._id
+      : orderData.buyer_id._id
+
+    let ratingUpdate = {}
+    if (oldPoints === points) {
+      ratingUpdate = { rating_pos: 0, rating_neg: 0 }
+    }
+
+    if (oldPoints === 1 && points === -1) {
+      ratingUpdate = { rating_pos: -1, rating_neg: 1 }
+    }
+
+    if (oldPoints === -1 && points === 1) {
+      ratingUpdate = { rating_neg: -1, rating_pos: 1 }
+    }
+    console.log("Rating update:", oldPoints, points, ratingUpdate)
+
+    try {
+      const res = await axios.patch(`/api/ratings/${userRating._id}`, {
+        product_id: product._id,
+        from_user_id: currentUserId,
+        to_user_id: ratedUserId,
+        points,
+        comment: ratingComment,
+      })
+      
+      await axios.put(`/api/users/update/${ratedUserId}`, {
+        $inc: ratingUpdate,
+      })
+
+      setUserRating(res.data)
+      setPendingRating(null)
+      setRatingComment("")
+      toast.success("Cập nhật đánh giá thành công!")
+      loadOrderData()
+    } catch (err) {
+      console.error("Update rating failed:", err)
+      toast.error(err.response?.data?.message || "Lỗi khi cập nhật đánh giá")
+    }
+  },
+  [userRating, ratingComment, isBuyer, orderData, product._id, currentUserId, loadOrderData]
+)
+
 
   const loadUserRating = useCallback(async () => {
     try {
-      if (!product?._id) return
+      if (!product?._id) return;
 
-      const toUserId = isBuyer ? orderData?.seller_id?._id : orderData?.buyer_id?._id
-      if (!toUserId) return
+      const toUserId = isBuyer
+        ? orderData?.seller_id?._id
+        : orderData?.buyer_id?._id;
+      if (!toUserId) return;
 
       const res = await axios.get(
-        `/api/ratings?product_id=${product._id}&from_user_id=${currentUserId}&to_user_id=${toUserId}`,
-      )
+        `/api/ratings?product_id=${product._id}&from_user_id=${currentUserId}&to_user_id=${toUserId}`
+      );
 
       if (res.data && res.data.length > 0) {
-        setUserRating(res.data[0])
-        setRatingComment(res.data[0].comment || "")
+        setUserRating(res.data[0]);
+        setRatingComment(res.data[0].comment || "");
       }
     } catch (err) {
-      console.error("Failed to load user rating:", err)
+      console.error("Failed to load user rating:", err);
     }
-  }, [product._id, currentUserId, orderData, isBuyer])
+  }, [product._id, currentUserId, orderData, isBuyer]);
 
   useEffect(() => {
     if (orderData?.status === "completed") {
-      loadUserRating()
+      loadUserRating();
     }
-  }, [orderData?.status, loadUserRating])
+  }, [orderData?.status, loadUserRating]);
 
   const getCurrentStep = useCallback(() => {
     const statusMap = {
@@ -211,9 +272,9 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
       pending_delivery: 3,
       completed: 4,
       cancelled: 0,
-    }
-    return statusMap[orderData?.status] || 1
-  }, [orderData?.status])
+    };
+    return statusMap[orderData?.status] || 1;
+  }, [orderData?.status]);
 
   const getStatusDisplay = useCallback(() => {
     const statusMap = {
@@ -238,25 +299,39 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
         step: 4,
       },
       cancelled: { label: "Đã hủy", color: "bg-red-100 text-red-700", step: 0 },
-    }
-    return statusMap[orderData?.status] || statusMap.pending_payment
-  }, [orderData?.status])
+    };
+    return statusMap[orderData?.status] || statusMap.pending_payment;
+  }, [orderData?.status]);
 
   const renderStepContent = useCallback(() => {
     if (orderData?.status === "cancelled") {
       return (
         <div className="bg-red-50 border-2 border-red-200 rounded-lg p-6">
           <div className="flex items-start gap-3">
-            <svg className="w-6 h-6 text-red-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            <svg
+              className="w-6 h-6 text-red-600 flex-shrink-0"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
             <div>
-              <h3 className="font-bold text-red-700 mb-2">Đơn hàng đã bị hủy</h3>
-              <p className="text-sm text-red-600">Lý do: {orderData.cancellation_reason || "Không có lý do"}</p>
+              <h3 className="font-bold text-red-700 mb-2">
+                Đơn hàng đã bị hủy
+              </h3>
+              <p className="text-sm text-red-600">
+                Lý do: {orderData.cancellation_reason || "Không có lý do"}
+              </p>
             </div>
           </div>
         </div>
-      )
+      );
     }
 
     if (orderData?.status === "pending_payment") {
@@ -265,7 +340,12 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
           <div className="bg-white rounded-lg p-6 border-2 border-gray-200">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                <svg className="w-6 h-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg
+                  className="w-6 h-6 text-blue-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -274,11 +354,15 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
                   />
                 </svg>
               </div>
-              <h3 className="text-xl font-bold">Bước 1: Cung cấp thông tin thanh toán</h3>
+              <h3 className="text-xl font-bold">
+                Bước 1: Cung cấp thông tin thanh toán
+              </h3>
             </div>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-semibold mb-2">Hóa đơn thanh toán</label>
+                <label className="block text-sm font-semibold mb-2">
+                  Hóa đơn thanh toán
+                </label>
                 <input
                   type="text"
                   placeholder="Nhập mã giao dịch hoặc link hóa đơn"
@@ -288,7 +372,9 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
                 />
               </div>
               <div>
-                <label className="block text-sm font-semibold mb-2">Địa chỉ giao hàng</label>
+                <label className="block text-sm font-semibold mb-2">
+                  Địa chỉ giao hàng
+                </label>
                 <textarea
                   placeholder="Nhập địa chỉ đầy đủ"
                   value={deliveryAddress}
@@ -305,7 +391,7 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
               </button>
             </div>
           </div>
-        )
+        );
       } else if (isSeller) {
         return (
           <div className="bg-yellow-50 border-2 border-yellow-200 rounded-lg p-6">
@@ -326,14 +412,17 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
                 </svg>
               </div>
               <div>
-                <h3 className="font-bold text-yellow-700 mb-1">Đợi người mua</h3>
+                <h3 className="font-bold text-yellow-700 mb-1">
+                  Đợi người mua
+                </h3>
                 <p className="text-sm text-yellow-600">
-                  Đang chờ người mua cung cấp thông tin thanh toán và địa chỉ giao hàng
+                  Đang chờ người mua cung cấp thông tin thanh toán và địa chỉ
+                  giao hàng
                 </p>
               </div>
             </div>
           </div>
-        )
+        );
       }
     }
 
@@ -343,7 +432,12 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
           <div className="bg-white rounded-lg p-6 border-2 border-gray-200">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                <svg className="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg
+                  className="w-6 h-6 text-green-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -352,19 +446,31 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
                   />
                 </svg>
               </div>
-              <h3 className="text-xl font-bold">Bước 2: Xác nhận và gửi hàng</h3>
+              <h3 className="text-xl font-bold">
+                Bước 2: Xác nhận và gửi hàng
+              </h3>
             </div>
             <div className="space-y-4">
               <div className="bg-gray-50 p-3 rounded">
-                <label className="block text-sm font-semibold mb-1">Thông tin thanh toán từ người mua</label>
-                <p className="text-sm text-gray-700">{orderData?.invoice_info || "Chưa cập nhật"}</p>
+                <label className="block text-sm font-semibold mb-1">
+                  Thông tin thanh toán từ người mua
+                </label>
+                <p className="text-sm text-gray-700">
+                  {orderData?.invoice_info || "Chưa cập nhật"}
+                </p>
               </div>
               <div className="bg-gray-50 p-3 rounded">
-                <label className="block text-sm font-semibold mb-1">Địa chỉ giao hàng</label>
-                <p className="text-sm text-gray-700">{orderData?.address || "Chưa cập nhật"}</p>
+                <label className="block text-sm font-semibold mb-1">
+                  Địa chỉ giao hàng
+                </label>
+                <p className="text-sm text-gray-700">
+                  {orderData?.address || "Chưa cập nhật"}
+                </p>
               </div>
               <div>
-                <label className="block text-sm font-semibold mb-2">Hóa đơn vận chuyển</label>
+                <label className="block text-sm font-semibold mb-2">
+                  Hóa đơn vận chuyển
+                </label>
                 <input
                   type="text"
                   placeholder="Nhập mã vận đơn"
@@ -381,7 +487,7 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
               </button>
             </div>
           </div>
-        )
+        );
       } else if (isBuyer) {
         return (
           <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-6">
@@ -403,11 +509,13 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
               </div>
               <div>
                 <h3 className="font-bold text-blue-700 mb-1">Đợi người bán</h3>
-                <p className="text-sm text-blue-600">Đang chờ người bán xác nhận thanh toán và gửi hàng</p>
+                <p className="text-sm text-blue-600">
+                  Đang chờ người bán xác nhận thanh toán và gửi hàng
+                </p>
               </div>
             </div>
           </div>
-        )
+        );
       }
     }
 
@@ -417,7 +525,12 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
           <div className="bg-white rounded-lg p-6 border-2 border-gray-200">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
-                <svg className="w-6 h-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg
+                  className="w-6 h-6 text-purple-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -426,12 +539,18 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
                   />
                 </svg>
               </div>
-              <h3 className="text-xl font-bold">Bước 3: Xác nhận đã nhận hàng</h3>
+              <h3 className="text-xl font-bold">
+                Bước 3: Xác nhận đã nhận hàng
+              </h3>
             </div>
             <div className="space-y-4">
               <div className="bg-gray-50 p-3 rounded">
-                <label className="block text-sm font-semibold mb-1">Mã vận đơn</label>
-                <p className="text-sm text-gray-700">{orderData?.delivery_info || "Chưa cập nhật"}</p>
+                <label className="block text-sm font-semibold mb-1">
+                  Mã vận đơn
+                </label>
+                <p className="text-sm text-gray-700">
+                  {orderData?.delivery_info || "Chưa cập nhật"}
+                </p>
               </div>
               <button
                 onClick={handleConfirmDelivery}
@@ -441,7 +560,7 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
               </button>
             </div>
           </div>
-        )
+        );
       } else if (isSeller) {
         return (
           <div className="bg-purple-50 border-2 border-purple-200 rounded-lg p-6">
@@ -462,12 +581,16 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
                 </svg>
               </div>
               <div>
-                <h3 className="font-bold text-purple-700 mb-1">Đợi người mua</h3>
-                <p className="text-sm text-purple-600">Đang chờ người mua xác nhận đã nhận hàng</p>
+                <h3 className="font-bold text-purple-700 mb-1">
+                  Đợi người mua
+                </h3>
+                <p className="text-sm text-purple-600">
+                  Đang chờ người mua xác nhận đã nhận hàng
+                </p>
               </div>
             </div>
           </div>
-        )
+        );
       }
     }
 
@@ -477,7 +600,12 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
           <div className="bg-white rounded-lg p-6 border-2 border-gray-200">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                <svg className="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg
+                  className="w-6 h-6 text-green-600"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -491,7 +619,9 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
 
             <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4 mb-6">
               <div className="flex items-center justify-between mb-3">
-                <p className="font-semibold text-green-700">Đánh giá của bạn:</p>
+                <p className="font-semibold text-green-700">
+                  Đánh giá của bạn:
+                </p>
                 <span
                   className={`px-3 py-1 rounded-full font-bold text-white ${
                     userRating.points > 0 ? "bg-green-600" : "bg-red-600"
@@ -500,10 +630,19 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
                   {userRating.points > 0 ? "+1 Tích cực" : "-1 Tiêu cực"}
                 </span>
               </div>
-              {userRating.comment && <p className="text-sm text-green-700 mb-3">Nhận xét: {userRating.comment}</p>}
-              {!userRating.comment && <p className="text-sm text-gray-600 mb-3 italic">Không có nhận xét</p>}
+              {userRating.comment && (
+                <p className="text-sm text-green-700 mb-3">
+                  Nhận xét: {userRating.comment}
+                </p>
+              )}
+              {!userRating.comment && (
+                <p className="text-sm text-gray-600 mb-3 italic">
+                  Không có nhận xét
+                </p>
+              )}
               <p className="text-xs text-green-600">
-                Gửi vào: {new Date(userRating.createdAt).toLocaleDateString("vi-VN")}
+                Gửi vào:{" "}
+                {new Date(userRating.createdAt).toLocaleDateString("vi-VN")}
               </p>
             </div>
 
@@ -516,10 +655,14 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
 
             {pendingRating !== null && (
               <div className="mt-6 p-4 bg-blue-50 border-2 border-blue-200 rounded-lg">
-                <h4 className="font-semibold text-blue-700 mb-4">Chỉnh sửa đánh giá</h4>
+                <h4 className="font-semibold text-blue-700 mb-4">
+                  Chỉnh sửa đánh giá
+                </h4>
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-semibold mb-3">Điểm đánh giá</label>
+                    <label className="block text-sm font-semibold mb-3">
+                      Điểm đánh giá
+                    </label>
                     <div className="flex gap-4">
                       <button
                         onClick={() => setPendingRating(1)}
@@ -530,7 +673,11 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
                         }`}
                       >
                         <div className="flex items-center justify-center gap-2">
-                          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                          <svg
+                            className="w-5 h-5"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
                             <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z" />
                           </svg>
                           Tích cực (+1)
@@ -545,7 +692,11 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
                         }`}
                       >
                         <div className="flex items-center justify-center gap-2">
-                          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                          <svg
+                            className="w-5 h-5"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
                             <path d="M18 9.5a1.5 1.5 0 11-3 0v-6a1.5 1.5 0 013 0v6zM14 9.667v-5.43a2 2 0 00-1.106-1.79l-.05-.025A4 4 0 0011.055 2H5.64a2 2 0 00-1.962 1.608l-1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4l1.4-1.866a4 4 0 00.8-2.4z" />
                           </svg>
                           Tiêu cực (-1)
@@ -555,7 +706,9 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold mb-2">Nhận xét (tùy chọn)</label>
+                    <label className="block text-sm font-semibold mb-2">
+                      Nhận xét (tùy chọn)
+                    </label>
                     <textarea
                       placeholder="Chia sẻ trải nghiệm của bạn..."
                       value={ratingComment}
@@ -568,8 +721,8 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
                   <div className="flex gap-3">
                     <button
                       onClick={() => {
-                        setPendingRating(null)
-                        setRatingComment(userRating.comment || "")
+                        setPendingRating(null);
+                        setRatingComment(userRating.comment || "");
                       }}
                       className="flex-1 px-6 py-2 bg-gray-300 text-gray-800 font-bold rounded-lg hover:bg-gray-400 transition"
                     >
@@ -586,14 +739,19 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
               </div>
             )}
           </div>
-        )
+        );
       }
 
       return (
         <div className="bg-white rounded-lg p-6 border-2 border-gray-200">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-              <svg className="w-6 h-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg
+                className="w-6 h-6 text-green-600"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -607,7 +765,9 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
 
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-semibold mb-3">Chọn đánh giá của bạn</label>
+              <label className="block text-sm font-semibold mb-3">
+                Chọn đánh giá của bạn
+              </label>
               <div className="flex gap-4">
                 <button
                   onClick={() => setPendingRating(1)}
@@ -618,7 +778,11 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
                   }`}
                 >
                   <div className="flex items-center justify-center gap-2">
-                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <svg
+                      className="w-5 h-5"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
                       <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z" />
                     </svg>
                     Tích cực (+1)
@@ -633,7 +797,11 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
                   }`}
                 >
                   <div className="flex items-center justify-center gap-2">
-                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <svg
+                      className="w-5 h-5"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
                       <path d="M18 9.5a1.5 1.5 0 11-3 0v-6a1.5 1.5 0 013 0v6zM14 9.667v-5.43a2 2 0 00-1.106-1.79l-.05-.025A4 4 0 0011.055 2H5.64a2 2 0 00-1.962 1.608l-1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4l1.4-1.866a4 4 0 00.8-2.4z" />
                     </svg>
                     Tiêu cực (-1)
@@ -643,7 +811,9 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
             </div>
 
             <div>
-              <label className="block text-sm font-semibold mb-2">Nhận xét (tùy chọn)</label>
+              <label className="block text-sm font-semibold mb-2">
+                Nhận xét (tùy chọn)
+              </label>
               <textarea
                 placeholder="Chia sẻ trải nghiệm của bạn..."
                 value={ratingComment}
@@ -663,10 +833,10 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
             )}
           </div>
         </div>
-      )
+      );
     }
 
-    return null
+    return null;
   }, [
     orderData,
     isBuyer,
@@ -682,14 +852,14 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
     handleConfirmDelivery,
     handleSubmitRating,
     handleUpdateRating,
-  ])
+  ]);
 
   const handleShowUserProfile = useCallback((user) => {
-    setSelectedUser(user)
-    setShowUserProfile(true)
-  }, [])
+    setSelectedUser(user);
+    setShowUserProfile(true);
+  }, []);
 
-  if (!isOpen) return null
+  if (!isOpen) return null;
 
   if (isMinimized) {
     return (
@@ -704,14 +874,17 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
           </span>
         </button>
       </div>
-    )
+    );
   }
 
-  const statusDisplay = getStatusDisplay()
-  const currentStep = getCurrentStep()
+  const statusDisplay = getStatusDisplay();
+  const currentStep = getCurrentStep();
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+      onClick={onClose}
+    >
       <div
         className="bg-white rounded-xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl"
         onClick={(e) => e.stopPropagation()}
@@ -719,43 +892,72 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
         <div className="border-b border-gray-200 p-6 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <h2 className="text-2xl font-bold">Hoàn tất đơn hàng</h2>
-            <span className={`px-3 py-1 rounded-full font-bold text-xs ${statusDisplay.color}`}>
+            <span
+              className={`px-3 py-1 rounded-full font-bold text-xs ${statusDisplay.color}`}
+            >
               {statusDisplay.label}
             </span>
           </div>
 
           <div className="flex items-center gap-4">
-            {orderData?.status !== "cancelled" && orderData?.status !== "completed" && (
-              <div className="flex gap-2">
-                {[1, 2, 3, 4].map((step) => (
-                  <button
-                    key={step}
-                    onClick={() => {
-                      console.log("Step", step)
-                    }}
-                    className={`w-8 h-8 rounded-full font-bold transition ${
-                      step === currentStep
-                        ? "bg-blue-600 text-white"
-                        : step < currentStep
+            {orderData?.status !== "cancelled" &&
+              orderData?.status !== "completed" && (
+                <div className="flex gap-2">
+                  {[1, 2, 3, 4].map((step) => (
+                    <button
+                      key={step}
+                      onClick={() => {
+                        console.log("Step", step);
+                      }}
+                      className={`w-8 h-8 rounded-full font-bold transition ${
+                        step === currentStep
+                          ? "bg-blue-600 text-white"
+                          : step < currentStep
                           ? "bg-green-500 text-white"
                           : "bg-gray-200 text-gray-600"
-                    }`}
-                  >
-                    {step < currentStep ? "✓" : step}
-                  </button>
-                ))}
-              </div>
-            )}
+                      }`}
+                    >
+                      {step < currentStep ? "✓" : step}
+                    </button>
+                  ))}
+                </div>
+              )}
 
-            <button onClick={() => setIsMinimized(true)} className="p-2 hover:bg-gray-100 rounded-full transition">
-              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+            <button
+              onClick={() => setIsMinimized(true)}
+              className="p-2 hover:bg-gray-100 rounded-full transition"
+            >
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M20 12H4"
+                />
               </svg>
             </button>
 
-            <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition">
-              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            <button
+              onClick={onClose}
+              className="p-2 hover:bg-gray-100 rounded-full transition"
+            >
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
           </div>
@@ -777,7 +979,9 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
             <button
               onClick={() => setActiveTab("chat")}
               className={`flex-1 px-6 py-4 font-semibold transition ${
-                activeTab === "chat" ? "border-b-2 border-blue-600 text-blue-600" : "text-gray-600 hover:text-gray-800"
+                activeTab === "chat"
+                  ? "border-b-2 border-blue-600 text-blue-600"
+                  : "text-gray-600 hover:text-gray-800"
               }`}
             >
               Chat
@@ -791,14 +995,16 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
             <div className="space-y-6">
               {renderStepContent()}
 
-              {isSeller && orderData?.status !== "cancelled" && orderData?.status !== "completed" && (
-                <button
-                  onClick={() => setShowCancelDialog(true)}
-                  className="w-full px-6 py-3 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 transition"
-                >
-                  Hủy giao dịch
-                </button>
-              )}
+              {isSeller &&
+                orderData?.status !== "cancelled" &&
+                orderData?.status !== "completed" && (
+                  <button
+                    onClick={() => setShowCancelDialog(true)}
+                    className="w-full px-6 py-3 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 transition"
+                  >
+                    Hủy giao dịch
+                  </button>
+                )}
             </div>
           ) : (
             <ChatInterface
@@ -817,11 +1023,20 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
           className="fixed inset-0 z-60 flex items-center justify-center bg-black/50 p-4"
           onClick={() => setShowCancelDialog(false)}
         >
-          <div className="bg-white rounded-xl max-w-md w-full p-6" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-xl font-bold mb-2">Bạn có chắc muốn hủy giao dịch?</h3>
-            <p className="text-sm text-gray-600 mb-4">Hành động này sẽ hủy đơn hàng và không thể hoàn tác.</p>
+          <div
+            className="bg-white rounded-xl max-w-md w-full p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-xl font-bold mb-2">
+              Bạn có chắc muốn hủy giao dịch?
+            </h3>
+            <p className="text-sm text-gray-600 mb-4">
+              Hành động này sẽ hủy đơn hàng và không thể hoàn tác.
+            </p>
             <div className="mb-4">
-              <label className="block text-sm font-semibold mb-2">Lý do hủy</label>
+              <label className="block text-sm font-semibold mb-2">
+                Lý do hủy
+              </label>
               <textarea
                 placeholder="Nhập lý do hủy giao dịch"
                 value={cancelReason}
@@ -848,7 +1063,11 @@ export default function OrderCompletionModal({ isOpen, onClose, order, currentUs
         </div>
       )}
 
-      <UserProfileModal isOpen={showUserProfile} onClose={() => setShowUserProfile(false)} user={selectedUser} />
+      <UserProfileModal
+        isOpen={showUserProfile}
+        onClose={() => setShowUserProfile(false)}
+        user={selectedUser}
+      />
     </div>
-  )
+  );
 }

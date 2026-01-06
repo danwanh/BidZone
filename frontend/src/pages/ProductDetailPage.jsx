@@ -230,7 +230,7 @@ export const ProductDetailPage = () => {
             time: bid.createdAt,
             status: bid.status !== false,
           }))
-          .sort((a, b) => b.amount - a.amount);
+          .sort((a, b) => b.price - a.price);
 
         setBidHistory(mapped);
 
@@ -241,7 +241,7 @@ export const ProductDetailPage = () => {
 
         const activeBids = mapped.filter((b) => b.status);
         if (activeBids.length > 0) {
-          setCurrentBid(activeBids[0].amount);
+          setCurrentBid(activeBids[0].price);
           setTotalBids(activeBids.length);
 
           const topBidData = data.find((b) => b._id === activeBids[0].id);
