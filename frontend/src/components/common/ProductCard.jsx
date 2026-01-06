@@ -1,7 +1,7 @@
 "use client";
 
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useState, useMemo, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import ProductTimer from "./ProductTimer";
 import { useLiked } from "../../context/LikedContext";
@@ -15,12 +15,11 @@ const ProductCard = ({ product }) => {
   const [showInfoPopup, setShowInfoPopup] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const { addToLikedList, removeFromLikedList, likedIds } = useLiked();
-  const { user, loading: authLoading } = useState(null);
+  const { user, loading: authLoading } = useAuth();
   const [isLiked, setIsLiked] = useState(likedIds.has(product._id));
   const [isSendingRating, setIsSendingRating] = useState(false);
-  const navigate = useNavigate();
 
-  const userId = authLoading ? "123" : user?._id;
+  const userId = authLoading ? "123" : user?._id || "123";
 
   const [showUserPopup, setShowUserPopup] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
@@ -123,17 +122,33 @@ const ProductCard = ({ product }) => {
   const toUserProfile = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    // navigate(
-    //   `/profile?tab=Đang+đấu+giá&page=1&id=${
-    //     product.bidder_id?._id || product.bidder_id
-    //   }`
-    // );
-    // console.log("123456");
-    // console.log(product);
-    // navigate(`/profile?tab=Đang+đấu+giá&page=1&id=${product.bidder_id._id}`);
     setSelectedUser(product.bidder_id);
     setShowUserPopup(true);
   };
+
+  const maskName = useCallback((name) => {
+    if (!name) return "Ẩn danh";
+    let toggle = true;
+    return name
+      .split("")
+      .map((char) => {
+        if (char === " ") return char;
+        if (toggle) {
+          toggle = false;
+          return char;
+        } else {
+          toggle = true;
+          return "*";
+        }
+      })
+      .join("");
+  }, []);
+
+  const bidder_name = maskName(
+    product?.bidder_id?.username
+      ? product?.bidder_id?.username
+      : product?.bidder_id?.name
+  );
 
   return (
     <div className="relative">
@@ -395,9 +410,7 @@ const ProductCard = ({ product }) => {
                         : ""
                     }`}
                   >
-                    {product?.bidder_id?.username
-                      ? product?.bidder_id?.username
-                      : product?.bidder_id?.name}
+                    {bidder_name}
                   </p>
                   <div className="mt-[2px] ml-1 flex-shrink-0">
                     <svg
