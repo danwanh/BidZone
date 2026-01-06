@@ -29,7 +29,7 @@ const AddCategory = ({ setAdd, parentCategory, updateAction }) => {
       console.log("Form submitted", body);
       const response = await api.post("api/category", body);
       console.log(response.data);
-      toast.success("Success! Added category.");
+      toast.success("Đã tạo danh mục thành công");
       setAdd(false);
       updateAction();
       reset({
