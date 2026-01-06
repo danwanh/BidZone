@@ -1,5 +1,3 @@
-"use client";
-
 import { useState } from "react";
 import { UserProfilePopup } from "../common/UserProfilePopup";
 import {formatPostedTime} from "../../utils/TimeFormat.js"
@@ -12,6 +10,9 @@ export const BidHistory = ({
 }) => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+
+  const [showRejectModal, setShowRejectModal] = useState(false);
+  const [pendingReject, setPendingReject] = useState(null);
 
   const handleOpenProfile = (bid) => {
     if (!bid?.userId) return;
@@ -89,7 +90,10 @@ export const BidHistory = ({
 
                 {b.status && userRole === "seller" && (
                   <button
-                    onClick={() => onRejectBid(b.id, b.userId)}
+                    onClick={() => {
+                      setPendingReject({ bidId: b.id, bidderId: b.userId });
+                      setShowRejectModal(true);
+                    }}
                     className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition text-sm"
                   >
                     Từ chối
@@ -99,6 +103,50 @@ export const BidHistory = ({
             ))}
         </div>
       </div>
+
+      {showRejectModal && pendingReject && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/50">
+          <div className="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full mx-4">
+            <h2 className="text-xl font-bold mb-4 text-red-600">
+              Xác nhận từ chối
+            </h2>
+
+            <p className="text-gray-700 mb-6">
+              Bạn chắc chắn muốn{" "}
+              <span className="font-bold text-red-600">
+                từ chối người đấu giá này
+              </span>
+              {" "}không?
+            </p>
+
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => {
+                  setShowRejectModal(false);
+                  setPendingReject(null);
+                }}
+                className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400"
+              >
+                Hủy
+              </button>
+
+              <button
+                onClick={async () => {
+                  await onRejectBid(
+                    pendingReject.bidId,
+                    pendingReject.bidderId
+                  );
+                  setShowRejectModal(false);
+                  setPendingReject(null);
+                }}
+                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+              >
+                Xác nhận
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <UserProfilePopup
         user={selectedUser}

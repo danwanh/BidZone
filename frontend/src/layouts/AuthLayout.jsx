@@ -6,7 +6,7 @@ import "react-toastify/dist/ReactToastify.css";
 export default function MainLayout() {
   return (
     <div>
-      <div className="bg-[linear-gradient(46deg,#A9B9F8,#667ACA)] px-[6%] py-20 flex gap-[30px] w-full">
+      <div className="bg-[#A9B9F8] px-[6%] py-20 flex gap-[30px] w-full">
         <Outlet />
       </div>
 

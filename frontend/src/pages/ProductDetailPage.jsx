@@ -110,12 +110,13 @@ export const ProductDetailPage = () => {
     if (minutes > 0) return `${minutes} phút trước`;
     return `vừa mới`;
   }, []);
+
   const setWinnerFromProduct = useCallback(
     (product) => {
       if (!product?.bidder_id) return;
 
       const u = product.bidder_id;
-      setCurrentBid(product.buy_now_price || product.current_price);
+      setCurrentBid(product.current_price);
       setHighestBidder({
         name: maskName(u.name),
         rating_pos: u.rating_pos || 0,
@@ -363,7 +364,7 @@ export const ProductDetailPage = () => {
 
     product.is_autobid ? fetchAutoBid(id) : fetchBids(id);
 
-    fetchRelatedProducts(product.category_id);
+    fetchRelatedProducts(product.category_id._id);
     fetchQuestions(id);
 
     fetchCurrentUser();
@@ -506,9 +507,9 @@ export const ProductDetailPage = () => {
 
   const handleRejectBid = useCallback(
     async (bidId, bidderId) => {
-      if (!window.confirm("Bạn chắc chắn muốn từ chối người đấu giá này?")) {
-        return;
-      }
+      // if (!window.confirm("Bạn chắc chắn muốn từ chối người đấu giá này?")) {
+      //   return;
+      // }
       console.log(bidId, bidderId);
       try {
         const endpoint =
