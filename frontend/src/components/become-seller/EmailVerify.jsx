@@ -12,7 +12,7 @@ const Email = ({ user_email, setStep, sendEmail, isSending }) => {
       });
 
       if (res.data.message === "OTP verified") {
-        toast.success("V");
+        toast.success("Xác thực thành công");
         setStep(3);
         window.scrollTo(0, 600);
       } else {

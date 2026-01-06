@@ -23,7 +23,7 @@ const Banner = () => {
   return (
     <>
       <div
-        className={`w-screen fixed left-0 -mt-10 ${
+        className={`w-screen fixed left-0 -mt-5 ${
           scrolled ? "blur-[5px]" : ""
         } transition-filter duration-500 ease-in-out shadow-2xl`}
       >
