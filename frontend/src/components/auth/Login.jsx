@@ -31,7 +31,7 @@ const Login = ({ toRegister }) => {
       toast.success("Đăng nhập thành công");
       navigate("/");
     } catch (err) {
-      toast.error("Đăng nhập thất bại\n" + err.message);
+      toast.error("Đăng nhập thất bại: Sai email hoặc mật khẩu");
       if (err.response) console.log(err.response.data.message);
       if (recaptchaRef.current) {
         recaptchaRef.current.reset(); // Reset ReCAPTCHA

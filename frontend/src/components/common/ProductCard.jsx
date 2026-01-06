@@ -28,7 +28,7 @@ const ProductCard = ({ product }) => {
     (product.status === "ended" && product?.bidder_id?._id === userId) || false;
   const is_new = new Date() - new Date(product.createdAt) <= 120 * 60 * 1000;
   const is_seller =
-    product?.seller_id?._id === userId && user.role === "seller";
+    product?.seller_id?._id === userId && user?.role === "seller";
   const has_user_name =
     product?.bidder_id?.username || product?.bidder_id?.name;
 
