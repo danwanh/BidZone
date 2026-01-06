@@ -49,7 +49,7 @@ const UserProfileModal = ({ isOpen, onClose, user }) => {
           {/* User info */}
           <div className="flex items-center gap-4 mb-6">
             <img
-              src={user?.avatar_url || "/placeholder.svg"}
+              src={user?.avatar_url || "https://www.gravatar.com/avatar/3b3be63a4c2a439b013787725dfce802?d=identicon"}
               alt={user?.name}
               className="w-20 h-20 rounded-full object-cover border-2 border-indigo-200"
             />

@@ -14,7 +14,7 @@ export const SellerInfo = ({ seller, highestBidder, currentBid }) => {
           {seller && (
             <div className="flex items-center gap-4">
               <img
-                src={seller.avatar_url || "/placeholder.svg"}
+                src={seller.avatar_url || "https://www.gravatar.com/avatar/3b3be63a4c2a439b013787725dfce802?d=identicon"}
                 alt={seller.name}
                 className="w-20 h-20 rounded-full object-cover border-2 border-indigo-200"
               />

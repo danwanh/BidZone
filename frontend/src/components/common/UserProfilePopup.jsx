@@ -1,53 +1,53 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import api from "../../api/axios.js"
+import { useState, useEffect } from "react";
+import api from "../../api/axios.js";
 
 export const UserProfilePopup = ({ user, isOpen, onClose }) => {
-  const [ratings, setRatings] = useState([])
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
+  const [ratings, setRatings] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!isOpen || !user?._id) return
+    if (!isOpen || !user?._id) return;
 
     const fetchRatings = async () => {
-      setLoading(true)
-      setError(null)
+      setLoading(true);
+      setError(null);
 
       try {
-        const res = await api.get(`/api/ratings/user/${user._id}`)
-        setRatings(res.data || [])
+        const res = await api.get(`/api/ratings/user/${user._id}`);
+        setRatings(res.data || []);
       } catch (err) {
-        console.error("Error fetching user ratings:", err)
-        setError("Lỗi khi tải hồ sơ người dùng")
+        console.error("Error fetching user ratings:", err);
+        setError("Lỗi khi tải hồ sơ người dùng");
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    fetchRatings()
-  }, [isOpen, user?._id])
+    fetchRatings();
+  }, [isOpen, user?._id]);
 
   // reset khi đóng popup (tuỳ chọn)
   useEffect(() => {
     if (!isOpen) {
-      setRatings([])
-      setError(null)
-      setLoading(false)
+      setRatings([]);
+      setError(null);
+      setLoading(false);
     }
-  }, [isOpen])
+  }, [isOpen]);
 
-  if (!isOpen) return null
+  if (!isOpen) return null;
 
   return (
-<div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
       <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="sticky top-0 bg-gradient-to-r from-indigo-500 to-indigo-600 p-6 flex items-start justify-between">
           <div className="flex items-center gap-4 flex-1">
             <img
-              src={user?.avatar_url || "/placeholder.svg"}
+              src={user?.avatar_url || "https://www.gravatar.com/avatar/3b3be63a4c2a439b013787725dfce802?d=identicon"}
               alt={user?.name}
               className="w-16 h-16 rounded-full object-cover border-2 border-white"
             />
@@ -57,12 +57,16 @@ export const UserProfilePopup = ({ user, isOpen, onClose }) => {
               <div className="flex gap-6 mt-2">
                 <div className="text-white">
                   <div className="text-sm opacity-90">Đánh giá tích cực</div>
-                  <div className="text-2xl font-bold">{user?.rating_pos || 0}</div>
+                  <div className="text-2xl font-bold">
+                    {user?.rating_pos || 0}
+                  </div>
                 </div>
 
                 <div className="text-white">
                   <div className="text-sm opacity-90">Đánh giá tiêu cực</div>
-                  <div className="text-2xl font-bold">{user?.rating_neg || 0}</div>
+                  <div className="text-2xl font-bold">
+                    {user?.rating_neg || 0}
+                  </div>
                 </div>
 
                 <div className="text-white">
@@ -86,8 +90,18 @@ export const UserProfilePopup = ({ user, isOpen, onClose }) => {
             onClick={onClose}
             className="text-white hover:bg-white hover:bg-opacity-20 rounded-lg p-2 transition"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
         </div>
@@ -125,31 +139,31 @@ export const UserProfilePopup = ({ user, isOpen, onClose }) => {
                   <div className="flex items-start justify-between mb-2">
                     <div>
                       <div className="font-semibold text-gray-900">
-                        {rating.from_user_id.name}
+                        {rating.from_user_id?.name || "Người dùng ẩn danh"}
                       </div>
                       <div className="text-sm text-gray-500">
                         {new Date(rating.createdAt).toLocaleDateString("vi-VN")}
                       </div>
                     </div>
-
                     <div className="flex items-center gap-1">
-                      {[...Array(rating.point || 0)].map((_, i) => (
-                        <svg
-                          key={i}
-                          className="w-4 h-4 text-yellow-400 fill-current"
-                          viewBox="0 0 20 20"
-                        >
-                          <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
-                        </svg>
-                      ))}
+                      {rating.points > 0 && (
+                        <span className="text-green-500 text-sm font-medium">
+                          +1
+                        </span>
+                      )}
+                      {rating.points < 0 && (
+                        <span className="text-red-500 text-sm font-medium">
+                          -1
+                        </span>
+                      )}
                     </div>
                   </div>
 
                   <p className="text-gray-700">{rating.comment}</p>
 
-                  {rating.product_id.name && (
+                  {rating.product_id?.name && (
                     <div className="text-xs text-gray-500 mt-2">
-                      Sản phẩm: {rating.product_id.name}
+                      Sản phẩm: {rating.product_id?.name}
                     </div>
                   )}
                 </div>
@@ -159,5 +173,5 @@ export const UserProfilePopup = ({ user, isOpen, onClose }) => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};

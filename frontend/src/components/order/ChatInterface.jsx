@@ -108,7 +108,7 @@ const ChatInterface = ({ orderId, sellerId, buyerId, seller, buyer }) => {
         onClick={() => console.log("Show user profile:", otherUser)}
       >
         <img
-          src={otherUser?.avatar_url || "/placeholder.svg?height=40&width=40"}
+          src={otherUser?.avatar_url || "https://www.gravatar.com/avatar/3b3be63a4c2a439b013787725dfce802?d=identicon"}
           alt={otherUser?.name}
           className="w-10 h-10 rounded-full"
         />
