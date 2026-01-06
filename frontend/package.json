@@ -14,7 +14,6 @@
     "@tailwindcss/vite": "^4.1.16",
     "@tinymce/tinymce-react": "^6.3.0",
     "axios": "^1.13.2",
-    "flowbite": "^4.0.1",
     "flowbite-react": "^0.12.10",
     "lucide-react": "^0.562.0",
     "node-cron": "^4.2.1",
