@@ -153,7 +153,7 @@ export const getAutoBidsByProduct = async (req, res) => {
     const { product_id } = req.validated.params;
     const bids = await AutoBid.find({ product_id }).populate(
       "bidder_id current_holder",
-      "name"
+      "name email rating_pos rating_neg"
     );
     res.json(bids);
   } catch (err) {

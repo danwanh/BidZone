@@ -15,7 +15,7 @@ const ProductCard = ({ product }) => {
   const [showInfoPopup, setShowInfoPopup] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const { addToLikedList, removeFromLikedList, likedIds } = useLiked();
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading } = useState(null);
   const [isLiked, setIsLiked] = useState(likedIds.has(product._id));
   const [isSendingRating, setIsSendingRating] = useState(false);
   const navigate = useNavigate();

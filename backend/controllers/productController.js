@@ -326,7 +326,7 @@ export const getAllProducts = async (req, res) => {
 // GET /api/product/:id
 export const getProductById = async (req, res) => {
   const product = await Product.findById(req.validated.params.id)
-    .populate("seller_id")
+    .populate("seller_id", "name")
     .populate("category_id")
     .populate("bidder_id");
 
@@ -511,10 +511,10 @@ export const getProductBySellerId = async (req, res) => {
 
     return res
       .status(200)
-      .json({ message: "Success!", total_page: total_page, products: result });
+      .json({ message: "Thành công ", total_page: total_page, products: result });
   } catch (error) {
     console.error("Error getting seller's product: ", error);
-    res.status(500).json({ message: "Can't get seller's product" });
+    res.status(500).json({ message: "Không thể lấy sản phẩm" });
   }
 };
 

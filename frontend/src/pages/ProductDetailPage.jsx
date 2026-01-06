@@ -110,12 +110,13 @@ export const ProductDetailPage = () => {
     if (minutes > 0) return `${minutes} phút trước`;
     return `vừa mới`;
   }, []);
+
   const setWinnerFromProduct = useCallback(
     (product) => {
       if (!product?.bidder_id) return;
 
       const u = product.bidder_id;
-      setCurrentBid(product.buy_now_price || product.current_price);
+      setCurrentBid(product.current_price);
       setHighestBidder({
         name: maskName(u.name),
         rating_pos: u.rating_pos || 0,
@@ -168,6 +169,8 @@ export const ProductDetailPage = () => {
             amount: bid.price,
             time: bid.createdAt,
             status: bid.status !== false,
+            rating_pos: bid.bidder_id?.rating_pos,
+            rating_neg: bid.bidder_id?.rating_neg,
           }))
           .sort((a, b) => b.amount - a.amount);
 
@@ -625,6 +628,10 @@ export const ProductDetailPage = () => {
     );
   }, [order, currentUserId]);
 
+  const isSeller = useMemo(() => {
+    return currentUserId === product?.seller_id?._id;
+  }, [currentUserId, product]);
+
   const { canBid, bidBlockReason } = useMemo(() => {
     if (!currentUser || !product) {
       return { canBid: false, bidBlockReason: "Vui lòng đăng nhập để đấu giá" };
@@ -794,7 +801,7 @@ export const ProductDetailPage = () => {
           product={product}
           onBuyNow={handleBuyNow}
         />
-      ) : (
+      ) : ( !isSeller ) && (
         <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-6">
           <p className="text-red-700 font-medium">
             Bạn không đủ điều kiện tham gia đấu giá
@@ -802,8 +809,7 @@ export const ProductDetailPage = () => {
           <p className="text-red-600 mt-1">{bidBlockReason}</p>
         </div>
       )}
-      {((product.is_autobid && userRole === "seller") ||
-        !product.is_autobid) && (
+      { (
         <BidHistory
           bidHistory={bidHistory}
           userRole={userRole}

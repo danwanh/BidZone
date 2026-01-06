@@ -46,7 +46,7 @@ const SideBar = ({ user, isOwnProfile }) => {
       setUserData((prev) => ({ ...prev, ...data }));
       setIsEditing(false);
       console.log(response?.data?.message || response);
-      toast.success("Success! Updated user.");
+      toast.success("Đã cập nhật thông tin cá nhân thành công");
     } catch (err) {
       console.error(err.response?.data?.message || err);
     }
