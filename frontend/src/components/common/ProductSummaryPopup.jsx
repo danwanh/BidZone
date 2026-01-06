@@ -2,8 +2,6 @@ import React from "react";
 
 const ProductSummaryPopup = ({ product, onClose }) => {
   if (!product) return null;
-  console.log(product);
-  // Format currency
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat("vi-VN", {
       style: "currency",
@@ -11,20 +9,21 @@ const ProductSummaryPopup = ({ product, onClose }) => {
     }).format(amount);
   };
 
-  // Get latest description (last item in history)
   const latestDescription =
     product.description_history && product.description_history.length > 0
       ? product.description_history[product.description_history.length - 1]
           .description
       : "Chưa có mô tả";
 
-  // Get category name safely
   const categoryName =
     product.category_id?.name || product.category?.name || "Chưa phân loại";
 
-  // Get seller name safely
   const sellerName =
-    product.seller_id?.name || product.seller_id?.username || "Ẩn danh";
+    product.seller_id?.name ||
+    product.seller_id?.username ||
+    product.seller?.name ||
+    product.seller?.username ||
+    "Ẩn danh";
 
   return (
     <div

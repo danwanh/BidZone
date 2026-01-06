@@ -9,19 +9,18 @@ import Back from "../components/common/Back";
 
 export default function MainLayout() {
   return (
-    <div>
+    <div className="min-h-screen flex flex-col">
       <Navbar />
-      <div className="bg-[linear-gradient(46deg,#A9B9F8,#667ACA)] px-[6%] py-4 flex flex-col gap-[10px] w-full">
+      <main className="flex-1 bg-[linear-gradient(46deg,#A9B9F8,#667ACA)] px-[6%] py-4 flex flex-col gap-[10px] w-full">
         <Back />
         <Outlet />
-      </div>
-      <footer>
-        <Footer />
-      </footer>
+      </main>
+
+      <Footer />
 
       <ToastContainer
         position="top-right"
-        autoClose={3000} // tự đóng sau 3 giây
+        autoClose={3000}
         hideProgressBar={false}
         newestOnTop
         closeOnClick
@@ -31,3 +30,4 @@ export default function MainLayout() {
     </div>
   );
 }
+

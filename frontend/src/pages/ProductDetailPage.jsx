@@ -364,7 +364,7 @@ export const ProductDetailPage = () => {
 
     product.is_autobid ? fetchAutoBid(id) : fetchBids(id);
 
-    fetchRelatedProducts(product.category_id);
+    fetchRelatedProducts(product.category_id._id);
     fetchQuestions(id);
 
     fetchCurrentUser();

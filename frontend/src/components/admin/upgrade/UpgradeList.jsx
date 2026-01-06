@@ -237,19 +237,21 @@ const UpgradeList = () => {
                             Trạng thái
                           </th>
                         )}
-                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Hành động
-                        </th>
+                        {status === "pending" && (
+                          <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Hành động
+                          </th>
+                        )}
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-100">
                       {upgrades.length > 0 ? (
                         upgrades.map((upgrade, index) => (
                           <UpgradeRow
-                            key={upgrade.id || upgrade._id || index}
+                            key={upgrade._id}
                             upgrade={upgrade}
-                            updateList={updateList}
                             status={status}
+                            showAction={status === "pending"}
                             onAccept={() => openConfirm(upgrade, "accept")}
                             onReject={() => openConfirm(upgrade, "reject")}
                           />

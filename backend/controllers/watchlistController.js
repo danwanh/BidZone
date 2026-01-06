@@ -86,7 +86,7 @@ export const getWatchlistByUserId = async (req, res) => {
     const watchlist = await Watchlist.findOne({ user_id: userId }).populate({
       path: "product_id",
       populate: {
-        path: "bidder_id category_id",
+        path: "bidder_id category_id seller_id",
       },
     });
     if (!watchlist) {

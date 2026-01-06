@@ -312,7 +312,7 @@ export const getAllProducts = async (req, res) => {
         Product.find(filter)
           .populate("category_id", "name")
           .populate("bidder_id")
-          .populate("seller_id", "username email")
+          .populate("seller_id", "username email name")
           .sort(sort)
           .skip(skip)
           .limit(limit),
@@ -608,7 +608,7 @@ export const getTop5Ending = async (req, res) => {
       status: "active",
       end_time: { $exists: true, $gt: new Date() },
     })
-      .populate("bidder_id")
+      .populate("bidder_id seller_id")
       .populate("category_id", "name")
       .sort({ end_time: 1 })
       .limit(5);
@@ -626,7 +626,7 @@ export const getTop5Bid = async (req, res) => {
       status: "active",
       total_bids: { $exists: true },
     })
-      .populate("bidder_id")
+      .populate("bidder_id seller_id")
       .populate("category_id", "name")
       .sort({ total_bids: -1 })
       .limit(5);
@@ -644,7 +644,7 @@ export const getTop5Price = async (req, res) => {
       status: "active",
       current_price: { $exists: true },
     })
-      .populate("bidder_id")
+      .populate("bidder_id seller_id")
       .populate("category_id", "name")
       .sort({ current_price: -1 })
       .limit(5);
