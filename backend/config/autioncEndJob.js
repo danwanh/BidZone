@@ -38,7 +38,7 @@ const auctionCronJob = cron.schedule("* * * * *", async () => {
           product_id: product._id,
           status: true,
         })
-          .sort({ price: -1 })
+          .sort({ max_price: -1 })
           .populate("bidder_id");
       }
 
@@ -46,8 +46,8 @@ const auctionCronJob = cron.schedule("* * * * *", async () => {
       if (winningBid?.bidder_id)
         winner = await User.findById(winningBid.bidder_id);
 
-      console.log(product.name);
-      console.log(winningBid);
+      // console.log(product.name);
+      // console.log(winningBid);
 
       // Create an order after auction ends
       const order = new Order({

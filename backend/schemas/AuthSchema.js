@@ -18,9 +18,15 @@ export const registerSchema = Joi.object({
     "string.min": "Mật khẩu phải có ít nhất 1 ký tự",
     "string.max": "Mật khẩu không được vượt quá 128 ký tự",
   }),
-  confirmPassword: Joi.string().valid(Joi.ref("password")).required().messages({
-    "any.only": "Mật khẩu xác nhận không khớp",
-    "string.empty": "Vui lòng xác nhận mật khẩu",
+  confirm_password: Joi.string()
+    .valid(Joi.ref("password"))
+    .required()
+    .messages({
+      "any.only": "Mật khẩu xác nhận không khớp",
+      "string.empty": "Vui lòng xác nhận mật khẩu",
+    }),
+  recaptcha: Joi.string().required().messages({
+    "string.empty": "Recaptcha là bắt buộc",
   }),
   phone: Joi.string().optional(),
   address: Joi.string().optional(),
