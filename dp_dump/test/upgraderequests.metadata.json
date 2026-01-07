@@ -1,0 +1,1 @@
+{"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_"}],"uuid":"92d5e02e13a24355b5eaa1fce59212b3","collectionName":"upgraderequests","type":"collection"}
