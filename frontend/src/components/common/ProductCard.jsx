@@ -383,7 +383,8 @@ const ProductCard = ({ product }) => {
               <div className="flex flex-col leading-[24px]">
                 <p className="text-sm text-[#666666]">Giá cao nhất</p>
                 <p className="text-[22px] font-bold text-orange-600">
-                  ${product.current_price ? product.current_price : 0}
+                  {product.current_price ? product.current_price : 0}
+                  <span className="text-sm text-orange-600">VNĐ</span>
                 </p>
               </div>
               {/* right */}
