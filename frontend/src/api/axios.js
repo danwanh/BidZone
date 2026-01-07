@@ -1,7 +1,7 @@
 import axios from "axios";
-
+const BASE_URL =  process.env.VITE_API_URL;
 const api = axios.create({
-  baseURL: process.env.VITE_API_URL, //backend
+  baseURL: BASE_URL, //backend
   withCredentials: true, // required to send/receive httpOnly cookies
 });
 
