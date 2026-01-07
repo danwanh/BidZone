@@ -335,9 +335,9 @@ export const getAllProducts = async (req, res) => {
 // GET /api/product/:id
 export const getProductById = async (req, res) => {
   const product = await Product.findById(req.validated.params.id)
-    .populate("seller_id", "name")
+    .populate("seller_id", "rating_pos rating_neg name")
     .populate("category_id")
-    .populate("bidder_id");
+    .populate("bidder_id", "rating_pos rating_neg name");
 
   if (!product) {
     return res.status(404).json({ message: "Không tìm thấy sản phẩm" });

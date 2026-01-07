@@ -229,6 +229,8 @@ export const ProductDetailPage = () => {
             price: bid.price,
             time: bid.createdAt,
             status: bid.status !== false,
+            rating_pos: bid.current_holder?.rating_pos,
+            rating_neg: bid.current_holder?.rating_neg,
           }))
           .sort((a, b) => b.price - a.price);
 
@@ -256,7 +258,7 @@ export const ProductDetailPage = () => {
                 topBidData.current_holder?.avatar_url ||
                 "https://www.gravatar.com/avatar/3b3be63a4c2a439b013787725dfce802?d=identicon",
             });
-
+console.log(highestBidder);
             setBuyer({
               _id: topBidData.current_holder?._id,
               name: topBidData.current_holder?.name,

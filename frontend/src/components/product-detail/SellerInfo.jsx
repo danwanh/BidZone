@@ -62,7 +62,7 @@ export const SellerInfo = ({ seller, highestBidder, currentBid }) => {
                 </div>
                 <div className="flex items-center gap-2 mb-3">
                   <span className="text-sm text-green-600 font-semibold">
-                    {highestBidder.rating_pos} / {highestBidder.reviews} đánh
+                    {highestBidder.rating} / {highestBidder.reviews} đánh
                     giá tích cực
                   </span>
                 </div>

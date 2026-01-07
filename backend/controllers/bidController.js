@@ -170,7 +170,7 @@ export const getBidByUser = async (req, res) => {
   try {
     const { id } = req.validated.params;
     const products = await Bid.find({ bidder_id: id }).populate(
-      "product_id bidder_id"
+      "product_id bidder_id", "rating_pos rating_neg name"
     );
     const { page = 1, per_page = 6, q = "" } = req.validated.query;
     const page_num = Math.max(1, Number(page) || 1);
