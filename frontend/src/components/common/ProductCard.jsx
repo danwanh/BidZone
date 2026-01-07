@@ -383,7 +383,8 @@ const ProductCard = ({ product }) => {
               <div className="flex flex-col leading-[24px]">
                 <p className="text-sm text-[#666666]">Giá cao nhất</p>
                 <p className="text-[22px] font-bold text-orange-600">
-                  ${product.current_price ? product.current_price : 0}
+                  {product.current_price ? product.current_price : 0}
+                  <span className="text-sm text-orange-600">VNĐ</span>
                 </p>
               </div>
               {/* right */}
@@ -427,12 +428,18 @@ const ProductCard = ({ product }) => {
                     </svg>
                   </div>
                   <p className="text-[#667EEA] -ml-1 flex-shrink-0">
-                    {(
-                      (product?.bidder_id?.rating_pos /
-                        (product?.bidder_id?.rating_pos +
-                          product?.bidder_id?.rating_neg)) *
-                      100
-                    ).toFixed(0) || 0}
+                    {product?.bidder_id &&
+                    product.bidder_id.rating_pos +
+                      product.bidder_id.rating_neg >
+                      0
+                      ? (
+                          (product.bidder_id.rating_pos /
+                            (product.bidder_id.rating_pos +
+                              product.bidder_id.rating_neg)) *
+                          100
+                        ).toFixed(0)
+                      : 0}
+
                     {"%"}
                   </p>
                 </div>

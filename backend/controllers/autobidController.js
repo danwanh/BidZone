@@ -72,7 +72,8 @@ export const createAutoBid = async (req, res) => {
     }
 
     // calculate new current price and holder: nếu là bidder cũ thì update max_price, bidder mới thì tạo autobid
-    const allBids = await AutoBid.find({ product_id }).sort({
+    // điều kiện khác status: true
+    const allBids = await AutoBid.find({ product_id, status: true }).sort({
       max_price: -1,
       createdAt: 1,
     });
@@ -201,16 +202,20 @@ export const rejectAutoBid = async (req, res) => {
   try {
     const { id } = req.validated.params;
 
-    const bid = await AutoBid.findByIdAndUpdate(
-      id,
-      { status: false },
-      { new: true }
-    );
+    // Lấy bid hiện tại để biết product_id và bidder_id
+    const bid = await AutoBid.findById(id);
 
     if (!bid) {
       return res.status(404).json({ message: "Bid không tồn tại" });
     }
 
+    // Từ chối tất cả bid của user này trên sản phẩm đó
+    await AutoBid.updateMany(
+      { product_id: bid.product_id, bidder_id: bid.bidder_id },
+      { status: false }
+    );
+
+    // Tìm bid hợp lệ cao nhất còn lại
     const highestValidBid = await AutoBid.findOne({
       product_id: bid.product_id,
       status: true,
@@ -218,18 +223,22 @@ export const rejectAutoBid = async (req, res) => {
 
     const newPrice = highestValidBid ? highestValidBid.price : 0;
 
-    const product = await Product.findByIdAndUpdate(bid.product_id, {
-      currentPrice: newPrice,
-    });
+    // Cập nhật giá sản phẩm
+    const product = await Product.findByIdAndUpdate(
+      bid.product_id,
+      { currentPrice: newPrice },
+      { new: true }
+    );
 
+    // Gửi event
     appEvent.emit("BID_REJECTED", {
       bidder: await User.findById(bid.bidder_id),
       product,
-      reason: "Lượt ra giá của bạn đã bị từ chối bời người bán",
+      reason: "Tất cả lượt ra giá của bạn đã bị từ chối bởi người bán",
     });
 
     res.json({
-      message: "Đã từ chối bid & cập nhật giá",
+      message: "Đã từ chối tất cả bid của user & cập nhật giá",
       currentPrice: newPrice,
     });
   } catch (error) {
@@ -237,3 +246,4 @@ export const rejectAutoBid = async (req, res) => {
     res.status(500).json({ message: "Lỗi server" });
   }
 };
+

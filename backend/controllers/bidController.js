@@ -345,37 +345,40 @@ export const rejectBid = async (req, res) => {
   try {
     const { id } = req.validated.params;
 
-    const bid = await Bid.findByIdAndUpdate(
-      id,
-      { status: false },
-      { new: true }
-    );
+    // Lấy bid hiện tại để biết product_id và bidder_id
+    const bid = await Bid.findById(id);
 
     if (!bid) {
       return res.status(404).json({ message: "Bid không tồn tại" });
     }
 
+    // Từ chối tất cả bid của user này trên sản phẩm đó
+    await Bid.updateMany(
+      { product_id: bid.product_id, bidder_id: bid.bidder_id },
+      { status: false }
+    );
+
+    // Lấy bid hợp lệ cao nhất còn lại
     const highestValidBid = await Bid.findOne({
       product_id: bid.product_id,
       status: true,
     }).sort({ price: -1 });
 
+    // Cập nhật giá sản phẩm
     let product = await Product.findById(bid.product_id);
-
-    const newPrice = highestValidBid
-      ? highestValidBid.price
-      : product.start_price;
+    const newPrice = highestValidBid ? highestValidBid.price : product.start_price;
     product.current_price = newPrice;
     await product.save();
 
+    // Gửi event
     appEvent.emit("BID_REJECTED", {
       bidder: await User.findById(bid.bidder_id),
       product,
-      reason: "Lượt ra giá của bạn đã bị từ chối bời người bán",
+      reason: "Tất cả lượt ra giá của bạn đã bị từ chối bởi người bán",
     });
 
     res.json({
-      message: "Đã từ chối bid & cập nhật giá",
+      message: "Đã từ chối tất cả bid của user & cập nhật giá",
       current_price: newPrice,
     });
   } catch (error) {
