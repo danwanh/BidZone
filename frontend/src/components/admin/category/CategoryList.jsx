@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import SubCategoryList from "./SubcategoryList";
+import SubCategoryList from "./SubCategoryList";
 import AddCategory from "./AddCategory";
 
 const CategoryList = ({ setSelected, categories, updateAction }) => {
