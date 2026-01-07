@@ -35,10 +35,8 @@ dotenv.config();
 const app = express();
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      "https://bidzone-frontend.onrender.com",
-    ],
+    origin: "http://localhost:5173",
+
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization"],
   })
