@@ -167,7 +167,7 @@ const Login = ({ toRegister }) => {
               Đăng nhập bằng Google
             </a>
 
-            {/* Facebook */}
+            {/* Github */}
             <a
               href={`${BASE_URL}/api/auth/github`}
               className="w-full p-3 px-5 bg-gray-700 text-white rounded-lg block text-center"
