@@ -427,12 +427,18 @@ const ProductCard = ({ product }) => {
                     </svg>
                   </div>
                   <p className="text-[#667EEA] -ml-1 flex-shrink-0">
-                    {(
-                      (product?.bidder_id?.rating_pos /
-                        (product?.bidder_id?.rating_pos +
-                          product?.bidder_id?.rating_neg)) *
-                      100
-                    ).toFixed(0) || 0}
+                    {product?.bidder_id &&
+                    product.bidder_id.rating_pos +
+                      product.bidder_id.rating_neg >
+                      0
+                      ? (
+                          (product.bidder_id.rating_pos /
+                            (product.bidder_id.rating_pos +
+                              product.bidder_id.rating_neg)) *
+                          100
+                        ).toFixed(0)
+                      : 0}
+
                     {"%"}
                   </p>
                 </div>
