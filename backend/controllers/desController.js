@@ -1,9 +1,8 @@
-import Description from "../models/description_list.model.js";
-import mongoose from "mongoose";
+import * as desService from "../services/desService.js";
 
 export const getAllDescriptions = async (req, res) => {
   try {
-    const descriptions = await Description.find();
+    const descriptions = await desService.getAllDescriptions();
     res.json(descriptions);
   } catch (err) {
     console.error("Error getting all descriptions:", err);
@@ -12,88 +11,40 @@ export const getAllDescriptions = async (req, res) => {
 };
 
 export const getDescriptionByID = async (req, res) => {
-  await getDescription(req, res);
-  if (!res.description) return res;
-  res.json(res.description);
+  try {
+    const description = await desService.getDescriptionById(req.validated.params.id);
+    res.json(description);
+  } catch (err) {
+    res.status(err.message === "Can't find description" ? 500 : 500).json({ message: err.message });
+  }
 };
 
 export const createDescription = async (req, res) => {
   try {
-    const { product_id, description } = req.validated.body;
-
-    const product = await Product.findById(product_id);
-    if (!product) {
-      return res.status(404).json({ message: "Product not found" });
-    }
-
-    const newDescription = new Description({ product_id, description });
-    const save = await newDescription.save();
-    res.status(201).json(save);
+    const description = await desService.createDescription(req.validated.body);
+    res.status(201).json(description);
   } catch (err) {
     console.error("Error creating description:", err);
-    res.status(500).json({ message: err.message });
+    res.status(err.message === "Product not found" ? 404 : 500).json({ message: err.message });
   }
 };
 
 export const updateDescription = async (req, res) => {
-  const { product_id, description } = req.validated.body;
   try {
-    await getDescription(req, res);
-    if (!res.description) return res;
-
-    // if(!mongoose.Types.ObjectId.isValid(req.validated.params.id)){
-    //     return res.status(400).json({ message: "Invalid ObjectId format" });
-    // }else if(!mongoose.Types.ObjectId.isValid(product_id)){
-    //     return res.status(400).json({ message: "Invalid product_id ObjectId format" });
-    // }
-
-    if (product_id) res.description.product_id = product_id;
-    if (description) res.description.description = description;
-
-    const updated = await Description.findByIdAndUpdate(
-      req.validated.params.id,
-      res.description,
-      { new: true }
-    );
+    const updated = await desService.updateDescription(req.validated.params.id, req.validated.body);
     res.json(updated);
   } catch (err) {
     console.error("Error updating description:", err);
-    res.status(500).json({ message: err.message });
+    res.status(err.message === "Can't find description" ? 500 : 500).json({ message: err.message });
   }
 };
 
 export const deleteDescription = async (req, res) => {
   try {
-    await getDescription(req, res);
-    if (!res.description) return res;
-
-    const deleted = await Description.findByIdAndDelete(
-      req.validated.params.id
-    );
-    if (!deleted)
-      return res.status(500).json({ message: "Failed to delete description" });
-
+    await desService.deleteDescription(req.validated.params.id);
     res.json({ message: "Deleted description" });
   } catch (err) {
     console.error("Error deleting description:", err);
     res.status(500).json({ message: err.message });
   }
 };
-
-async function getDescription(req, res) {
-  let description;
-  try {
-    // if(!mongoose.Types.ObjectId.isValid(req.validated.params.id)){
-    //     return res.status(400).json({ message: "Invalid ObjectId format" });
-    // }
-
-    description = await Description.findById(req.validated.params.id);
-    if (!description) {
-      return res.status(500).json({ message: "Can't find description" });
-    }
-  } catch (err) {
-    console.error("Error getting description by ID:", err);
-    return res.status(500).json({ message: err.message });
-  }
-  res.description = description;
-}

@@ -1,7 +1,7 @@
 import passport from "passport";
 import GoogleStrategy from "passport-google-oauth20";
 import FacebookStrategy from "passport-facebook";
-import User from "../models/user.model.js";
+import User from "../models/userModel.js";
 import { Strategy as GithubStrategy } from "passport-github2";
 
 const {
@@ -115,3 +115,5 @@ passport.use(
 
 
 export default passport;
+
+

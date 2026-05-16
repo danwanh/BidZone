@@ -30,3 +30,5 @@ const RatingSchema = new mongoose.Schema(
 );
 
 export default mongoose.model("Rating", RatingSchema);
+
+

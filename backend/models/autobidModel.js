@@ -35,3 +35,4 @@ const AutoBidSchema = mongoose.Schema(
 );
 
 export default mongoose.model("AutoBid", AutoBidSchema);
+

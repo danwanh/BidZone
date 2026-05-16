@@ -30,3 +30,5 @@ export const sanitizeDescription = (html) => {
     allowedSchemes: ["http", "https", "mailto"],
   });
 };
+
+

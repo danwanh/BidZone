@@ -36,3 +36,4 @@ export const updateDescriptionSchema = Joi.object({
 }).min(1).messages({
   "object.min": "Cần cập nhật ít nhất một trường",
 });
+

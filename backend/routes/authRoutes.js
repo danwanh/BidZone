@@ -10,7 +10,7 @@ import {
   login,
   logout,
   refresh,
-  checkEmail,
+  checkEmailAvailability,
   oauthSuccess,
   resetPassword,
 } from "../controllers/authController.js";
@@ -27,7 +27,8 @@ router.post("/register", validate({body: registerSchema}), verifyRecaptcha, regi
 router.post("/login", validate({body: loginSchema}), verifyRecaptcha, login);
 router.post("/logout", logout);
 router.get("/refresh", refresh);
-router.post("/check-email", validate({body: emailSchema}), checkEmail);
+router.post("/check-email", validate({body: emailSchema}), checkEmailAvailability);
+
 
 // GOOGLE
 router.get("/google", passport.authenticate("google", { scope: ["profile", "email"] }));
@@ -62,3 +63,5 @@ router.get(
 router.post("/reset-password", validate({body: emailSchema}), resetPassword);
 
 export default router;
+
+

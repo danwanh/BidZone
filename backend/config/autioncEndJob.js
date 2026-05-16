@@ -1,9 +1,9 @@
 import cron from "node-cron";
-import Product from "../models/product.model.js";
-import Bid from "../models/bid.model.js";
-import AutoBid from "../models/autobid.model.js";
-import User from "../models/user.model.js";
-import Order from "../models/order.model.js";
+import Product from "../models/productModel.js";
+import Bid from "../models/bidModel.js";
+import AutoBid from "../models/autobidModel.js";
+import User from "../models/userModel.js";
+import Order from "../models/orderModel.js";
 import appEvent from "../services/mailSystem/mailEvents.js";
 
 const auctionCronJob = cron.schedule("* * * * *", async () => {
@@ -72,3 +72,5 @@ const auctionCronJob = cron.schedule("* * * * *", async () => {
   }
 });
 export default auctionCronJob;
+
+

@@ -25,3 +25,5 @@ router.put("/:key", authenticate, updateConfig);
 router.delete("/:key", authenticate, deleteConfig);
 
 export default router;
+
+

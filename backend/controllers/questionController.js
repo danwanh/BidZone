@@ -1,12 +1,8 @@
-import Question from "../models/question.model.js";
-import User from "../models/user.model.js";
-import Product from "../models/product.model.js";
-import mongoose from "mongoose";
-import appEvent from "../services/mailSystem/mailEvents.js";
+import * as questionService from "../services/questionService.js";
 
 export const getAllQuestions = async (req, res) => {
   try {
-    const questions = await Question.find();
+    const questions = await questionService.getAllQuestions();
     res.json(questions);
   } catch (err) {
     console.error("Error getting all questions:", err);
@@ -14,25 +10,9 @@ export const getAllQuestions = async (req, res) => {
   }
 };
 
-// export const getQuestionByID = async (req, res) => {
-//     await getQuestion(req, res);
-//     if (!res.question)
-//         return res;
-//     res.json(res.question);
-// };
 export const getQuestionsByProductId = async (req, res) => {
   try {
-    const { product_id } = req.validated.params;
-
-    // if (!mongoose.isValidObjectId(product_id)) {
-    //   return res.status(400).json({ message: "Invalid product_id format" });
-    // }
-
-    const questions = await Question.find({ product_id })
-      .populate("bidder_id", "name email")
-      .populate("seller_id", "name email")
-      .sort({ createdAt: -1 });
-
+    const questions = await questionService.getQuestionsByProductId(req.validated.params.product_id);
     res.json(questions);
   } catch (err) {
     console.error("Error fetching questions:", err);
@@ -42,125 +22,30 @@ export const getQuestionsByProductId = async (req, res) => {
 
 export const createQuestion = async (req, res) => {
   try {
-    const { product_id, seller_id, bidder_id, question, answer } =
-      req.validated.body;
-
-    // if (!mongoose.Types.ObjectId.isValid(product_id)) {
-    //   return res
-    //     .status(400)
-    //     .json({ message: "Invalid product_id ObjectId format" });
-    // } else if (!mongoose.Types.ObjectId.isValid(seller_id)) {
-    //   return res
-    //     .status(400)
-    //     .json({ message: "Invalid seller_id ObjectId format" });
-    // } else if (!mongoose.Types.ObjectId.isValid(bidder_id)) {
-    //   return res
-    //     .status(400)
-    //     .json({ message: "Invalid bidder_id ObjectId format" });
-    // }
-
-    // if (!product_id || !seller_id || !bidder_id || !question) {
-    //   return res.status(400).json({ message: "Missing required fields" });
-    // } else
-    if (seller_id === bidder_id) {
-      return res
-        .status(400)
-        .json({ message: "User can't ask/answer themself " });
-    }
-
-    const newQuestion = new Question({
-      product_id,
-      seller_id,
-      bidder_id,
-      question,
-      answer,
-    });
-    const save = await newQuestion.save();
-
-    const seller = await User.findById(seller_id);
-    const product = await Product.findById(product_id);
-
-    appEvent.emit("QUESTION_ASKED", {
-      seller,
-      question: newQuestion,
-      product,
-    });
-
-    res.status(201).json(save);
+    const question = await questionService.createQuestion(req.validated.body);
+    res.status(201).json(question);
   } catch (err) {
     console.error("Error creating question:", err);
-    res.status(500).json({ message: err.message });
+    res.status(err.message === "User can't ask/answer themself" ? 400 : 500).json({ message: err.message });
   }
 };
 
 export const updateQuestion = async (req, res) => {
-  const { product_id, seller_id, bidder_id, question, answer } =
-    req.validated.body;
   try {
-    await getQuestion(req, res);
-    if (!res.question) return res;
-
-    // if (!mongoose.Types.ObjectId.isValid(req.validated.params.id)) {
-    //   return res.status(400).json({ message: "Invalid ObjectId format" });
-    // }
-
-    // if (product_id) question.product_id = product_id;
-    // if(seller_id) question.seller_id = seller_id;
-    // if (bidder_id) question.bidder_id = bidder_id;
-
-    //if (question) res.question.question = question;
-    if (answer) res.question.answer = answer;
-    const updated = await Question.findByIdAndUpdate(
-      req.validated.params.id,
-      res.question,
-      { new: true }
-    );
-
-    if (answer) {
-      appEvent.emit("QUESTION_ANSWERED", {
-        buyer: await User.findById(updated.bidder_id),
-        question: updated,
-        product: await Product.findById(updated.product_id),
-      });
-    }
-
+    const updated = await questionService.updateQuestion(req.validated.params.id, req.validated.body);
     res.json(updated);
   } catch (err) {
     console.error("Error updating question:", err);
-    res.status(500).json({ message: err.message });
+    res.status(err.message === "Can't find question" ? 500 : 500).json({ message: err.message });
   }
 };
 
 export const deleteQuestion = async (req, res) => {
   try {
-    await getQuestion(req, res);
-    if (!res.question) return res;
-
-    const deleted = await Question.findByIdAndDelete(req.validated.params.id);
-    if (!deleted)
-      return res.status(500).json({ message: "Failed to delete question" });
-
+    await questionService.deleteQuestion(req.validated.params.id);
     res.json({ message: "Deleted question" });
   } catch (err) {
     console.error("Error deleting question:", err);
     res.status(500).json({ message: err.message });
   }
 };
-
-async function getQuestion(req, res) {
-  let question;
-  try {
-    // if (!mongoose.Types.ObjectId.isValid(req.validated.params.id)) {
-    //   return res.status(400).json({ message: "Invalid ObjectId format" });
-    // }
-
-    question = await Question.findById(req.validated.params.id);
-    if (!question) {
-      return res.status(500).json({ message: "Can't find question" });
-    }
-  } catch (err) {
-    console.error("Error getting question by ID:", err);
-    return res.status(500).json({ message: err.message });
-  }
-  res.question = question;
-}

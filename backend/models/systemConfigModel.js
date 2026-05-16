@@ -22,3 +22,5 @@ const systemConfigSchema = new mongoose.Schema(
 );
 
 export default mongoose.model("SystemConfig", systemConfigSchema);
+
+

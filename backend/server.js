@@ -1,13 +1,13 @@
+import "dotenv/config";
 import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
-import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import jwt from "jsonwebtoken";
 import { errorHandler, notFoundHandler } from "./middleware/errorMiddleware.js";
 import cron from "node-cron";
 
-import User from "./models/user.model.js";
+import User from "./models/userModel.js";
 // Import routes
 import bidRoutes from "./routes/bidRoutes.js";
 import ratingRoutes from "./routes/ratingRoutes.js";
@@ -30,9 +30,8 @@ import passport from "./config/passport.js";
 
 import auctionCronJob from "./config/autioncEndJob.js";
 
-dotenv.config();
-
 const app = express();
+
 app.use(
   cors({
     origin: "http://localhost:5173",
@@ -106,3 +105,5 @@ app.use(errorHandler);
 app.listen(process.env.PORT, () =>
   console.log(`Server running on port ${process.env.PORT}`)
 );
+
+

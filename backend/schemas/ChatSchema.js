@@ -56,3 +56,5 @@ export const updateMessageSchema = Joi.object({
     "any.required": "Nội dung tin nhắn là bắt buộc",
   }),
 });
+
+

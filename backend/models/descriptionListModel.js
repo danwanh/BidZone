@@ -16,3 +16,4 @@ const DescriptionItemSchema = mongoose.Schema(
 );
 
 export default mongoose.model("DescriptionItem", DescriptionItemSchema);
+

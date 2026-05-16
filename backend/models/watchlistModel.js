@@ -21,3 +21,5 @@ const WatchListSchema = mongoose.Schema(
 );
 
 export default mongoose.model("WatchList", WatchListSchema);
+
+

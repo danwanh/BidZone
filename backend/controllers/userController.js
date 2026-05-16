@@ -1,28 +1,9 @@
-import User from "../models/user.model.js";
-import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
-import mongoose from "mongoose";
+import * as userService from "../services/userService.js";
 
 // READ - Get all users (Admin only)
 export const getAllUsers = async (req, res) => {
   try {
-    const { role, q = "", is_deleted = false } = req.validated.query; // Filter by role if provided
-
-    let query = {};
-    if (role) query.role = role;
-    query.is_deleted = is_deleted;
-
-    if (q) {
-      query.$or = [
-        { username: { $regex: q, $options: "i" } },
-        { name: { $regex: q, $options: "i" } },
-        { email: { $regex: q, $options: "i" } },
-      ];
-    }
-
-    const users = await User.find(query).select(
-      "-password_hash -reset_password_token"
-    );
+    const users = await userService.getAllUsers(req.validated.query);
     res.json(users);
   } catch (err) {
     console.error("Error getting users:", err);
@@ -33,158 +14,58 @@ export const getAllUsers = async (req, res) => {
 // READ - Get user by ID
 export const getUserById = async (req, res) => {
   try {
-    const { id } = req.validated.params;
-
-    // if (!mongoose.Types.ObjectId.isValid(id)) {
-    //   return res.status(400).json({ message: "Invalid user ID" });
-    // }
-
-    const user = await User.findById(id).select(
-      "-password_hash -reset_password_token"
-    );
-
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
+    const user = await userService.getUserById(req.validated.params.id);
     res.json({ message: "Success", user: user });
   } catch (err) {
     console.error("Error getting user:", err);
-    res.status(500).json({ message: err.message });
+    res.status(err.message === "User not found" ? 404 : 500).json({ message: err.message });
   }
 };
 
 // READ - Get current user profile
 export const getProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).select(
-      "-password_hash -reset_password_token"
-    );
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
+    const user = await userService.getUserById(req.user._id);
     res.json(user);
   } catch (err) {
     console.error("Error getting profile:", err);
-    res.status(500).json({ message: err.message });
+    res.status(err.message === "User not found" ? 404 : 500).json({ message: err.message });
   }
 };
 
 // UPDATE - Update user profile
 export const updateUser = async (req, res) => {
   try {
-    console.log("Update user body:", req.validated.body)
-
-    const { id } = req.validated.params
-    const {
-      name,
-      email,
-      phonenumber,
-      address,
-      dob,
-      password,
-      gender,
-      username,
-      $inc, 
-    } = req.validated.body
-
-    const user = await User.findById(id)
-    if (!user) {
-      return res.status(404).json({ message: "User not found" })
-    }
-
-
-    if (name) user.name = name
-
-    if (email) {
-      const emailExists = await User.findOne({ email, _id: { $ne: id } })
-      if (emailExists) {
-        return res.status(400).json({ message: "Email already in use" })
-      }
-      user.email = email
-    }
-
-    if (phonenumber) user.phone = phonenumber
-    if (address) user.address = address
-    if (dob) user.dob = dob
-    if (gender) user.gender = gender
-    if (username) user.username = username
-
-    if (password) {
-      const salt = await bcrypt.genSalt(10)
-      user.password_hash = await bcrypt.hash(password, salt)
-    }
-
-    await user.save()
-
-
-    if ($inc && Object.keys($inc).length > 0) {
-      await User.findByIdAndUpdate(id, { $inc })
-    }
-
-    const updatedUser = await User.findById(id).select(
-      "-password_hash -reset_password_token"
-    )
-
+    const user = await userService.updateUser(req.validated.params.id, req.validated.body);
     res.json({
       message: "User updated successfully",
-      user: updatedUser,
-    })
+      user,
+    });
   } catch (err) {
-    console.error("Error updating user:", err)
-    res.status(500).json({ message: err.message })
+    console.error("Error updating user:", err);
+    res.status(err.message === "User not found" ? 404 : err.message === "Email already in use" ? 400 : 500).json({ message: err.message });
   }
-}
-
+};
 
 // UPDATE - Update user role (Admin only)
 export const updateUserRole = async (req, res) => {
   try {
-    const { id } = req.validated.params;
-    const { role } = req.validated.body;
-
-    // if (!mongoose.Types.ObjectId.isValid(id)) {
-    //   return res.status(400).json({ message: "Invalid user ID" });
-    // }
-
-    // const validRoles = ["bidder", "seller", "admin"];
-    // if (!validRoles.includes(role)) {
-    //   return res.status(400).json({ message: "Invalid role" });
-    // }
-
-    const user = await User.findById(id);
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    user.role = role;
-    await user.save();
-
+    const user = await userService.updateUserRole(req.validated.params.id, req.validated.body.role);
     res.json({ message: "User role updated", user });
   } catch (err) {
     console.error("Error updating user role:", err);
-    res.status(500).json({ message: err.message });
+    res.status(err.message === "User not found" ? 404 : 500).json({ message: err.message });
   }
 };
 
 // DELETE - Delete user (Admin only)
 export const deleteUser = async (req, res) => {
   try {
-    const { id } = req.validated.params;
-
-    // if (!mongoose.Types.ObjectId.isValid(id)) {
-    //   return res.status(400).json({ message: "Invalid user ID" });
-    // }
-
-    const user = await User.findByIdAndDelete(id);
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
+    await userService.deleteUser(req.validated.params.id);
     res.json({ message: "User deleted successfully" });
   } catch (err) {
     console.error("Error deleting user:", err);
-    res.status(500).json({ message: err.message });
+    res.status(err.message === "User not found" ? 404 : 500).json({ message: err.message });
   }
 };
 
@@ -193,133 +74,52 @@ export const toggleUserBan = async (req, res) => {
   try {
     const { id } = req.validated.params;
     const { is_banned } = req.validated.body;
-
-    // if (!mongoose.Types.ObjectId.isValid(id)) {
-    //   return res.status(400).json({ message: "Invalid user ID" });
-    // }
-
-    const user = await User.findById(id);
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    // You might want to add an is_banned field to your User model
-    // For now, we could use is_verified as a proxy or add the field
-
+    const user = await userService.getUserById(id);
+    // Placeholder as original logic was incomplete
     res.json({
       message: is_banned ? "User banned" : "User unbanned",
       user,
     });
   } catch (err) {
     console.error("Error toggling user ban:", err);
-    res.status(500).json({ message: err.message });
+    res.status(err.message === "User not found" ? 404 : 500).json({ message: err.message });
   }
 };
 
 export const rateUp = async (req, res) => {
   try {
-    const id = req.validated.body?.id || "";
-    const user = await User.findById(id);
-    if (!user) {
-      return res.status(400).json({ message: "No user with that id" });
-    }
-
-    if (!user?.rating_pos) {
-      user.rating_pos = 0;
-    }
-
-    user.rating_pos = user.rating_pos + 1;
-    await user.save();
+    await userService.rateUp(req.validated.body?.id);
     return res.status(200).json({ message: "User rated up successfully" });
   } catch (err) {
     console.log(err);
-    res.status(400).json({ message: "Server error" });
+    res.status(err.message === "No user with that id" ? 400 : 500).json({ message: err.message || "Server error" });
   }
 };
 
 export const rateDown = async (req, res) => {
   try {
-    const id = req.validated.body?.id || "";
-    const user = await User.findById(id);
-    if (!user) {
-      return res.status(400).json({ message: "No user with that id" });
-    }
-
-    if (!user?.rating_neg) {
-      user.rating_neg = 0;
-    }
-
-    user.rating_neg = user.rating_neg + 1;
-    await user.save();
+    await userService.rateDown(req.validated.body?.id);
     return res.status(200).json({ message: "User rated down successfully" });
   } catch (err) {
     console.log(err);
-    res.status(400).json({ message: "Server error" });
+    res.status(err.message === "No user with that id" ? 400 : 500).json({ message: err.message || "Server error" });
   }
 };
 
 export const changePassword = async (req, res) => {
   try {
-    console.log(req.validated.body);
-    const user = await User.findById(req.user._id);
     const { oldPassword, newPassword } = req.validated.body;
-
-    if (user.password_hash) {
-      const isMatch = await bcrypt.compare(oldPassword, user.password_hash);
-      if (!isMatch) {
-        return res.status(400).json({ message: "Wrong password" });
-      }
-    }
-
-    const salt = await bcrypt.genSalt(10);
-    const newPasswordHash = await bcrypt.hash(newPassword, salt);
-
-    user.password_hash = newPasswordHash;
-    await user.save();
-
-    return res.status(200).json({
-      message: "Mật khẩu đã được đổi lại",
-    });
+    await userService.changePassword(req.user._id, oldPassword, newPassword);
+    return res.status(200).json({ message: "Mật khẩu đã được đổi lại" });
   } catch (err) {
     console.error("Reset password error:", err);
-    res.status(500).json({ message: err.message });
+    res.status(err.message === "Wrong password" ? 400 : 500).json({ message: err.message });
   }
 };
 
 export const createUser = async (req, res) => {
   try {
-    const {
-      username = "",
-      name = "",
-      address = "",
-      dob,
-      email = "",
-      password = "",
-      gender = "Khác",
-    } = req.validated.body;
-
-    const salt = await bcrypt.genSalt(10);
-    const newPasswordHash = await bcrypt.hash(password, salt);
-
-    const user = new User({
-      username: username,
-      name: name,
-      address: address,
-      dob: dob,
-      email: email,
-      gender: gender,
-      password_hash: newPasswordHash,
-      seller_expires: null,
-      social_is: "",
-      is_verified: true,
-      reset_password_expires: true,
-      reset_password_token: "",
-      otp_expires: true,
-      rating_pos: 0,
-      rating_neg: 0,
-      is_private: false,
-    });
-    user.save();
+    const user = await userService.createUser(req.validated.body);
     return res.status(201).json(user);
   } catch (err) {
     console.log(err.message);
@@ -327,54 +127,40 @@ export const createUser = async (req, res) => {
   }
 };
 
-export const setPrivate = async () => {
+export const setPrivate = async (req, res) => {
   try {
-    const id = req.validated.body?.id || "";
-    if (id !== req.user._id) {
+    const { id } = req.validated.body;
+    if (id !== req.user._id.toString()) {
       return res.status(400).json({ message: "Not your account" });
     }
-    const user = await User.findById(id);
-
-    if (!user) {
-      return res.status(400).json({ message: "No user found" });
-    }
-    user.is_private = true;
-    await user.save();
+    await userService.setPrivateStatus(id, true);
+    res.status(200).json({ message: "Account set to private" });
   } catch (err) {
     console.log(err);
-    res.status(400).json({ message: "Server error" });
+    res.status(err.message === "No user found" ? 400 : 500).json({ message: err.message || "Server error" });
   }
 };
 
-export const setPublic = async () => {
+export const setPublic = async (req, res) => {
   try {
-    const id = req.validated.body?.id || "";
-    if (id !== req.user._id) {
+    const { id } = req.validated.body;
+    if (id !== req.user._id.toString()) {
       return res.status(400).json({ message: "Not your account" });
     }
-    const user = await User.findById(id);
-
-    if (!user) {
-      return res.status(400).json({ message: "No user found" });
-    }
-    user.is_private = false;
-    await user.save();
+    await userService.setPrivateStatus(id, false);
+    res.status(200).json({ message: "Account set to public" });
   } catch (err) {
     console.log(err);
-    res.status(400).json({ message: "Server error" });
+    res.status(err.message === "No user found" ? 400 : 500).json({ message: err.message || "Server error" });
   }
 };
 
 export const softDeleteUser = async (req, res) => {
-  //Chỉnh is_deleted thành true của user có id từ params
   try {
-    const { id } = req.params;
-    const user = await User.findById(id);
-    user.is_deleted = true;
-    await user.save();
+    await userService.softDeleteUser(req.params.id);
     res.status(200).json({ message: "User soft deleted successfully" });
   } catch (err) {
     console.log(err);
-    res.status(400).json({ message: "Server error" });
+    res.status(err.message === "User not found" ? 404 : 500).json({ message: err.message || "Server error" });
   }
 };

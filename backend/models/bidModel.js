@@ -28,3 +28,4 @@ const BidSchema = mongoose.Schema(
 );
 
 export default mongoose.model("Bid", BidSchema);
+

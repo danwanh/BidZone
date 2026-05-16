@@ -375,3 +375,5 @@ export const descriptionChangeTemplate = (product, description) => `
   </div>
 </div>
 `;
+
+

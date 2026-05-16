@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import User from "../models/user.model.js";
+import User from "../models/userModel.js";
 
 // Verify JWT token and attach user to request
 export const authenticate = async (req, res, next) => {
@@ -56,7 +56,7 @@ export const isOwner = (resourceType) => {
 
       // Import the appropriate model based on resourceType
       if (resourceType === "order") {
-        const Order = (await import("../models/order.model.js")).default;
+        const Order = (await import("../models/orderModel.js")).default;
         resource = await Order.findById(resourceId);
 
         // Check if user is buyer or seller of this order
@@ -95,3 +95,5 @@ export const validateOrderData = (req, res, next) => {
 
   next();
 };
+
+

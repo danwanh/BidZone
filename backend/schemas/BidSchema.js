@@ -39,3 +39,5 @@ export const updateBidStatusSchema = Joi.object({
     "any.required": "Trạng thái là bắt buộc",
   }),
 });
+
+

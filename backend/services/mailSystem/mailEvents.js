@@ -91,3 +91,5 @@ appEvent.on("DESCRIPTION_CHANGE", async ({ bidders, product, description }) => {
 });
 
 export default appEvent;
+
+
