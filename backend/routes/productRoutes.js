@@ -6,7 +6,7 @@ import {
   addDescriptionSchema,
 } from "../schemas/ProductSchema.js";
 import {
-  getProductsByCategory,
+  getRecommendedProducts,
   getProductByCategoryId,
   addProduct,
   getAllProducts,
@@ -68,9 +68,9 @@ router.patch(
   changeProductById
 );
 router.get(
-  "/by-category/:id",
+  "/recommendation/:id",
   validate({ params: productIdParamSchema }),
-  getProductsByCategory
+  getRecommendedProducts
 );
 router.get("/liked/:id", getLikedProducts);
 router.get("/:id", validate({ params: productIdParamSchema }), getProductById);
@@ -81,5 +81,6 @@ router.patch(
 );
 
 export default router;
+
 
 

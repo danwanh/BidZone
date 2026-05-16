@@ -7,6 +7,8 @@ import Bid from "../models/bidModel.js";
 import { sanitizeDescription } from "../utils/sanitizeHtml.js";
 import appEvent from "./mailSystem/mailEvents.js";
 import mongoose from "mongoose";
+import * as vectorUtils from "../utils/vectorUtils.js";
+
 
 export const addProduct = async (productData) => {
   const {
@@ -443,38 +445,79 @@ export const getTop5Price = async () => {
     .limit(5);
 };
 
-export const getProductsByCategoryWithFallback = async (categoryId) => {
+export const getRecommendedProducts = async (productId) => {
   const LIMIT = 5;
-  const currentCategory = await Category.findById(categoryId);
-  if (!currentCategory) throw new Error("Category not found");
+  
+  const targetProduct = await Product.findById(productId).populate("category_id");
+  if (!targetProduct) throw new Error("Product not found");
 
-  let products = await Product.find({ category_id: categoryId })
-    .populate("bidder_id")
-    .limit(LIMIT)
-    .lean();
+  const categoryId = targetProduct.category_id._id;
+  const parentCategoryId = targetProduct.category_id.category_id;
 
-  if (products.length >= LIMIT) return products;
+  const candidates = await Product.find({
+    _id: { $ne: productId },
+    status: "active",
+    end_time: { $gt: new Date() }
+  }).populate("category_id").lean();
 
-  const parentId = currentCategory.category_id;
-  if (!parentId) return products;
+  if (candidates.length === 0) return [];
 
-  const siblingCategories = await Category.find({
-    parent_id: parentId,
-    _id: { $ne: categoryId },
+  const stats = candidates.reduce((acc, p) => {
+    acc.maxBids = Math.max(acc.maxBids, p.total_bids || 0);
+    acc.maxPrice = Math.max(acc.maxPrice, p.current_price || 0);
+    return acc;
+  }, { maxBids: 0, maxPrice: 0 });
+
+  const categoryCounts = {};
+  candidates.forEach(p => {
+    const catId = p.category_id._id.toString();
+    categoryCounts[catId] = (categoryCounts[catId] || 0) + 1;
   });
 
-  for (const cat of siblingCategories) {
-    if (products.length >= LIMIT) break;
-    const need = LIMIT - products.length;
-    const extraProducts = await Product.find({ category_id: cat._id })
-      .populate("bidder_id")
-      .limit(need)
-      .lean();
-    products = [...products, ...extraProducts];
-  }
+  const now = new Date().getTime();
 
-  return products;
+  const scoredProducts = candidates.map(p => {
+    const features = {}; // category, popularity, demand, avg bid, rarity
+
+    if (p.category_id._id.toString() === categoryId.toString()) {
+      features.category = 1.0;
+    } else if (parentCategoryId && p.category_id.category_id?.toString() === parentCategoryId.toString()) {
+      features.category = 0.5;
+    } else {
+      features.category = 0.0;
+    }
+
+    features.popularity = vectorUtils.normalize(p.total_bids || 0, 0, stats.maxBids || 1);
+
+    const timeLeft = new Date(p.end_time).getTime() - now;
+    const hoursLeft = Math.max(0, timeLeft / (1000 * 60 * 60));
+    features.demand = 1 / (hoursLeft + 1);
+
+    const avgBid = (p.current_price || 0) / (p.total_bids || 1);
+    features.avgBid = vectorUtils.normalize(avgBid, 0, stats.maxPrice || 1);
+
+    const countInCat = categoryCounts[p.category_id._id.toString()] || 1;
+    features.rarity = 1 / countInCat;
+
+    const targetVector = {
+      category: 1.0,
+      popularity: vectorUtils.normalize(targetProduct.total_bids || 0, 0, stats.maxBids || 1),
+      demand: 1 / (Math.max(0, (new Date(targetProduct.end_time).getTime() - now) / 3600000) + 1),
+      avgBid: vectorUtils.normalize((targetProduct.current_price || 0) / (targetProduct.total_bids || 1), 0, stats.maxPrice || 1),
+      rarity: 1 / (categoryCounts[categoryId.toString()] || 1)
+    };
+
+    const similarity = vectorUtils.cosineSimilarity(features, targetVector);
+    
+    return { ...p, similarity };
+  });
+
+  return scoredProducts
+    .sort((a, b) => b.similarity - a.similarity)
+    .slice(0, LIMIT);
 };
+
+
 
 export const getProductsByCategoryIdSimple = async (id, status) => {
   const categories = await Category.find({

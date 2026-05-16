@@ -1,6 +1,6 @@
 # BidZone - Online Auction Web Platform
 
-BidZone is a modern online auction platform designed to provide a secure, transparent, and user-friendly bidding experience. The project is built using the MERN stack (MongoDB, Express, React, Node.js) along with the latest web technologies.
+BidZone is a modern AI-powered online auction platform designed to provide a secure, transparent, and user-friendly bidding experience. The project is built using the MERN stack (MongoDB, Express, React, Node.js) along with the latest web technologies.
 
 ## Key Features
 
@@ -19,6 +19,7 @@ BidZone is a modern online auction platform designed to provide a secure, transp
 - **Product Management**: Detailed product descriptions with TinyMCE rich text editor and image hosting via Cloudinary.
 - **Watchlist**: Track favorite products and receive status updates.
 - **Bidding History**: Detailed logs of all previous bids for each product.
+- **Smart Recommendation (AI-Powered)**: Content-based recommendation based on popularity, demand, price, and category relevance.
 
 ### Automation & Notifications
 - **Cron Jobs**: Automatically ends auctions, determines winners, and handles Seller role expiration.

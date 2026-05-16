@@ -150,16 +150,17 @@ export const getTop5Price = async (req, res) => {
   }
 };
 
-// GET /products/by-category/:id
-export const getProductsByCategory = async (req, res) => {
+export const getRecommendedProducts = async (req, res) => {
   try {
-    const products = await productService.getProductsByCategoryWithFallback(req.validated.params.id);
+    const products = await productService.getRecommendedProducts(req.validated.params.id);
     res.json(products);
   } catch (error) {
-    console.error("Error getting products by category:", error);
-    res.status(error.message === "Category not found" ? 404 : 500).json({ message: error.message });
+    console.error("Error getting recommended products:", error);
+    res.status(error.message === "Product not found" ? 404 : 500).json({ message: error.message });
   }
 };
+
+
 
 // GET /products/by-category/simple/:id
 export const getProductsByCategoryIdSimple = async (req, res) => {

@@ -2,7 +2,7 @@ import { Link } from "react-router-dom"
 export const RelatedProducts = ({ relatedProducts }) => {
   return (
     <div className="bg-white p-8 rounded-xl shadow-xl">
-      <h2 className="text-2xl font-bold mb-6">Sản phẩm khác cùng chuyên mục</h2>
+      <h2 className="text-2xl font-bold mb-6">Sản phẩm gợi ý cho bạn</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         {relatedProducts.slice(0, 5).map((p) => (
           <div key={p._id} className="border rounded-lg p-4 hover:shadow-lg transition">

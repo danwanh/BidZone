@@ -287,9 +287,9 @@ console.log(highestBidder);
   }, []);
 
   const fetchRelatedProducts = useCallback(
-    async (categoryId) => {
+    async (productId) => {
       try {
-        const res = await axios.get(`/api/product/by-category/${categoryId}`);
+        const res = await axios.get(`/api/product/recommendation/${productId}`);
         const data = res.data;
         setRelatedProducts(
           Array.isArray(data) ? data.filter((p) => p.id !== id) : []
@@ -366,7 +366,7 @@ console.log(highestBidder);
 
     product.is_autobid ? fetchAutoBid(id) : fetchBids(id);
 
-    fetchRelatedProducts(product.category_id._id);
+    fetchRelatedProducts(product._id);
     fetchQuestions(id);
 
     fetchCurrentUser();
